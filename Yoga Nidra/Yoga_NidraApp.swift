@@ -9,9 +9,28 @@ import SwiftUI
 
 @main
 struct Yoga_NidraApp: App {
+    // Initialize the shared manager at app launch
+    @StateObject private var progressManager = ProgressManager.shared
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TabView {
+                HomeView()
+                    .tabItem {
+                        Label("Home", systemImage: "house.fill")
+                    }
+                
+                SessionListView()
+                    .tabItem {
+                        Label("Library", systemImage: "books.vertical.fill")
+                    }
+                
+                ProgressTabView()
+                    .tabItem {
+                        Label("Progress", systemImage: "chart.bar.fill")
+                    }
+            }
+            .environmentObject(progressManager)  // Moved to affect all child views
         }
     }
 }

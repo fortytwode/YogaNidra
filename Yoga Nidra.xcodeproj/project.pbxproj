@@ -283,7 +283,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Yoga Nidra/Preview Content\"";
 				DEVELOPMENT_TEAM = 56PU6YD8LM;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Yoga Nidra/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
