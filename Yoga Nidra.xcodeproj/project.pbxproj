@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		129012D22D25C6E400188A26 /* Yoga Nidra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Yoga Nidra.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		24BD50222D263F7300159E70 /* Yoga Nidra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Yoga Nidra.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		129012D42D25C6E400188A26 /* Yoga Nidra */ = {
+		24BD50242D263F7300159E70 /* Yoga Nidra */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "Yoga Nidra";
 			sourceTree = "<group>";
@@ -19,7 +19,7 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		129012CF2D25C6E400188A26 /* Frameworks */ = {
+		24BD501F2D263F7300159E70 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -29,18 +29,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		129012C92D25C6E400188A26 = {
+		24BD50192D263F7300159E70 = {
 			isa = PBXGroup;
 			children = (
-				129012D42D25C6E400188A26 /* Yoga Nidra */,
-				129012D32D25C6E400188A26 /* Products */,
+				24BD50242D263F7300159E70 /* Yoga Nidra */,
+				24BD50232D263F7300159E70 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		129012D32D25C6E400188A26 /* Products */ = {
+		24BD50232D263F7300159E70 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				129012D22D25C6E400188A26 /* Yoga Nidra.app */,
+				24BD50222D263F7300159E70 /* Yoga Nidra.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,64 +48,64 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		129012D12D25C6E400188A26 /* Yoga Nidra */ = {
+		24BD50212D263F7300159E70 /* Yoga Nidra */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 129012E02D25C6E600188A26 /* Build configuration list for PBXNativeTarget "Yoga Nidra" */;
+			buildConfigurationList = 24BD50302D263F7400159E70 /* Build configuration list for PBXNativeTarget "Yoga Nidra" */;
 			buildPhases = (
-				129012CE2D25C6E400188A26 /* Sources */,
-				129012CF2D25C6E400188A26 /* Frameworks */,
-				129012D02D25C6E400188A26 /* Resources */,
+				24BD501E2D263F7300159E70 /* Sources */,
+				24BD501F2D263F7300159E70 /* Frameworks */,
+				24BD50202D263F7300159E70 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				129012D42D25C6E400188A26 /* Yoga Nidra */,
+				24BD50242D263F7300159E70 /* Yoga Nidra */,
 			);
 			name = "Yoga Nidra";
 			packageProductDependencies = (
 			);
 			productName = "Yoga Nidra";
-			productReference = 129012D22D25C6E400188A26 /* Yoga Nidra.app */;
+			productReference = 24BD50222D263F7300159E70 /* Yoga Nidra.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		129012CA2D25C6E400188A26 /* Project object */ = {
+		24BD501A2D263F7300159E70 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
-					129012D12D25C6E400188A26 = {
+					24BD50212D263F7300159E70 = {
 						CreatedOnToolsVersion = 16.2;
 					};
 				};
 			};
-			buildConfigurationList = 129012CD2D25C6E400188A26 /* Build configuration list for PBXProject "Yoga Nidra" */;
+			buildConfigurationList = 24BD501D2D263F7300159E70 /* Build configuration list for PBXProject "Yoga Nidra" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = 129012C92D25C6E400188A26;
+			mainGroup = 24BD50192D263F7300159E70;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 129012D32D25C6E400188A26 /* Products */;
+			productRefGroup = 24BD50232D263F7300159E70 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				129012D12D25C6E400188A26 /* Yoga Nidra */,
+				24BD50212D263F7300159E70 /* Yoga Nidra */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		129012D02D25C6E400188A26 /* Resources */ = {
+		24BD50202D263F7300159E70 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -115,7 +115,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		129012CE2D25C6E400188A26 /* Sources */ = {
+		24BD501E2D263F7300159E70 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -125,7 +125,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		129012DE2D25C6E600188A26 /* Debug */ = {
+		24BD502E2D263F7400159E70 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -188,7 +188,7 @@
 			};
 			name = Debug;
 		};
-		129012DF2D25C6E600188A26 /* Release */ = {
+		24BD502F2D263F7400159E70 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -244,7 +244,7 @@
 			};
 			name = Release;
 		};
-		129012E12D25C6E600188A26 /* Debug */ = {
+		24BD50312D263F7400159E70 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -252,7 +252,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Yoga Nidra/Preview Content\"";
-				DEVELOPMENT_TEAM = 56PU6YD8LM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -273,7 +272,7 @@
 			};
 			name = Debug;
 		};
-		129012E22D25C6E600188A26 /* Release */ = {
+		24BD50322D263F7400159E70 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -281,10 +280,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Yoga Nidra/Preview Content\"";
-				DEVELOPMENT_TEAM = 56PU6YD8LM;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Yoga Nidra/Info.plist";
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -306,25 +303,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		129012CD2D25C6E400188A26 /* Build configuration list for PBXProject "Yoga Nidra" */ = {
+		24BD501D2D263F7300159E70 /* Build configuration list for PBXProject "Yoga Nidra" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				129012DE2D25C6E600188A26 /* Debug */,
-				129012DF2D25C6E600188A26 /* Release */,
+				24BD502E2D263F7400159E70 /* Debug */,
+				24BD502F2D263F7400159E70 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		129012E02D25C6E600188A26 /* Build configuration list for PBXNativeTarget "Yoga Nidra" */ = {
+		24BD50302D263F7400159E70 /* Build configuration list for PBXNativeTarget "Yoga Nidra" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				129012E12D25C6E600188A26 /* Debug */,
-				129012E22D25C6E600188A26 /* Release */,
+				24BD50312D263F7400159E70 /* Debug */,
+				24BD50322D263F7400159E70 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 129012CA2D25C6E400188A26 /* Project object */;
+	rootObject = 24BD501A2D263F7300159E70 /* Project object */;
 }
