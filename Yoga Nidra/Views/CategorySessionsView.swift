@@ -196,6 +196,6 @@ enum SortOption: String, CaseIterable, Identifiable {
 
 #Preview {
     NavigationStack {
-        CategorySessionsView(category: .quickSleep)
+        CategorySessionsView(category: .deepSleep)
     }
 } 

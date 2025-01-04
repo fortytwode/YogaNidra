@@ -7,7 +7,7 @@ struct YogaNidraSession: Identifiable {
     let duration: TimeInterval
     let category: SessionCategory
     let audioFileName: String
-    let thumbnailUrl: URL?
+    let thumbnailUrl: String
     var isFavorite: Bool
     var lastPlayed: Date?
     var completionCount: Int
@@ -18,7 +18,7 @@ struct YogaNidraSession: Identifiable {
          duration: TimeInterval, 
          category: SessionCategory, 
          audioFileName: String,
-         thumbnailUrl: URL? = nil,
+         thumbnailUrl: String,
          isFavorite: Bool = false,
          lastPlayed: Date? = nil,
          completionCount: Int = 0) {
@@ -39,32 +39,60 @@ struct YogaNidraSession: Identifiable {
 extension YogaNidraSession {
     static let previewData = [
         YogaNidraSession(
-            title: "Quick Sleep Relaxation",
-            description: "A brief practice to help you fall asleep quickly.",
-            duration: 600, // 10 minutes
-            category: .quickSleep,
-            audioFileName: "quick_sleep_10min"
-        ),
-        YogaNidraSession(
-            title: "Deep Sleep Journey",
-            description: "Complete Yoga Nidra practice for deep, restful sleep.",
-            duration: 2400, // 40 minutes
+            title: "Complete Yoga Nidra",
+            description: "Deep sleep meditation",
+            duration: 1800, // 30 min
             category: .deepSleep,
-            audioFileName: "deep_sleep_40min"
+            audioFileName: "complete_yoga_nidra",
+            thumbnailUrl: "complete-yoga-nidra"
         ),
         YogaNidraSession(
-            title: "Calm Night Anxiety",
-            description: "Release anxiety and prepare for peaceful sleep.",
-            duration: 1500, // 25 minutes
-            category: .nightAnxiety,
-            audioFileName: "night_anxiety_25min"
+            title: "Quick Refresh",
+            description: "Quick energizing rest",
+            duration: 300, // 5 min
+            category: .powerNap,
+            audioFileName: "quick_refresh",
+            thumbnailUrl: "quick-refresh"
         ),
         YogaNidraSession(
-            title: "Sleep Reset",
-            description: "Reset your sleep cycle after travel or disruption.",
-            duration: 1200, // 20 minutes
-            category: .sleepRestoration,
-            audioFileName: "sleep_restoration_20min"
+            title: "Calm Mind",
+            description: "Relaxation practice",
+            duration: 900, // 15 min
+            category: .quickSleep,
+            audioFileName: "calm_mind",
+            thumbnailUrl: "calm_mind"
+        ),
+        YogaNidraSession(
+            title: "Stress Relief",
+            description: "Reduce anxiety",
+            duration: 600, // 10 min
+            category: .sleepAnxiety,
+            audioFileName: "stress_relief",
+            thumbnailUrl: "stress_relief"
+        ),
+        YogaNidraSession(
+            title: "Power Focus",
+            description: "Enhance concentration",
+            duration: 1500, // 25 min
+            category: .powerNap,
+            audioFileName: "power_focus",
+            thumbnailUrl: "power_focus"
+        ),
+        YogaNidraSession(
+            title: "Travel Rest",
+            description: "Jet lag recovery",
+            duration: 1200, // 20 min
+            category: .travelJetLag,
+            audioFileName: "travel_rest",
+            thumbnailUrl: "travel_rest"
+        ),
+        YogaNidraSession(
+            title: "Beginner's Guide",
+            description: "Introduction to sleep meditation",
+            duration: 900, // 15 min
+            category: .beginnersPath,
+            audioFileName: "beginners_guide",
+            thumbnailUrl: "beginners_guide"
         )
     ]
 } 

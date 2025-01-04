@@ -12,15 +12,18 @@ struct Yoga_NidraApp: App {
     // Initialize the shared manager at app launch
     @StateObject private var progressManager = ProgressManager.shared
     
+    // Add this to toggle between views (optional, for testing)
+    @AppStorage("useNewHomeView") private var useNewHomeView = true
+    
     var body: some Scene {
         WindowGroup {
             TabView {
-                HomeView()
+                HomeView_v2()
                     .tabItem {
                         Label("Home", systemImage: "house.fill")
                     }
                 
-                SessionListView()
+                SessionListView_v2()
                     .tabItem {
                         Label("Library", systemImage: "books.vertical.fill")
                     }
@@ -30,7 +33,7 @@ struct Yoga_NidraApp: App {
                         Label("Progress", systemImage: "chart.bar.fill")
                     }
             }
-            .environmentObject(progressManager)  // Moved to affect all child views
+            .environmentObject(progressManager)
         }
     }
 }
