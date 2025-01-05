@@ -51,48 +51,12 @@ struct HomeView_v2: View {
                         ], spacing: 16) {
                             // First session
                             NavigationLink(destination: SessionDetailView(session: sessions[0])) {
-                                VStack(alignment: .leading, spacing: 0) {
-                                    Rectangle()
-                                        .fill(Color(uiColor: UIColor(red: 0.3, green: 0.3, blue: 0.5, alpha: 1.0)))
-                                        .frame(height: 160)
-                                        .cornerRadius(8)
-                                        .overlay(alignment: .bottomLeading) {
-                                            Text("20 min")
-                                                .font(.subheadline)
-                                                .foregroundColor(.white)
-                                                .padding(12)
-                                        }
-                                        .overlay(alignment: .bottomTrailing) {
-                                            Image(systemName: "play.fill")
-                                                .foregroundColor(.white)
-                                                .padding(8)
-                                                .background(Circle().fill(Color.white.opacity(0.2)))
-                                                .padding(12)
-                                        }
-                                }
+                                SessionCard(session: sessions[0])
                             }
                             
                             // Second session
                             NavigationLink(destination: SessionDetailView(session: sessions[1])) {
-                                VStack(alignment: .leading, spacing: 0) {
-                                    Rectangle()
-                                        .fill(Color(uiColor: UIColor(red: 0.3, green: 0.3, blue: 0.5, alpha: 1.0)))
-                                        .frame(height: 160)
-                                        .cornerRadius(8)
-                                        .overlay(alignment: .bottomLeading) {
-                                            Text("15 min")
-                                                .font(.subheadline)
-                                                .foregroundColor(.white)
-                                                .padding(12)
-                                        }
-                                        .overlay(alignment: .bottomTrailing) {
-                                            Image(systemName: "play.fill")
-                                                .foregroundColor(.white)
-                                                .padding(8)
-                                                .background(Circle().fill(Color.white.opacity(0.2)))
-                                                .padding(12)
-                                        }
-                                }
+                                SessionCard(session: sessions[1])
                             }
                         }
                         .padding(.horizontal, 24)

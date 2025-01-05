@@ -32,30 +32,9 @@ struct SessionListView_v2: View {
                         GridItem(.flexible()),
                         GridItem(.flexible())
                     ], spacing: 16) {
-                        ForEach(0..<12) { index in // Increased to 12 items
-                            NavigationLink(destination: SessionDetailView(session: sessions[index % sessions.count])) {
-                                VStack(alignment: .leading, spacing: 0) {
-                                    Rectangle()
-                                        .fill(Color(uiColor: UIColor(red: 0.3, green: 0.3, blue: 0.5, alpha: 1.0)))
-                                        .frame(height: 160)
-                                        .cornerRadius(8)
-                                        .overlay(alignment: .bottomLeading) {
-                                            Text("\((index + 1) * 5) min")
-                                                .font(.subheadline)
-                                                .foregroundColor(.white)
-                                                .padding(12)
-                                        }
-                                        .overlay(alignment: .bottomTrailing) {
-                                            Image(systemName: "play.fill")
-                                                .foregroundColor(.white)
-                                                .padding(8)
-                                                .background(Circle().fill(Color.white.opacity(0.2)))
-                                                .padding(12)
-                                        }
-                                }
-                            }
-                            .onAppear {
-                                print("Item \(index) appeared")
+                        ForEach(sessions) { session in
+                            NavigationLink(destination: SessionDetailView(session: session)) {
+                                SessionCard(session: session)
                             }
                         }
                     }
