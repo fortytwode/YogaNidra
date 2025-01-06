@@ -4,6 +4,13 @@ struct SessionListView_v2: View {
     let sessions = YogaNidraSession.previewData
     @State private var selectedCategory: SessionCategory? = nil
     
+    var filteredSessions: [YogaNidraSession] {
+        guard let category = selectedCategory else {
+            return sessions // Return all sessions when no category is selected
+        }
+        return sessions.filter { $0.category == category }
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -27,12 +34,12 @@ struct SessionListView_v2: View {
                         .padding(.horizontal)
                     }
                     
-                    // Grid layout with more items for scrolling test
+                    // Grid layout with filtered sessions
                     LazyVGrid(columns: [
                         GridItem(.flexible()),
                         GridItem(.flexible())
                     ], spacing: 16) {
-                        ForEach(sessions) { session in
+                        ForEach(filteredSessions) { session in
                             NavigationLink(destination: SessionDetailView(session: session)) {
                                 SessionCard(session: session)
                             }

@@ -8,6 +8,7 @@ struct YogaNidraSession: Identifiable {
     let category: SessionCategory
     let audioFileName: String
     let thumbnailUrl: String
+    let instructor: String
     var isFavorite: Bool
     var lastPlayed: Date?
     var completionCount: Int
@@ -19,6 +20,7 @@ struct YogaNidraSession: Identifiable {
          category: SessionCategory, 
          audioFileName: String,
          thumbnailUrl: String,
+         instructor: String,
          isFavorite: Bool = false,
          lastPlayed: Date? = nil,
          completionCount: Int = 0) {
@@ -29,6 +31,7 @@ struct YogaNidraSession: Identifiable {
         self.category = category
         self.audioFileName = audioFileName
         self.thumbnailUrl = thumbnailUrl
+        self.instructor = instructor
         self.isFavorite = isFavorite
         self.lastPlayed = lastPlayed
         self.completionCount = completionCount
@@ -37,62 +40,9 @@ struct YogaNidraSession: Identifiable {
 
 // MARK: - Preview Data
 extension YogaNidraSession {
-    static let previewData = [
-        YogaNidraSession(
-            title: "Complete Yoga Nidra",
-            description: "Deep sleep meditation",
-            duration: 1800, // 30 min
-            category: .deepSleep,
-            audioFileName: "complete_yoga_nidra",
-            thumbnailUrl: "complete-yoga-nidra"
-        ),
-        YogaNidraSession(
-            title: "Quick Refresh",
-            description: "Quick energizing rest",
-            duration: 300, // 5 min
-            category: .powerNap,
-            audioFileName: "quick_refresh",
-            thumbnailUrl: "quick-refresh"
-        ),
-        YogaNidraSession(
-            title: "Calm Mind",
-            description: "Relaxation practice",
-            duration: 900, // 15 min
-            category: .quickSleep,
-            audioFileName: "calm_mind",
-            thumbnailUrl: "calm_mind"
-        ),
-        YogaNidraSession(
-            title: "Stress Relief",
-            description: "Reduce anxiety",
-            duration: 600, // 10 min
-            category: .sleepAnxiety,
-            audioFileName: "stress_relief",
-            thumbnailUrl: "stress_relief"
-        ),
-        YogaNidraSession(
-            title: "Power Focus",
-            description: "Enhance concentration",
-            duration: 1500, // 25 min
-            category: .powerNap,
-            audioFileName: "power_focus",
-            thumbnailUrl: "power_focus"
-        ),
-        YogaNidraSession(
-            title: "Travel Rest",
-            description: "Jet lag recovery",
-            duration: 1200, // 20 min
-            category: .travelJetLag,
-            audioFileName: "travel_rest",
-            thumbnailUrl: "travel_rest"
-        ),
-        YogaNidraSession(
-            title: "Beginner's Guide",
-            description: "Introduction to sleep meditation",
-            duration: 900, // 15 min
-            category: .beginnersPath,
-            audioFileName: "beginners_guide",
-            thumbnailUrl: "beginners_guide"
-        )
-    ]
+    static let previewData: [YogaNidraSession] = {
+        let sessions = SessionDataParser.loadSessions()
+        print("🔄 Loaded \(sessions.count) sessions for preview data")
+        return sessions
+    }()
 } 
