@@ -30,11 +30,7 @@ struct MiniPlayerView: View {
                     
                     // Play/Pause Button
                     Button(action: {
-                        if audioManager.isPlaying {
-                            audioManager.pause()
-                        } else {
-                            audioManager.play()
-                        }
+                        audioManager.onPlaySession(session: session)
                     }) {
                         Image(systemName: audioManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
                             .font(.system(size: 32))

@@ -20,13 +20,6 @@ struct AudioPlayerView: View {
             .font(.subheadline)
             .foregroundColor(.gray)
         }
-        .onAppear {
-            print("📱 AudioPlayerView appeared, loading audio: \(session.audioFileName)")
-            audioManager.loadAudio(
-                named: session.audioFileName,
-                title: session.title
-            )
-        }
     }
     
     private func formatTime(_ time: TimeInterval) -> String {

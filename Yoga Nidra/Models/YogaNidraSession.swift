@@ -1,6 +1,6 @@
 import Foundation
 
-struct YogaNidraSession: Identifiable {
+struct YogaNidraSession: Identifiable, Equatable {
     let id: UUID
     let title: String
     let description: String

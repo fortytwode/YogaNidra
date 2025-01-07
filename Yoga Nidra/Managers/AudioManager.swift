@@ -1,124 +1,148 @@
 import AVFoundation
 import MediaPlayer
 
-class AudioManager: NSObject, ObservableObject {
+@MainActor
+final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
+    
     static let shared = AudioManager()
     
     @Published var isPlaying = false
-    @Published var currentTime: TimeInterval = 0
-    private var audioPlayer: AVAudioPlayer?
-    private var timer: Timer?
-    private var currentTitle: String?
-    private var currentArtwork: String?
+    @Published var currentTime: TimeInterval = 0.0
     
-    override init() {
+    private var audioPlayer: AVAudioPlayer?
+    private var currentPlayingSession: YogaNidraSession?
+
+    private override init() {
         super.init()
-        print("🎵 AudioManager: Initializing...")
         UIApplication.shared.beginReceivingRemoteControlEvents()
         setupAudioSession()
-        setupRemoteTransportControls()
+        setupRemoteCommandCenter()
         setupNotifications()
     }
     
+    // MARK: - Audio Session Setup
     private func setupAudioSession() {
+        let audioSession = AVAudioSession.sharedInstance()
         do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(
-                .playback,
-                mode: .default,
-                options: [.mixWithOthers, .allowAirPlay]
-            )
-            try session.setActive(true)
-            print("✅ AudioSession: Successfully configured for background playback")
+            try audioSession.setCategory(.playback, mode: .default, options: [])
+            try audioSession.setActive(true)
         } catch {
-            print("❌ AudioSession Error: \(error.localizedDescription)")
+            print("Failed to set up audio session: \(error)")
         }
     }
     
-    private func setupRemoteTransportControls() {
-        print("🎮 Setting up remote controls...")
+    // MARK: - Remote Command Center
+    private func setupRemoteCommandCenter() {
         let commandCenter = MPRemoteCommandCenter.shared()
         
-        commandCenter.playCommand.addTarget { [weak self] _ in
-            print("▶️ Remote play command received")
-            self?.play()
+        commandCenter.playCommand.addTarget { [weak self] event in
+            self?.resume()
             return .success
         }
         
-        commandCenter.pauseCommand.addTarget { [weak self] _ in
-            print("⏸️ Remote pause command received")
+        commandCenter.pauseCommand.addTarget { [weak self] event in
             self?.pause()
             return .success
         }
         
-        print("✅ Remote controls configured")
+        commandCenter.nextTrackCommand.addTarget { [weak self] event in
+            self?.nextTrack()
+            return .success
+        }
+        
+        commandCenter.previousTrackCommand.addTarget { [weak self] event in
+            self?.previousTrack()
+            return .success
+        }
     }
     
-    func loadAudio(named fileName: String, title: String? = nil, artworkName: String? = nil) {
-        print("🔄 Loading audio file: \(fileName)")
-        
-        self.currentTitle = title
-        self.currentArtwork = artworkName
-        
-        guard let path = Bundle.main.path(forResource: fileName, ofType: nil) else {
-            print("❌ Could not find audio file: \(fileName)")
+    func onPlaySession(session: YogaNidraSession) {
+        if isPlaying {
+            pause()
+        } else {
+            if currentPlayingSession == session {
+                resume()
+            } else {
+                play(audioFileWithExtension: session.audioFileName)
+                currentPlayingSession = session
+            }
+        }
+    }
+    
+    // MARK: - Playback Controls
+    private func play(audioFileWithExtension: String) {
+        let splits = audioFileWithExtension.split(separator: ".")
+        let fileName = splits.first
+        let fileExtension = splits.last
+        guard let fileName,
+              let fileExtension,
+              let url = Bundle.main.url(forResource: String(fileName), withExtension: String(fileExtension)) else {
+            print("Audio file not found.")
             return
         }
         
         do {
-            audioPlayer = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: path))
+            audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer?.delegate = self
             audioPlayer?.prepareToPlay()
-            print("✅ Successfully loaded audio: \(fileName)")
+            audioPlayer?.play()
+            isPlaying = true
             updateNowPlayingInfo()
         } catch {
-            print("❌ Error loading audio: \(error.localizedDescription)")
+            print("Failed to play audio: \(error)")
         }
     }
     
-    func play() {
-        print("▶️ Attempting to play audio...")
-        audioPlayer?.play()
-        isPlaying = true
-        updateNowPlayingInfo()
-        print("✅ Audio playing, now playing info updated")
-    }
-    
-    func pause() {
-        print("⏸️ Pausing audio...")
+    private func pause() {
         audioPlayer?.pause()
         isPlaying = false
         updateNowPlayingInfo()
-        print("✅ Audio paused, now playing info updated")
     }
     
-    func updateNowPlayingInfo() {
-        print("🔄 Updating now playing info...")
-        guard let player = audioPlayer else {
-            print("❌ Cannot update now playing info: No audio player available")
-            return
-        }
+    private func resume() {
+        audioPlayer?.play()
+        isPlaying = true
+        updateNowPlayingInfo()
+    }
+    
+    private func stop() {
+        audioPlayer?.stop()
+        isPlaying = false
+        audioPlayer?.currentTime = 0
+        currentPlayingSession = nil
+        updateNowPlayingInfo()
+    }
+    
+    private func nextTrack() {
+        // Implement logic for next track playback
+        print("Next track")
+    }
+    
+    private func previousTrack() {
+        // Implement logic for previous track playback
+        print("Previous track")
+    }
+    
+    // MARK: - Now Playing Info
+    private func updateNowPlayingInfo() {
+        guard let audioPlayer = audioPlayer, let session = currentPlayingSession else { return }
         
         var nowPlayingInfo = [String: Any]()
+        nowPlayingInfo[MPMediaItemPropertyTitle] = session.title
+        nowPlayingInfo[MPMediaItemPropertyArtist] = session.description
+        nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = session.category
         
-        // Add title
-        nowPlayingInfo[MPMediaItemPropertyTitle] = currentTitle ?? player.url?.lastPathComponent
-        
-        // Add duration and time
-        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = player.duration
-        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime
-        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
-        
-        // Add artwork if available
-        if let artworkName = currentArtwork {
-            if let image = UIImage(named: artworkName) {
-                let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
-                nowPlayingInfo[MPMediaItemPropertyArtwork] = artwork
-                print("✅ Added artwork to now playing info")
+        if let artworkImage = UIImage(named: session.thumbnailUrl) { // Replace with your album art
+            nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: artworkImage.size) { _ in
+                return artworkImage
             }
         }
         
+        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = audioPlayer.currentTime
+        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = audioPlayer.duration
+        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
+        
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-        print("✅ Now playing info updated with title: \(currentTitle ?? "unknown"), playback state: \(isPlaying ? "playing" : "paused")")
     }
     
     private func setupNotifications() {
@@ -153,7 +177,7 @@ class AudioManager: NSObject, ObservableObject {
             guard let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else { return }
             let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
             if options.contains(.shouldResume) {
-                play()
+                resume()
             }
         @unknown default:
             break
@@ -174,4 +198,4 @@ class AudioManager: NSObject, ObservableObject {
             break
         }
     }
-} 
+}
