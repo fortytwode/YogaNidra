@@ -43,11 +43,13 @@ struct MiniPlayerView: View {
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
-                .background(Color(UIColor.systemBackground))
                 .onTapGesture {
                     showFullPlayer = true
                 }
+                Spacer()
+                    .frame(height: 8)
             }
+            .background(Color(UIColor.systemBackground))
     }
     
     private func formatTime(_ time: TimeInterval) -> String {
