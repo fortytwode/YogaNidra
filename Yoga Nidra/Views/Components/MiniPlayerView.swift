@@ -1,12 +1,11 @@
 import SwiftUI
 
 struct MiniPlayerView: View {
+    let session: YogaNidraSession
     @StateObject private var audioManager = AudioManager.shared
-    @Binding var currentSession: YogaNidraSession?
     @Binding var showFullPlayer: Bool
     
     var body: some View {
-        if let session = currentSession {
             VStack(spacing: 0) {
                 Divider()
                 
@@ -49,7 +48,6 @@ struct MiniPlayerView: View {
                     showFullPlayer = true
                 }
             }
-        }
     }
     
     private func formatTime(_ time: TimeInterval) -> String {

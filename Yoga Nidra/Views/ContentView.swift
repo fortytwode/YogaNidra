@@ -4,6 +4,7 @@ struct ContentView: View {
     @State private var selectedTab = 0
     @State private var showFullPlayer = false
     @EnvironmentObject var playerState: PlayerState
+    @State var tabBarHeight: CGFloat = 0.0
     
     init() {
         // Adjust tab bar appearance
@@ -34,6 +35,9 @@ struct ContentView: View {
                 NavigationStack {
                     SessionListView_v2()
                 }
+                .background(TabBarAccessor { tabBar in
+                    tabBarHeight = tabBar.bounds.height - tabBar.safeAreaInsets.bottom
+                })
                 .tabItem {
                     Image(systemName: "book.fill")
                     Text("Library")
@@ -50,13 +54,14 @@ struct ContentView: View {
                 .tag(2)
             }
             .preferredColorScheme(.dark)
-            
-            if playerState.currentSession != nil {
+            if let session = playerState.currentSession {
                 MiniPlayerView(
-                    currentSession: .constant(playerState.currentSession),
+                    session: session,
                     showFullPlayer: $showFullPlayer
                 )
+                .offset(CGSize(width: 0, height: -tabBarHeight))
+                .transition(.move(edge: .bottom))
             }
         }
     }
-} 
+}

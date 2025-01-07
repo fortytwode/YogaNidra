@@ -14,6 +14,7 @@ class AudioManager: NSObject, ObservableObject {
     override init() {
         super.init()
         print("🎵 AudioManager: Initializing...")
+        UIApplication.shared.beginReceivingRemoteControlEvents()
         setupAudioSession()
         setupRemoteTransportControls()
         setupNotifications()
