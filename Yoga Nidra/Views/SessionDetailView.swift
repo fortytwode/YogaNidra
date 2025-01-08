@@ -9,19 +9,6 @@ struct SessionDetailView: View {
     
     var body: some View {
         ZStack {
-            // Background Image
-            Image(session.thumbnailUrl)
-                .resizable()
-                .scaledToFill()
-                .edgesIgnoringSafeArea(.all)
-                .overlay(
-                    LinearGradient(
-                        gradient: Gradient(colors: [.clear, .black.opacity(0.7)]),
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-            
             // Content
             VStack(spacing: 20) {
                 Spacer()
@@ -85,6 +72,20 @@ struct SessionDetailView: View {
                 Spacer().frame(height: 30)
             }
             .padding()
+            .background {
+                Image(session.thumbnailUrl)
+                    .resizable()
+                    .scaledToFill()
+                    .edgesIgnoringSafeArea(.all)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .overlay(
+                        LinearGradient(
+                            gradient: Gradient(colors: [.clear, .black.opacity(0.7)]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+            }
         }
         .sheet(isPresented: $showingPremiumSheet) {
             PremiumContentSheet()
