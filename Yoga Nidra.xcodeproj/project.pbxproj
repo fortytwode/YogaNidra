@@ -6,7 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		12B4C6362D2E8A7F00353CB5 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12B4C6352D2E8A7F00353CB5 /* StoreKit.framework */; };
+		12B4C63A2D2E924400353CB5 /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 12B4C6392D2E923D00353CB5 /* Configuration.storekit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		12B4C6352D2E8A7F00353CB5 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		12B4C6392D2E923D00353CB5 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 		24BD50222D263F7300159E70 /* Yoga Nidra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Yoga Nidra.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -23,16 +30,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12B4C6362D2E8A7F00353CB5 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		12B4C6342D2E8A7F00353CB5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				12B4C6352D2E8A7F00353CB5 /* StoreKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		24BD50192D263F7300159E70 = {
 			isa = PBXGroup;
 			children = (
+				12B4C6392D2E923D00353CB5 /* Configuration.storekit */,
 				24BD50242D263F7300159E70 /* Yoga Nidra */,
+				12B4C6342D2E8A7F00353CB5 /* Frameworks */,
 				24BD50232D263F7300159E70 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -109,6 +127,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12B4C63A2D2E924400353CB5 /* Configuration.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,6 +275,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Yoga-Nidra-Info.plist";
+				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Allow access to play meditation audio in the background";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -266,7 +286,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.rocketship.Yoga-Nidra";
+				PRODUCT_BUNDLE_IDENTIFIER = com.rocketship.YogaNidraSleepDeeply;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -286,6 +306,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Yoga-Nidra-Info.plist";
+				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Allow access to play meditation audio in the background";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -296,7 +317,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.rocketship.Yoga-Nidra";
+				PRODUCT_BUNDLE_IDENTIFIER = com.rocketship.YogaNidraSleepDeeply;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

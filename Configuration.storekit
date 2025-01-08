@@ -1,0 +1,13 @@
+{
+    "identifier": "com.rocketship.YogaNidraSleepDeeply.annual.premium",
+    "type": "Auto-Renewable Subscription",
+    "duration": "1 Year",
+    "displayPrice": "59.99",
+    "familyShareable": false,
+    "subscription": {
+        "introductoryOffer": {
+            "type": "Free Trial",
+            "duration": "7 Days"
+        }
+    }
+}

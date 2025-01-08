@@ -1,9 +1,11 @@
 import SwiftUI
 
 struct SessionDetailView: View {
+    @StateObject private var subscriptionManager = SubscriptionManager.shared
     let session: YogaNidraSession
     @EnvironmentObject private var playerState: PlayerState
     @State private var showingShareSheet = false
+    @State private var showingPremiumSheet = false
     
     var body: some View {
         ZStack {
@@ -24,10 +26,18 @@ struct SessionDetailView: View {
             VStack(spacing: 20) {
                 Spacer()
                 
-                // Title
-                Text(session.title)
-                    .font(.system(size: 34, weight: .bold))
-                    .multilineTextAlignment(.center)
+                // Title and Premium Badge
+                HStack {
+                    Text(session.title)
+                        .font(.system(size: 34, weight: .bold))
+                        .multilineTextAlignment(.center)
+                    
+                    if session.isPremium {
+                        Image(systemName: "crown.fill")
+                            .foregroundColor(.yellow)
+                            .font(.title2)
+                    }
+                }
                 
                 // Duration
                 Text("\(Int(session.duration / 60)) minutes")
@@ -51,24 +61,36 @@ struct SessionDetailView: View {
                 .padding(.bottom, 40)
                 
                 // Audio player controls
-                AudioPlayerView(session: session)
-                    .padding(.bottom, 30)
+                if session.isPremium && !subscriptionManager.isSubscribed {
+                    Button {
+                        showingPremiumSheet = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "crown.fill")
+                                .foregroundColor(.yellow)
+                            Text("Unlock Premium")
+                                .fontWeight(.semibold)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                    }
+                    .padding(.horizontal)
+                } else {
+                    AudioPlayerView(session: session)
+                }
+                
+                Spacer().frame(height: 30)
             }
-            .foregroundColor(.white)
             .padding()
         }
-        .preferredColorScheme(.dark)
-        .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showingShareSheet) {
-            ShareSheet(activityItems: [
-                "Check out this meditation: \(session.title)",
-                URL(string: "https://yoganidra.app/session/\(session.id)")!
-            ])
+        .sheet(isPresented: $showingPremiumSheet) {
+            PremiumContentSheet()
         }
-        .onAppear {
-            print("📱 SessionDetailView appeared for session: \(session.title)")
-            print("📱 Audio filename: \(session.audioFileName)")
-            playerState.play(session)
+        .sheet(isPresented: $showingShareSheet) {
+            ShareSheet(activityItems: [session.title])
         }
     }
 }

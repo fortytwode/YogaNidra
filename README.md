@@ -8,56 +8,25 @@ A meditation app built with SwiftUI that offers guided Yoga Nidra sessions.
 - [x] Mini player for quick access
 - [x] Session detail view
 - [x] Progress tracking
-- [ ] Background audio controls (In Progress)
+- [x] Background audio controls ✨
+  - Control Center integration
+  - Lock screen controls
+  - Background playback
 
-## Current Technical Challenges
+## Technical Notes
 
 ### Background Audio / Control Center Integration
-Current Status: Not Working
-- [x] Added background audio capability in Info.plist
-- [x] Configured AVAudioSession for background playback
-- [x] Implemented MPRemoteCommandCenter controls
-- [x] Added MPNowPlayingInfoCenter updates
-- [ ] Control Center controls not appearing when app is minimized
+Status: ✅ Working
+- Successfully implemented on physical devices
+- Shows audio controls in Control Center
+- Allows background playback
+- Responds to system audio controls
 
-Attempted Solutions:
-1. Basic AVAudioSession setup
-   ```swift
-   try session.setCategory(.playback)
-   try session.setActive(true)
-   ```
+Note: Control Center integration has limited functionality in iOS Simulator:
+- Control Center controls may not appear in simulator
+- For full testing, use physical iOS devices
+- This is expected behavior due to simulator limitations
 
-2. Enhanced AVAudioSession configuration
-   ```swift
-   try session.setCategory(
-       .playback,
-       mode: .default,
-       options: [.mixWithOthers, .allowAirPlay]
-   )
-   ```
-
-3. Added Now Playing Info updates
-   ```swift
-   MPNowPlayingInfoCenter.default().nowPlayingInfo = [
-       MPMediaItemPropertyTitle: title,
-       MPMediaItemPropertyPlaybackDuration: duration,
-       MPNowPlayingInfoPropertyElapsedPlaybackTime: currentTime
-   ]
-   ```
-
-4. Verified Info.plist configuration
-   ```xml
-   <key>UIBackgroundModes</key>
-   <array>
-       <string>audio</string>
-   </array>
-   ```
-
-Next Steps to Try:
-1. Verify background capability is properly enabled in Xcode project
-2. Test on physical device (simulator might have limitations)
-3. Add more detailed logging for audio session state
-4. Investigate audio session activation timing
 
 ## Technical Details
 - Swift and SwiftUI
@@ -90,6 +59,69 @@ Next Steps to Try:
 - Xcode 13.0+
 - Swift 5.5+
 
-## Known Issues
-- Background audio controls not appearing in Control Center
-- Need to verify background mode capability in Xcode project settings
+## Immediate Next Steps
+1. Content Preparation
+   - [x] Basic audio player functionality
+   - [ ] Finalize meditation audio templates
+   - [ ] Record initial free sessions
+   - [ ] Record premium sessions
+
+2. Monetization Setup
+   - [ ] Basic in-app purchase setup
+   - [ ] Premium content flags
+   - [ ] Purchase restoration
+   - [ ] Receipt validation
+
+3. User Experience
+   - [ ] First-time user onboarding
+   - [ ] Session recommendation flow
+   - [ ] Free vs Premium content indicators
+   - [ ] "Upgrade to Premium" prompts
+
+4. Analytics & Tracking
+   - [ ] Basic analytics integration
+   - [ ] Track key user actions
+   - [ ] Monitor conversion points
+
+**
+# Project Structure
+
+## Core Files
+### App
+- `YogaNidraApp.swift` - Main app entry point, sets up environment objects
+- `ContentView.swift` - Main container view with tab navigation
+
+### Models
+- `YogaNidraSession.swift` - Data model for meditation sessions
+- `SessionCategory.swift` - Enum for session categories
+- `PlayerState.swift` - Manages global audio playback state
+
+### Views
+#### Main Views
+- `HomeView.swift` - Home tab with featured sessions
+- `LibraryView.swift` - Browse all meditation sessions
+- `ProgressView.swift` - User's meditation progress
+
+#### Components
+- `SessionCardView.swift` - Reusable session card component
+- `AudioPlayerView.swift` - Audio controls and progress
+- `MiniPlayerView.swift` - Minimized player for continuous playback
+- `SessionDetailView.swift` - Detailed view of a session
+
+### Managers
+- `AudioManager.swift` - Handles audio playback and background audio
+- `ProgressManager.swift` - Tracks user's meditation progress
+
+### Data
+- `sessions.csv` - Source data for meditation sessions
+- `PreviewData.swift` - Sample data for SwiftUI previews
+
+### Resources
+- `/Audio` - Contains meditation audio files
+- `/Images` - Session thumbnails and app assets
+- `Yoga-Nidra-Info.plist` - App configuration and permissions
+
+### Supporting Files
+- `Assets.xcassets` - Image assets and app icons
+- `Preview Content` - Development-time preview resources
+

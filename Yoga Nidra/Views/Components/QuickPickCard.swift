@@ -49,7 +49,7 @@ struct RecentlyPlayedList: View {
                         
                         Spacer()
                         
-                        Text(formatDuration(session.duration))
+                        Text(formatDuration(TimeInterval(session.duration)))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }

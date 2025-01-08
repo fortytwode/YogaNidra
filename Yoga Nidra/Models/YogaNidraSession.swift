@@ -1,40 +1,18 @@
 import Foundation
 
 struct YogaNidraSession: Identifiable, Equatable {
-    let id: UUID
+    let id = UUID()
     let title: String
-    let description: String
-    let duration: TimeInterval
+    let duration: Int
     let category: SessionCategory
     let audioFileName: String
     let thumbnailUrl: String
+    let isPremium: Bool
     let instructor: String
-    var isFavorite: Bool
-    var lastPlayed: Date?
-    var completionCount: Int
     
-    init(id: UUID = UUID(), 
-         title: String, 
-         description: String, 
-         duration: TimeInterval, 
-         category: SessionCategory, 
-         audioFileName: String,
-         thumbnailUrl: String,
-         instructor: String,
-         isFavorite: Bool = false,
-         lastPlayed: Date? = nil,
-         completionCount: Int = 0) {
-        self.id = id
-        self.title = title
-        self.description = description
-        self.duration = duration
-        self.category = category
-        self.audioFileName = audioFileName
-        self.thumbnailUrl = thumbnailUrl
-        self.instructor = instructor
-        self.isFavorite = isFavorite
-        self.lastPlayed = lastPlayed
-        self.completionCount = completionCount
+    // Add Equatable conformance
+    static func == (lhs: YogaNidraSession, rhs: YogaNidraSession) -> Bool {
+        lhs.id == rhs.id
     }
 }
 

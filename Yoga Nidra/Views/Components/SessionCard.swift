@@ -21,10 +21,16 @@ struct SessionCard: View {
                 .clipped()
                 .cornerRadius(12)
                 .overlay(alignment: .bottomLeading) {
-                    Text("\(Int(session.duration / 60)) min")
-                        .font(.subheadline)
-                        .foregroundColor(.white)
-                        .padding(12)
+                    HStack {
+                        Text("\(Int(session.duration / 60)) min")
+                            .font(.subheadline)
+                            .foregroundColor(.white)
+                        if session.isPremium {
+                            Image(systemName: "crown.fill")
+                                .foregroundColor(.yellow)
+                        }
+                    }
+                    .padding(12)
                 }
                 .overlay(alignment: .bottomTrailing) {
                     Image(systemName: "play.fill")

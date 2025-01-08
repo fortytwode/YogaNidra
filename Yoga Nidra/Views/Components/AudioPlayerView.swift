@@ -8,14 +8,17 @@ struct AudioPlayerView: View {
     var body: some View {
         VStack(spacing: 20) {
             // Progress bar
-            ProgressView(value: audioManager.currentTime, total: session.duration)
-                .tint(.white)
+            ProgressView(
+                value: audioManager.currentTime,
+                total: TimeInterval(session.duration)
+            )
+            .tint(.white)
             
             // Time labels
             HStack {
                 Text(formatTime(audioManager.currentTime))
                 Spacer()
-                Text(formatTime(session.duration))
+                Text(formatTime(TimeInterval(session.duration)))
             }
             .font(.subheadline)
             .foregroundColor(.gray)

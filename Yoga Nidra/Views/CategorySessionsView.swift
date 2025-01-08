@@ -14,13 +14,13 @@ struct CategorySessionsView: View {
     var sortedSessions: [YogaNidraSession] {
         switch sortOption {
         case .duration:
-            return sessions.sorted { $0.duration < $1.duration }
+            return sessions.sorted { (s1: YogaNidraSession, s2: YogaNidraSession) in 
+                s1.duration < s2.duration 
+            }
         case .title:
-            return sessions.sorted { $0.title < $1.title }
-        case .mostPlayed:
-            return sessions.sorted { $0.completionCount > $1.completionCount }
-        case .recent:
-            return sessions.sorted { ($0.lastPlayed ?? .distantPast) > ($1.lastPlayed ?? .distantPast) }
+            return sessions.sorted { (s1: YogaNidraSession, s2: YogaNidraSession) in 
+                s1.title < s2.title 
+            }
         }
     }
     
@@ -115,27 +115,17 @@ struct SessionRowView: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     
-                    if !session.description.isEmpty {
-                        Text(session.description)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .lineLimit(2)
-                    }
+                    Text(session.instructor)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 
                 Spacer()
                 
-                // Completion Count Badge
-                if session.completionCount > 0 {
-                    VStack {
-                        Text("\(session.completionCount)")
-                            .font(.caption2)
-                            .bold()
-                        Text("plays")
-                            .font(.caption2)
-                    }
-                    .foregroundColor(.secondary)
-                    .frame(width: 44)
+                // Premium indicator
+                if session.isPremium {
+                    Image(systemName: "crown.fill")
+                        .foregroundColor(.yellow)
                 }
             }
             .padding()
@@ -144,9 +134,8 @@ struct SessionRowView: View {
         }
     }
     
-    private func formatDuration(_ duration: TimeInterval) -> String {
-        let minutes = Int(duration) / 60
-        return "\(minutes) min"
+    private func formatDuration(_ duration: Int) -> String {
+        return "\(duration / 60) min"
     }
 }
 
@@ -188,8 +177,6 @@ struct CategoryInfoView: View {
 enum SortOption: String, CaseIterable, Identifiable {
     case duration = "Duration"
     case title = "Title"
-    case mostPlayed = "Most Played"
-    case recent = "Recent"
     
     var id: String { rawValue }
 }
