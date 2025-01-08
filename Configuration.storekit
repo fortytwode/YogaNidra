@@ -1,13 +1,114 @@
 {
-    "identifier": "com.rocketship.YogaNidraSleepDeeply.annual.premium",
-    "type": "Auto-Renewable Subscription",
-    "duration": "1 Year",
-    "displayPrice": "59.99",
-    "familyShareable": false,
-    "subscription": {
-        "introductoryOffer": {
-            "type": "Free Trial",
-            "duration": "7 Days"
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "DD14803A",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "A03A1026",
+      "localizations" : [
+
+      ],
+      "name" : "com.renewable.rocketship.sub",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "0.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "56683FAE",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "yearly.premium.audio.sub",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Yearly Premium audio subscription",
+          "subscriptionGroupID" : "A03A1026",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         }
+      ]
     }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
 }

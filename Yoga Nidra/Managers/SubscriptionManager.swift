@@ -11,9 +11,10 @@ class SubscriptionManager: ObservableObject {
     @Published var errorMessage: String?
     @Published var showError = false
     
-    private let productID = "com.rocketship.YogaNidraSleepDeeply.annual.premium"
+    private let productID = "yearly.premium.audio.sub"
     
     init() {
+        listenForTransactions()
         Task {
             await loadProducts()
             await updateSubscriptionStatus()
@@ -49,7 +50,7 @@ class SubscriptionManager: ObservableObject {
             let result = try await product.purchase()
             
             switch result {
-            case .success(let verification):
+            case .success:
                 await updateSubscriptionStatus()
                 print("✅ Subscription successful")
                 // Optionally show success message
@@ -107,3 +108,41 @@ class SubscriptionManager: ObservableObject {
         "7-day free trial, then"
     }
 } 
+
+extension SubscriptionManager {
+    
+    typealias SKTransaction = StoreKit.Transaction
+    
+    @discardableResult
+    private func listenForTransactions() -> Task<Void, Error> {
+        return Task.detached {
+            ///Iterate through any transactions that don't come from a direct call to `purchase()`.
+            for await result in SKTransaction.updates {
+                do {
+                    let transaction = try await self.checkVerified(result)
+                    
+                    ///Deliver products to the user.
+                    await self.updateSubscriptionStatus()
+                    
+                    ///Always finish a transaction.
+                    await transaction.finish()
+                } catch {
+                    ///StoreKit has a transaction that fails verification. Don't deliver content to the user.
+                    print("Transaction failed verification")
+                }
+            }
+        }
+    }
+
+    public func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
+        ///Check whether the JWS passes StoreKit verification.
+        switch result {
+            ///StoreKit parses the JWS, but it fails verification.
+        case .unverified:
+            throw SKError(SKError.clientInvalid)
+            ///The result is verified. Return the unwrapped value.
+        case .verified(let safe):
+            return safe
+        }
+    }
+}
