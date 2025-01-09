@@ -1,17 +1,61 @@
 # Yoga Nidra App
 
+todo:
+- [ ] check subs purchase flow.
+- [ ] update onboarding and refine it. 
+- [ ] upload session audios.
+- [ ] Refine onboarding flow
+- [ ] Add benefits/value proposition screens
+
+
+- [ ] Set up custom paywall design
+- [ ] Test purchase flow end-to-end
+- [ ] Verify trial period activation
+- [ ] Test restore purchases
+- [ ] Add subscription benefits screen in onboarding
+- [ ] Test subscription status persistence
+- [ ] Add subscription analytics/tracking
+
+- [ ] Upload all session audio files
+- [ ] Verify audio quality
+- [ ] Test background playback
+- [ ] Test offline downloads
+- [ ] Verify premium content flagging
+
+- [ ] Add proper error handling throughout app
+- [ ] Implement crash reporting
+- [ ] Add analytics for key user actions
+- [ ] Test network connectivity handling
+- [ ] Add loading states for async operations
+- [ ] Test deep linking
+- [ ] Verify app size optimization
+- [ ] Add proper App Store metadata
+
+**
 A meditation app built with SwiftUI that offers guided Yoga Nidra sessions.
 
-## Features
+## Implemented Features ✅
 - [x] Session library with categorized meditations
-- [x] Audio playback in foreground
+- [x] Audio playback in foreground and background
 - [x] Mini player for quick access
 - [x] Session detail view
 - [x] Progress tracking
-- [x] Background audio controls ✨
-  - Control Center integration
-  - Lock screen controls
-  - Background playback
+- [x] Background audio controls
+  [x] Control Center integration
+  [x] Lock screen controls
+  [x] Background playback
+- [x] Personalized recommendations
+- [x] Comprehensive onboarding
+
+- [x] Premium subscription integration
+  - Trial period
+  - Purchase handling
+  - Premium content flagging
+- [x] Offline mode
+  - Download management
+  - Progress tracking
+  - Network status detection
+- [x] User preferences & personalization
 
 ## Technical Notes
 
@@ -22,11 +66,19 @@ Status: ✅ Working
 - Allows background playback
 - Responds to system audio controls
 
-Note: Control Center integration has limited functionality in iOS Simulator:
-- Control Center controls may not appear in simulator
-- For full testing, use physical iOS devices
-- This is expected behavior due to simulator limitations
+### Offline Support
+Status: ✅ Working
+- Download management for premium users
+- Progress tracking for downloads
+- Network status monitoring
+- Persistent storage of downloaded content
 
+### Premium Features
+Status: ✅ Working
+- Trial period implementation
+- Subscription management
+- Premium content access control
+- Restore purchases functionality
 
 ## Technical Details
 - Swift and SwiftUI
@@ -43,11 +95,6 @@ Note: Control Center integration has limited functionality in iOS Simulator:
   - Thumbnail image reference
 - `SessionCategory`: Enum defining all meditation categories
 
-### Testing
-- [ ] Unit tests for audio playback
-- [ ] UI tests for main flows
-- [ ] Performance testing
-- [ ] User testing
 
 ## Setup
 1. Clone the repository
@@ -59,29 +106,6 @@ Note: Control Center integration has limited functionality in iOS Simulator:
 - Xcode 13.0+
 - Swift 5.5+
 
-## Immediate Next Steps
-1. Content Preparation
-   - [x] Basic audio player functionality
-   - [ ] Finalize meditation audio templates
-   - [ ] Record initial free sessions
-   - [ ] Record premium sessions
-
-2. Monetization Setup
-   - [ ] Basic in-app purchase setup
-   - [ ] Premium content flags
-   - [ ] Purchase restoration
-   - [ ] Receipt validation
-
-3. User Experience
-   - [ ] First-time user onboarding
-   - [ ] Session recommendation flow
-   - [ ] Free vs Premium content indicators
-   - [ ] "Upgrade to Premium" prompts
-
-4. Analytics & Tracking
-   - [ ] Basic analytics integration
-   - [ ] Track key user actions
-   - [ ] Monitor conversion points
 
 **
 # Project Structure
@@ -124,4 +148,36 @@ Note: Control Center integration has limited functionality in iOS Simulator:
 ### Supporting Files
 - `Assets.xcassets` - Image assets and app icons
 - `Preview Content` - Development-time preview resources
+
+# Additional Features & Architecture
+
+## Features Added
+- Personalized meditation recommendations based on sleep patterns
+- Comprehensive onboarding flow with sleep assessment
+- Premium content with subscription
+- User preference tracking
+- Personalized dashboard
+
+## Architecture Components Added
+
+### Views
+- `ContentView`: Main tab-based navigation
+- `HomeView`: Personalized dashboard with recommendations
+- `OnboardingContainerView`: Multi-step onboarding process
+- `FinalProfileView`: Subscription and personalization summary
+
+### Managers
+- `PreferencesManager`: Handles user preferences and personalization
+- `OnboardingManager`: Controls onboarding flow
+- `SubscriptionManager`: Handles premium features and trials
+
+### Models
+- `Session`: Meditation session data structure
+- `UserPreferences`: User settings and sleep preferences
+- `QuestionOption`: Onboarding question structure
+
+## Setup & Requirements
+- iOS 16.0+
+- Xcode 15.0+
+- Swift 5.9+
 

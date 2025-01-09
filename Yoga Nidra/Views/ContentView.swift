@@ -1,67 +1,66 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var onboardingManager = OnboardingManager.shared
     @State private var selectedTab = 0
-    @State private var showFullPlayer = false
-    @EnvironmentObject var playerState: PlayerState
-    @State var tabBarHeight: CGFloat = 0.0
-    
-    init() {
-        // Adjust tab bar appearance
-        let tabBarAppearance = UITabBarAppearance()
-        tabBarAppearance.backgroundColor = .black
-        tabBarAppearance.stackedLayoutAppearance.normal.iconColor = .gray
-        tabBarAppearance.stackedLayoutAppearance.selected.iconColor = .white
-        
-        // Remove default shadow and adjust padding
-        tabBarAppearance.shadowColor = .clear
-        
-        UITabBar.appearance().standardAppearance = tabBarAppearance
-        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-    }
+    @State private var tabBarHeight: CGFloat = 0
     
     var body: some View {
-        ZStack(alignment: .bottom) {
-            TabView(selection: $selectedTab) {
-                NavigationStack {
-                    HomeView(selectedTab: $selectedTab)
-                }
+        TabView(selection: $selectedTab) {
+            HomeView(selectedTab: $selectedTab)
                 .tabItem {
                     Image(systemName: "house.fill")
                     Text("Home")
                 }
                 .tag(0)
-                
-                NavigationStack {
-                    SessionListView_v2()
-                }
-                .background(TabBarAccessor { tabBar in
-                    tabBarHeight = tabBar.bounds.height - tabBar.safeAreaInsets.bottom
-                })
-                .tabItem {
-                    Image(systemName: "book.fill")
-                    Text("Library")
-                }
-                .tag(1)
-                
-                NavigationStack {
-                    ProgressTabView()
-                }
-                .tabItem {
-                    Image(systemName: "chart.bar.fill")
-                    Text("Progress")
-                }
-                .tag(2)
+            
+            NavigationStack {
+                SessionListView_v2()
             }
-            .preferredColorScheme(.dark)
-            if let session = playerState.currentSession {
-                MiniPlayerView(
-                    session: session,
-                    showFullPlayer: $showFullPlayer
-                )
-                .offset(CGSize(width: 0, height: -tabBarHeight))
-                .transition(.move(edge: .bottom))
+            .tabItem {
+                Image(systemName: "book.fill")
+                Text("Library")
             }
+            .tag(1)
+            
+            NavigationStack {
+                ProgressTabView()
+            }
+            .tabItem {
+                Image(systemName: "chart.bar.fill")
+                Text("Progress")
+            }
+            .tag(2)
         }
+        .overlay(
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: TabBarHeightPreferenceKey.self,
+                    value: proxy.safeAreaInsets.bottom + 49
+                )
+            }
+        )
+        .onPreferenceChange(TabBarHeightPreferenceKey.self) { height in
+            self.tabBarHeight = height
+        }
+        .environmentObject(TabBarState(height: tabBarHeight))
+        .fullScreenCover(isPresented: $onboardingManager.shouldShowOnboarding) {
+            OnboardingContainerView()
+        }
+    }
+}
+
+struct TabBarHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+class TabBarState: ObservableObject {
+    @Published var height: CGFloat
+    
+    init(height: CGFloat) {
+        self.height = height
     }
 }

@@ -1,8 +1,10 @@
 import SwiftUI
 
 struct SessionDetailView: View {
-    @StateObject private var subscriptionManager = SubscriptionManager.shared
     let session: YogaNidraSession
+    @StateObject private var subscriptionManager = SubscriptionManager.shared
+    @StateObject private var downloadManager = DownloadManager.shared
+    @Environment(\.isPreview) private var isPreview: Bool
     @EnvironmentObject private var playerState: PlayerState
     @State private var showingShareSheet = false
     @State private var showingPremiumSheet = false
@@ -31,12 +33,15 @@ struct SessionDetailView: View {
                     .font(.system(size: 20))
                     .foregroundColor(.gray)
                 
-                // Action buttons
+                // Download and action buttons
                 HStack(spacing: 40) {
+                    DownloadButton(session: session)
+                    
                     Button(action: {}) {
                         Image(systemName: "heart")
                             .font(.title2)
                     }
+                    
                     Button(action: {
                         showingShareSheet = true
                     }) {
@@ -105,4 +110,13 @@ struct ShareSheet: UIViewControllerRepresentable {
     }
     
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+// Preview provider
+struct SessionDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        SessionDetailView(session: PreviewData.loadSessions().first!)
+            .environmentObject(PlayerState())
+            .environment(\.isPreview, true)
+    }
 } 

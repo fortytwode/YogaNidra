@@ -2,7 +2,9 @@ import SwiftUI
 
 struct PremiumContentSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var subscriptionManager = SubscriptionManager.shared
+    @ObservedObject private var subscriptionManager = SubscriptionManager.shared
+    @State private var showError = false
+    @State private var errorMessage = ""
     
     var body: some View {
         VStack(spacing: 24) {
@@ -32,39 +34,43 @@ struct PremiumContentSheet: View {
             // Subscribe Button
             Button {
                 Task {
-                    try? await subscriptionManager.purchase()
+                    do {
+                        try await subscriptionManager.purchase()
+                        if subscriptionManager.isSubscribed {
+                            dismiss()
+                        }
+                    } catch {
+                        errorMessage = error.localizedDescription
+                        showError = true
+                    }
                 }
             } label: {
-                Text("\(subscriptionManager.trialText) \(subscriptionManager.subscriptionPrice)/year")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
+                if subscriptionManager.isLoading {
+                    ProgressView()
+                } else {
+                    Text("\(subscriptionManager.trialText) • \(subscriptionManager.subscriptionPrice)/year")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
             }
+            .disabled(subscriptionManager.isLoading)
             
             Button("Restore Purchases") {
-                // Add restore functionality
+                Task {
+                    await subscriptionManager.restorePurchases()
+                }
             }
             .font(.caption)
         }
         .padding()
-    }
-}
-
-private struct FeatureRow: View {
-    let text: String
-    
-    init(_ text: String) {
-        self.text = text
-    }
-    
-    var body: some View {
-        HStack {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(.green)
-            Text(text)
+        .alert("Error", isPresented: $showError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(errorMessage)
         }
     }
 } 

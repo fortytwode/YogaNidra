@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct SubscriptionView: View {
-    @StateObject private var subscriptionManager = SubscriptionManager.shared
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var subscriptionManager = SubscriptionManager.shared
     
     var body: some View {
         VStack(spacing: 20) {
@@ -28,17 +28,13 @@ struct SubscriptionView: View {
                     await subscriptionManager.purchase()
                 }
             } label: {
-                VStack(spacing: 4) {
-                    Text(subscriptionManager.trialText)
-                        .font(.subheadline)
-                    Text("\(subscriptionManager.subscriptionPrice) / year")
-                        .font(.headline)
-                }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.accentColor)
-                .foregroundColor(.white)
-                .cornerRadius(12)
+                Text("\(subscriptionManager.trialText) • \(subscriptionManager.subscriptionPrice)/year")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
             }
             .disabled(subscriptionManager.isLoading)
             
@@ -55,9 +51,6 @@ struct SubscriptionView: View {
                 .foregroundColor(.secondary)
         }
         .padding()
-        .overlay(
-            subscriptionManager.isLoading ? ProgressView() : nil
-        )
         .alert("Error", isPresented: $subscriptionManager.showError) {
             Button("OK", role: .cancel) { }
         } message: {
@@ -68,21 +61,12 @@ struct SubscriptionView: View {
                 dismiss()
             }
         }
-    }
-}
-
-private struct FeatureRow: View {
-    let text: String
-    
-    init(_ text: String) {
-        self.text = text
-    }
-    
-    var body: some View {
-        HStack {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(.green)
-            Text(text)
+        .onAppear {
+            Task {
+                // Force a product refresh when view appears
+                await subscriptionManager.setupProducts()
+                subscriptionManager.verifySetup()
+            }
         }
     }
 } 
