@@ -113,10 +113,16 @@ struct ShareSheet: UIViewControllerRepresentable {
 }
 
 // Preview provider
-struct SessionDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        SessionDetailView(session: PreviewData.loadSessions().first!)
-            .environmentObject(PlayerState())
-            .environment(\.isPreview, true)
-    }
-} 
+#Preview {
+    SessionDetailView(session: YogaNidraSession(
+        title: "Title",
+        duration: 1,
+        category: .all,
+        audioFileName: "",
+        thumbnailUrl: "",
+        isPremium: true,
+        instructor: ""
+    ))
+    .environmentObject(PlayerState())
+    .environment(\.isPreview, true)
+}

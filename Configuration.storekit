@@ -1,19 +1,119 @@
 {
-  "identifier" : "com.rocketship.YogaNidraSleepDeeply.premium.annual",
-  "subscriptions" : [
-    {
-      "displayPrice" : "59.99",
-      "familyShareable" : false,
-      "groupNumber" : 1,
-      "productID" : "com.rocketship.YogaNidraSleepDeeply.premium.annual",
-      "type" : "RecurringSubscription",
-      "subscriptionPeriod" : "P1Y",
-      "introductoryOffer" : {
-        "displayPrice" : "0",
-        "inAppOwnershipType" : "PURCHASED",
-        "paymentMode" : "FREE_TRIAL",
-        "subscriptionPeriod" : "P7D"
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
       }
+    ]
+  },
+  "identifier" : "E6909EC4",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "5420A74C",
+      "localizations" : [
+
+      ],
+      "name" : "com.rocketship.YogaNidraSleepDeeply.premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "59",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "07F9DC3C",
+          "introductoryOffer" : {
+            "displayPrice" : "0.99",
+            "internalID" : "FDFFAED5",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.rocketship.YogaNidraSleepDeeply.premium.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Annual reneawable subscription",
+          "subscriptionGroupID" : "5420A74C",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
     }
-  ]
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
 }

@@ -8,12 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		12B4C6362D2E8A7F00353CB5 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12B4C6352D2E8A7F00353CB5 /* StoreKit.framework */; };
-		24266DE72D2F0FA1001BDA27 /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 24266DE62D2F0FA1001BDA27 /* Configuration.storekit */; };
+		24ABFCAF2D319FAD00CBF892 /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 24ABFCAE2D319FAD00CBF892 /* Configuration.storekit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		12B4C6352D2E8A7F00353CB5 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
-		24266DE62D2F0FA1001BDA27 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
+		24ABFCAE2D319FAD00CBF892 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 		24BD50222D263F7300159E70 /* Yoga Nidra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Yoga Nidra.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -48,7 +48,7 @@
 		24BD50192D263F7300159E70 = {
 			isa = PBXGroup;
 			children = (
-				24266DE62D2F0FA1001BDA27 /* Configuration.storekit */,
+				24ABFCAE2D319FAD00CBF892 /* Configuration.storekit */,
 				24BD50242D263F7300159E70 /* Yoga Nidra */,
 				12B4C6342D2E8A7F00353CB5 /* Frameworks */,
 				24BD50232D263F7300159E70 /* Products */,
@@ -127,7 +127,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				24266DE72D2F0FA1001BDA27 /* Configuration.storekit in Resources */,
+				24ABFCAF2D319FAD00CBF892 /* Configuration.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
