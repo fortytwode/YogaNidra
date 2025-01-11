@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RecommendedSessionCard: View {
-    let session: Session
+    let session: YogaNidraSession
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -40,17 +40,13 @@ struct RecommendedSessionCard: View {
                     
                     // Tags
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(session.tags, id: \.rawValue) { tag in
-                                Text(tag.rawValue)
-                                    .font(.caption)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.accentColor.opacity(0.1))
-                                    .foregroundColor(.accentColor)
-                                    .cornerRadius(8)
-                            }
-                        }
+                        Text(session.category.rawValue)
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.accentColor.opacity(0.1))
+                            .foregroundColor(.accentColor)
+                            .cornerRadius(8)
                     }
                 }
             }

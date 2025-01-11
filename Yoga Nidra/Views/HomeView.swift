@@ -1,82 +1,130 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var preferencesManager = PreferencesManager.shared
+    let sessions = YogaNidraSession.previewData
     @Binding var selectedTab: Int
+    
+    var recommendedSessions: [YogaNidraSession] {
+        var recommendations: [YogaNidraSession] = []
+        var usedCategories: Set<SessionCategory> = []
+        
+        for session in sessions.shuffled() {
+            if !usedCategories.contains(session.category) {
+                recommendations.append(session)
+                usedCategories.insert(session.category)
+                
+                if recommendations.count == 4 {
+                    break
+                }
+            }
+        }
+        return recommendations
+    }
     
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Personalized greeting
-                    welcomeSection
-                    
-                    // Recommended session
-                    if let recommendedSession = getRecommendedSession() {
-                        RecommendedSessionCard(session: recommendedSession)
-                    }
-                    
-                    // Rest of your home view content...
+                    // Header with image background
+                    headerAndBacgkround
+                    // Popular section
+                    popularSection
+                    // Recommended section
+                    recomenndedSeciont
                 }
-                .padding()
+                .padding(.vertical)
             }
-            .navigationTitle("Home")
+            .navigationTitle("Yoga Nidra")
+            .background(Color(uiColor: UIColor(red: 0.06, green: 0.09, blue: 0.16, alpha: 1.0)))
         }
+        .preferredColorScheme(.dark)
     }
     
-    private var welcomeSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(getWelcomeMessage())
-                .font(.title)
-                .bold()
+    var popularSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Popular")
+                    .font(.title2)
+                    .bold()
+                Spacer()
+                Button("See All") {
+                    selectedTab = 1
+                }
+                .foregroundColor(.blue)
+            }
+            .padding(.horizontal, 24)
             
-            Text(getPersonalizedSubtitle())
-                .font(.subheadline)
-                .foregroundColor(.gray)
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 16) {
+                ForEach(sessions.prefix(2), id: \.id) { session in
+                    NavigationLink(destination: SessionDetailView(session: session)) {
+                        SessionCard(session: session)
+                    }
+                }
+            }
+            .padding(.horizontal, 24)
         }
     }
     
-    private func getWelcomeMessage() -> String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        switch hour {
-        case 0..<12: return "Good morning"
-        case 12..<17: return "Good afternoon"
-        default: return "Good evening"
-        }
-    }
-    
-    private func getPersonalizedSubtitle() -> String {
-        if let impact = preferencesManager.preferences.sleepImpact {
-            switch impact {
-            case "Significantly":
-                return "Let's work on improving your sleep quality"
-            case "Moderately":
-                return "Ready for better sleep tonight?"
-            default:
-                return "Time for your daily practice"
+    var headerAndBacgkround: some View {
+        ZStack {
+            Image("header")
+                .resizable()
+                .scaledToFill()
+                .frame(height: 192)
+                .clipped()
+            
+            VStack {
+                Spacer()
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Time to Unwind")
+                        .font(.system(size: 32, weight: .bold))
+                    Text("Let your mind drift into peaceful dreams")
+                        .font(.system(size: 16))
+                        .foregroundColor(Color(red: 0.6, green: 0.6, blue: 1.0))
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 32)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        return "Welcome to Yoga Nidra"
     }
     
-    private func getRecommendedSession() -> Session? {
-        let recommendations = preferencesManager.getPersonalizedRecommendations()
-        
-        // Create session based on user preferences
-        let session = Session(
-            title: recommendations.session,
-            duration: 1200, // 20 minutes
-            description: "Personalized deep sleep meditation",
-            thumbnailUrl: "your_thumbnail_url",
-            audioUrl: "your_audio_url",
-            isPremium: true,
-            category: .deepSleep,
-            tags: [
-                preferencesManager.preferences.fallAsleepTime == "Over an hour" ? .fallAsleep : .stayAsleep,
-                .beginnerFriendly
-            ]
-        )
-        
-        return session
+    var recomenndedSeciont: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Recommended for You")
+                    .font(.title2)
+                    .bold()
+                Spacer()
+                Button("See All") {
+                    selectedTab = 1
+                }
+                .foregroundColor(.blue)
+            }
+            .padding(.horizontal, 24)
+            
+            VStack(spacing: 12) {
+                ForEach(recommendedSessions) { session in
+                    NavigationLink(destination: SessionDetailView(session: session)) {
+                        RecommendedSessionCard(session: session)
+                    }
+                }
+            }
+            .padding(.horizontal, 24)
+            
+            Button("See All") {
+                selectedTab = 1
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.white.opacity(0.1))
+            .cornerRadius(12)
+            .foregroundColor(.white)
+            .padding(.horizontal, 24)
+            .padding(.top, 8)
+        }
     }
 }
