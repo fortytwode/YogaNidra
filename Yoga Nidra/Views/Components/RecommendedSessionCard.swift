@@ -22,13 +22,9 @@ struct RecommendedSessionCard: View {
             // Session Info
             HStack(spacing: 16) {
                 // Thumbnail
-                AsyncImage(url: URL(string: session.thumbnailUrl)) { image in
-                    image.resizable()
-                } placeholder: {
-                    Color.gray.opacity(0.2)
-                }
-                .frame(width: 80, height: 80)
-                .cornerRadius(12)
+                Image(session.thumbnailUrl)
+                    .frame(width: 80, height: 80)
+                    .cornerRadius(12)
                 
                 VStack(alignment: .leading, spacing: 8) {
                     Text(session.title)
