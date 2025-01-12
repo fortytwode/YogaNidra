@@ -4,6 +4,7 @@ struct ContentView: View {
     @StateObject private var onboardingManager = OnboardingManager.shared
     @EnvironmentObject private var playerState: PlayerState
     @StateObject private var audioManager = AudioManager.shared
+    @StateObject private var storeManager = StoreManager.shared
     @State private var selectedTab = 0
     
     var body: some View {
@@ -58,5 +59,14 @@ struct ContentView: View {
             OnboardingContainerView()
         }
         .preferredColorScheme(.dark)
+        .task {
+            // Load products when view appears
+            do {
+                try await storeManager.loadProducts()
+            } catch {
+                storeManager.errorMessage = error.localizedDescription
+                storeManager.showError = true
+            }
+        }
     }
 }

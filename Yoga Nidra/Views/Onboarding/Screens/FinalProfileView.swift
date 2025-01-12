@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FinalProfileView: View {
     @StateObject private var preferencesManager = PreferencesManager.shared
+    @StateObject private var onboardingManager = OnboardingManager.shared
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -62,7 +63,10 @@ struct FinalProfileView: View {
                         .cornerRadius(10)
                 }
                 
-                Button(action: dismiss.callAsFunction) {
+                Button {
+                    onboardingManager.isOnboardingCompleted = true
+                    dismiss()
+                } label: {
                     Text("Maybe Later")
                         .font(.headline)
                         .foregroundColor(.white)
@@ -100,7 +104,7 @@ struct FinalProfileView: View {
         let storeManager = StoreManager.shared
         Task {
             do {
-                try await storeManager.purchase()
+                try await storeManager.purchase(duringOnboarinng: true)
                 if storeManager.isSubscribed {
                     dismiss()
                 }

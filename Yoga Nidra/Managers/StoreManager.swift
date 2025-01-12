@@ -30,7 +30,6 @@ final class StoreManager: ObservableObject {
     // MARK: - Initialization
     private init() {
         print("🚀 StoreManager: Initializing...")
-        loadSavedSubscriptionState()
         startTransactionListeners()
         
         // Initial product load
@@ -65,7 +64,7 @@ final class StoreManager: ObservableObject {
         }
     }
     
-    private func handle(transactionResult: VerificationResult<StoreKit.Transaction>) async {
+    private func handle(transactionResult: VerificationResult<StoreKit.Transaction>, duringOnboarinng: Bool = false) async {
         switch transactionResult {
         case .verified(let transaction):
             // Check if we've already processed this transaction
@@ -79,16 +78,15 @@ final class StoreManager: ObservableObject {
             
             // Update subscription state
             await MainActor.run {
-                isSubscribed = true
-                OnboardingManager.shared.isOnboardingCompleted = true
+                isSubscribed = transaction.productID == productID
+                if duringOnboarinng {
+                    OnboardingManager.shared.isOnboardingCompleted = true
+                }
                 isInTrialPeriod = transaction.isUpgraded
                 if let expirationDate = transaction.expirationDate {
                     trialEndDate = expirationDate
                 }
             }
-            
-            // Save state
-            saveSubscriptionState(true)
             
             // Finish the transaction
             await transaction.finish()
@@ -141,7 +139,10 @@ final class StoreManager: ObservableObject {
     }
     
     // MARK: - Purchase Flow
-    func purchase() async throws {
+    func purchase(duringOnboarinng: Bool = false) async throws {
+        if hasLoadedProducts {
+            try await loadProducts()
+        }
         guard currentPurchaseTask == nil else {
             print("⚠️ StoreManager: Purchase already in progress")
             return
@@ -168,7 +169,7 @@ final class StoreManager: ObservableObject {
             switch result {
             case .success(let verification):
                 print("✅ StoreManager: Purchase successful, verifying...")
-                await handle(transactionResult: verification)
+                await handle(transactionResult: verification, duringOnboarinng: duringOnboarinng)
                 
             case .userCancelled:
                 print("🚫 StoreManager: Purchase cancelled by user")
@@ -183,17 +184,6 @@ final class StoreManager: ObservableObject {
         }
         currentPurchaseTask = task
         try await task.value
-    }
-    
-    // MARK: - State Management
-    private func loadSavedSubscriptionState() {
-        isSubscribed = UserDefaults.standard.bool(forKey: "subscriptionStateKey")
-        print("📱 StoreManager: Loaded saved subscription state: \(isSubscribed)")
-    }
-    
-    private func saveSubscriptionState(_ state: Bool) {
-        UserDefaults.standard.set(state, forKey: "subscriptionStateKey")
-        print("💾 StoreManager: Saved subscription state: \(state)")
     }
     
     // Restore Purchases
@@ -250,4 +240,4 @@ enum StoreError: LocalizedError {
             return "An unknown error occurred"
         }
     }
-} 
+}

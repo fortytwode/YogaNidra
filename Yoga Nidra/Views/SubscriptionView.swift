@@ -74,14 +74,5 @@ struct SubscriptionView: View {
                 dismiss()
             }
         }
-        .task {
-            // Load products when view appears
-            do {
-                try await storeManager.loadProducts()
-            } catch {
-                storeManager.errorMessage = error.localizedDescription
-                storeManager.showError = true
-            }
-        }
     }
 }

@@ -6,6 +6,8 @@ struct SessionDetailView: View {
     @EnvironmentObject private var playerState: PlayerState
     @StateObject private var audioManager = AudioManager.shared
     let session: YogaNidraSession
+    @StateObject private var storeManager = StoreManager.shared
+    @State private var showingSubscriptionSheet = false
     
     private var durationInMinutes: Int {
         Int(ceil(Double(session.duration) / 60.0))
@@ -71,7 +73,11 @@ struct SessionDetailView: View {
                             
                             Button {
                                 Task {
-                                    try await audioManager.onPlaySession(session: session)
+                                    if session.isPremium && !storeManager.isSubscribed {
+                                        showingSubscriptionSheet = true
+                                    } else {
+                                        try await audioManager.onPlaySession(session: session)
+                                    }
                                 }
                             } label: {
                                 Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
@@ -94,6 +100,9 @@ struct SessionDetailView: View {
             }
         }
         .edgesIgnoringSafeArea(.all)
+        .sheet(isPresented: $showingSubscriptionSheet) {
+            SubscriptionView()
+        }
     }
     
     private func formatTime(_ time: TimeInterval) -> String {
