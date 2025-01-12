@@ -1,128 +1,108 @@
 import SwiftUI
+import AVFoundation
 
 struct SessionDetailView: View {
-    let session: YogaNidraSession
-    @StateObject private var subscriptionManager = SubscriptionManager.shared
-    @StateObject private var downloadManager = DownloadManager.shared
-    @Environment(\.isPreview) private var isPreview: Bool
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var playerState: PlayerState
-    @State private var showingShareSheet = false
-    @State private var showingPremiumSheet = false
+    @StateObject private var audioManager = AudioManager.shared
+    let session: YogaNidraSession
+    
+    private var durationInMinutes: Int {
+        Int(ceil(Double(session.duration) / 60.0))
+    }
     
     var body: some View {
-        ZStack {
-            // Content
-            VStack(spacing: 20) {
-                Spacer()
+        GeometryReader { geometry in
+            ZStack {
+                Color.black.edgesIgnoringSafeArea(.all)
                 
-                // Title and Premium Badge
-                HStack {
-                    Text(session.title)
-                        .font(.system(size: 34, weight: .bold))
-                        .multilineTextAlignment(.center)
+                VStack(spacing: 30) {
+                    // Session Image
+                    Image(session.thumbnailUrl)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 200, height: 200)
+                        .cornerRadius(20)
                     
-                    if session.isPremium {
-                        Image(systemName: "crown.fill")
-                            .foregroundColor(.yellow)
-                            .font(.title2)
-                    }
-                }
-                
-                // Duration
-                Text("\(Int(session.duration / 60)) minutes")
-                    .font(.system(size: 20))
-                    .foregroundColor(.gray)
-                
-                // Download and action buttons
-                HStack(spacing: 40) {
-                    DownloadButton(session: session)
-                    
-                    Button(action: {}) {
-                        Image(systemName: "heart")
-                            .font(.title2)
+                    // Session Info
+                    VStack(spacing: 8) {
+                        Text(session.title)
+                            .font(.title)
+                            .foregroundColor(.white)
+                        
+                        Text("with \(session.instructor)")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                        
+                        Text("\(durationInMinutes) minutes")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
                     }
                     
-                    Button(action: {
-                        showingShareSheet = true
-                    }) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.title2)
-                    }
-                }
-                .foregroundColor(.white)
-                .padding(.bottom, 40)
-                
-                // Audio player controls
-                if session.isPremium && !subscriptionManager.isSubscribed {
-                    Button {
-                        showingPremiumSheet = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "crown.fill")
-                                .foregroundColor(.yellow)
-                            Text("Unlock Premium")
-                                .fontWeight(.semibold)
+                    Spacer()
+                    
+                    // Player Controls
+                    VStack(spacing: 30) {
+                        // Progress Slider and Time
+                        VStack(spacing: 8) {
+                            Slider(value: .constant(audioManager.currentTime),
+                                   in: 0...Double(session.duration))
+                                .tint(.white)
+                            
+                            HStack {
+                                Text(formatTime(audioManager.currentTime))
+                                Spacer()
+                                Text(formatTime(TimeInterval(session.duration)))
+                            }
+                            .font(.system(size: 12))
+                            .foregroundColor(.white)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.accentColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
+                        .padding(.horizontal)
+                        
+                        // Control Buttons
+                        HStack(spacing: 60) {
+                            Button(action: { /* Skip backward */ }) {
+                                Image(systemName: "gobackward.15")
+                                    .font(.title)
+                                    .foregroundColor(.white)
+                            }
+                            
+                            Button {
+                                Task {
+                                    try await audioManager.onPlaySession(session: session)
+                                }
+                            } label: {
+                                Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
+                                    .font(.system(size: 30))
+                                    .foregroundColor(.white)
+                                    .frame(width: 60, height: 60)
+                                    .background(Circle().fill(Color.white.opacity(0.2)))
+                            }
+                            
+                            Button(action: { /* Skip forward */ }) {
+                                Image(systemName: "goforward.15")
+                                    .font(.title)
+                                    .foregroundColor(.white)
+                            }
+                        }
                     }
-                    .padding(.horizontal)
-                } else {
-                    AudioPlayerView(session: session)
+                    .padding(.bottom, 50)
                 }
-                
-                Spacer().frame(height: 30)
-            }
-            .padding()
-            .background {
-                Image(session.thumbnailUrl)
-                    .resizable()
-                    .scaledToFill()
-                    .edgesIgnoringSafeArea(.all)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .overlay(
-                        LinearGradient(
-                            gradient: Gradient(colors: [.clear, .black.opacity(0.7)]),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
+                .padding(.top, geometry.safeAreaInsets.top + 20)
             }
         }
-        .sheet(isPresented: $showingPremiumSheet) {
-            PremiumContentSheet()
-        }
-        .sheet(isPresented: $showingShareSheet) {
-            ShareSheet(activityItems: [session.title])
-        }
+        .edgesIgnoringSafeArea(.all)
+    }
+    
+    private func formatTime(_ time: TimeInterval) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%d:%02d", minutes, seconds)
     }
 }
 
-// Add ShareSheet view
-struct ShareSheet: UIViewControllerRepresentable {
-    let activityItems: [Any]
-    
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-    }
-    
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-
-// Preview provider
+// Preview Provider
 #Preview {
-    SessionDetailView(session: YogaNidraSession(
-        title: "Title",
-        duration: 1,
-        category: .all,
-        audioFileName: "",
-        thumbnailUrl: "",
-        isPremium: true,
-        instructor: ""
-    ))
-    .environmentObject(PlayerState())
-    .environment(\.isPreview, true)
+    SessionDetailView(session: .preview)
+        .preferredColorScheme(.dark) // Since app uses dark mode
 }

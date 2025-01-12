@@ -1,24 +1,22 @@
 import SwiftUI
 
 struct HomeView: View {
-    let sessions = YogaNidraSession.previewData
+    let sessions = YogaNidraSession.allSessions
     @Binding var selectedTab: Int
     
+    var freeSessions: [YogaNidraSession] {
+        sessions.filter { !$0.isPremium }
+    }
+    
+    var popularSessions: [YogaNidraSession] {
+        // Get 2 random free sessions for popular section
+        Array(freeSessions.shuffled().prefix(2))
+    }
+    
     var recommendedSessions: [YogaNidraSession] {
-        var recommendations: [YogaNidraSession] = []
-        var usedCategories: Set<SessionCategory> = []
-        
-        for session in sessions.shuffled() {
-            if !usedCategories.contains(session.category) {
-                recommendations.append(session)
-                usedCategories.insert(session.category)
-                
-                if recommendations.count == 4 {
-                    break
-                }
-            }
-        }
-        return recommendations
+        let premiumSessions = sessions.filter { $0.isPremium }.prefix(3)
+        let nonPremiumSession = sessions.filter { !$0.isPremium }.prefix(1)
+        return Array(nonPremiumSession + premiumSessions)
     }
     
     var body: some View {
@@ -26,18 +24,16 @@ struct HomeView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     // Header with image background
-                    headerAndBacgkround
+                    headerAndBackground
                     // Popular section
                     popularSection
                     // Recommended section
-                    recomenndedSeciont
+                    recommendedSection
                 }
                 .padding(.vertical)
             }
             .navigationTitle("Yoga Nidra")
-            .background(Color(uiColor: UIColor(red: 0.06, green: 0.09, blue: 0.16, alpha: 1.0)))
         }
-        .preferredColorScheme(.dark)
     }
     
     var popularSection: some View {
@@ -68,7 +64,7 @@ struct HomeView: View {
         }
     }
     
-    var headerAndBacgkround: some View {
+    var headerAndBackground: some View {
         ZStack {
             Image("header")
                 .resizable()
@@ -92,7 +88,7 @@ struct HomeView: View {
         }
     }
     
-    var recomenndedSeciont: some View {
+    var recommendedSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text("Recommended for You")

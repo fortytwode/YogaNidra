@@ -1,19 +1,15 @@
 import Foundation
 
 struct UserPreferences: Codable {
-    var sleepQuality: String?
-    var fallAsleepTime: String?
-    var nightWakeups: String?
-    var morningTiredness: String?
-    var sleepImpact: String?
-    var onboardingCompleted: Date?
+    var fallAsleepTime: String = ""
+    var nightWakeups: String = ""
+    var sleepImpact: String = ""
+    var morningTiredness: String = ""
+    var sleepDuration: String = ""
     
-    static let `default` = UserPreferences(
-        sleepQuality: nil,
-        fallAsleepTime: nil,
-        nightWakeups: nil,
-        morningTiredness: nil,
-        sleepImpact: nil,
-        onboardingCompleted: nil
-    )
+    // New fields for additional questions
+    var mainGoal: String = ""
+    var sleepFeelings: String = ""
+    var relaxationObstacle: String = ""
+    var sleepQuality: String = ""
 } 

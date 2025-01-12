@@ -1,9 +1,10 @@
 import Foundation
 
+@MainActor
 class DownloadManager: ObservableObject {
     static let shared = DownloadManager()
     @Published var downloads: [String: Download] = [:]
-    private let subscriptionManager = SubscriptionManager.shared
+    private let storeManager = StoreManager.shared
     
     struct Download {
         var progress: Float
@@ -14,65 +15,67 @@ class DownloadManager: ObservableObject {
     private let defaults = UserDefaults.standard
     private let downloadedSessionsKey = "downloadedSessions"
     
-    func downloadSession(_ session: YogaNidraSession) async {
+    func downloadSession(_ yogaNidraSession: YogaNidraSession) async throws {
         // Check subscription status asynchronously
-        guard await subscriptionManager.checkIsSubscribed() else { return }
+        guard await storeManager.isSubscribed else { return }
         
-        let audioUrl = session.audioUrl.isEmpty ? 
-            "https://your-base-url.com/audio/\(session.audioFileName)" : 
-            session.audioUrl
-            
-        guard let url = URL(string: audioUrl) else { return }
+        // Construct audio URL from fileName
+        let baseUrl = "https://your-base-url.com/audio/"
+        let audioUrl = baseUrl + yogaNidraSession.audioFileName
         
-        let task = URLSession.shared.downloadTask(with: url) { localUrl, _, error in
-            guard let localUrl = localUrl, error == nil else { return }
-            
-            // Move to permanent location
-            let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let destinationUrl = documentsPath.appendingPathComponent("\(session.id).m4a")
-            
-            try? FileManager.default.moveItem(at: localUrl, to: destinationUrl)
-            
-            DispatchQueue.main.async {
-                self.downloads[session.id.uuidString]?.isDownloading = false
-                // Update session's local URL
-                // You'll need to implement persistence for this
-            }
+        guard let url = URL(string: audioUrl) else {
+            throw DownloadError.invalidURL
         }
         
-        downloads[session.id.uuidString] = Download(progress: 0, task: task, isDownloading: true)
-        task.resume()
-    }
-    
-    func cancelDownload(_ session: YogaNidraSession) {
-        downloads[session.id.uuidString]?.task.cancel()
-        downloads.removeValue(forKey: session.id.uuidString)
-    }
-    
-    func removeDownload(_ session: YogaNidraSession) async {
-        // Check subscription status asynchronously
-        guard await subscriptionManager.checkIsSubscribed() else { return }
+        // Create URLSession with delegate for progress tracking
+        let urlSession = URLSession(configuration: .default)
         
-        if let localUrl = session.localUrl {
-            try? FileManager.default.removeItem(at: localUrl)
+        // Track download state
+        let task = urlSession.downloadTask(with: url)
+        DispatchQueue.main.async {
+            self.downloads[yogaNidraSession.id.uuidString] = Download(
+                progress: 0,
+                task: task,
+                isDownloading: true
+            )
         }
         
-        // Remove from downloaded sessions
-        var downloadedSessions = defaults.stringArray(forKey: downloadedSessionsKey) ?? []
-        downloadedSessions.removeAll { $0 == session.id.uuidString }
-        defaults.set(downloadedSessions, forKey: downloadedSessionsKey)
+        // Use async/await API for download
+        let (tempUrl, _) = try await urlSession.download(from: url)
         
-        objectWillChange.send()
+        // Move downloaded file to documents directory
+        try FileManager.default.moveItem(at: tempUrl, to: yogaNidraSession.localUrl)
+        
+        // Clear download state
+        DispatchQueue.main.async {
+            self.downloads.removeValue(forKey: yogaNidraSession.id.uuidString)
+        }
     }
     
-    func isDownloaded(_ session: YogaNidraSession) -> Bool {
-        let downloadedSessions = defaults.stringArray(forKey: downloadedSessionsKey) ?? []
-        return downloadedSessions.contains(session.id.uuidString)
+    func cancelDownload(_ yogaNidraSession: YogaNidraSession) {
+        downloads[yogaNidraSession.id.uuidString]?.task.cancel()
+        downloads.removeValue(forKey: yogaNidraSession.id.uuidString)
     }
     
-    private func saveDownloadedSession(_ session: YogaNidraSession, at url: URL) {
-        var downloadedSessions = defaults.stringArray(forKey: downloadedSessionsKey) ?? []
-        downloadedSessions.append(session.id.uuidString)
-        defaults.set(downloadedSessions, forKey: downloadedSessionsKey)
+    func removeDownload(_ yogaNidraSession: YogaNidraSession) async throws {
+        guard await storeManager.isSubscribed else { return }
+        
+        if FileManager.default.fileExists(atPath: yogaNidraSession.localUrl.path) {
+            try FileManager.default.removeItem(at: yogaNidraSession.localUrl)
+        }
+    }
+}
+
+enum DownloadError: LocalizedError {
+    case invalidURL
+    case fileMoveError(Error)
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL:
+            return "Invalid download URL"
+        case .fileMoveError(let error):
+            return "Failed to save download: \(error.localizedDescription)"
+        }
     }
 } 

@@ -1,43 +1,49 @@
 import Foundation
 
-struct YogaNidraSession: Identifiable, Equatable {
-    let id = UUID()
+struct YogaNidraSession: Identifiable, Codable, Equatable {
+    let id: UUID
     let title: String
+    let description: String
     let duration: Int
-    let category: SessionCategory
-    let audioFileName: String
     let thumbnailUrl: String
+    let audioFileName: String
     let isPremium: Bool
+    let category: SessionCategory
     let instructor: String
-    let audioUrl: String
-    var isDownloaded: Bool = false
-    var localUrl: URL?
     
     // Add Equatable conformance
     static func == (lhs: YogaNidraSession, rhs: YogaNidraSession) -> Bool {
         lhs.id == rhs.id
     }
     
-    // Update initializer to include audioUrl
-    init(title: String, duration: Int, category: SessionCategory, 
-         audioFileName: String, thumbnailUrl: String, isPremium: Bool, 
-         instructor: String, audioUrl: String = "") {  // Default empty string for existing code
-        self.title = title
-        self.duration = duration
-        self.category = category
-        self.audioFileName = audioFileName
-        self.thumbnailUrl = thumbnailUrl
-        self.isPremium = isPremium
-        self.instructor = instructor
-        self.audioUrl = audioUrl
+    // Add computed property for local URL
+    var localUrl: URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("\(id.uuidString).m4a")
     }
-}
-
-// MARK: - Preview Data
-extension YogaNidraSession {
-    static let previewData: [YogaNidraSession] = {
-        let sessions = SessionDataParser.loadSessions()
-        print("🔄 Loaded \(sessions.count) sessions for preview data")
-        return sessions
-    }()
+    
+    var isDownloaded: Bool {
+        FileManager.default.fileExists(atPath: localUrl.path)
+    }
+    
+    // Load all sessions from CSV
+    static var allSessions: [YogaNidraSession] {
+        SessionDataParser.loadSessions()
+    }
+    
+    // Keep minimal preview data for SwiftUI previews only
+    static let preview = YogaNidraSession(
+        id: UUID(),
+        title: "Preview Session",
+        description: "This is a preview session for development",
+        duration: 10,
+        thumbnailUrl: "preview-thumbnail",
+        audioFileName: "preview-audio.m4a",
+        isPremium: false,
+        category: .quickSleep,
+        instructor: "Preview Instructor"
+    )
+    
+    // For preview purposes only
+    static let previewData = [preview]
 } 

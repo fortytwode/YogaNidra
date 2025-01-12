@@ -2,46 +2,51 @@ import SwiftUI
 
 struct DownloadButton: View {
     let session: YogaNidraSession
-    @StateObject private var downloadManager = DownloadManager.shared
-    @StateObject private var subscriptionManager = SubscriptionManager.shared
+    @ObservedObject private var downloadManager: DownloadManager
+    @ObservedObject private var storeManager: StoreManager
     @State private var showingPremiumSheet = false
+    @State private var showError = false
+    @State private var errorMessage = ""
+    
+    init(session: YogaNidraSession) {
+        self.session = session
+        self._downloadManager = ObservedObject(wrappedValue: DownloadManager.shared)
+        self._storeManager = ObservedObject(wrappedValue: StoreManager.shared)
+    }
     
     var body: some View {
         Group {
             if session.isDownloaded {
                 // Downloaded state
                 Button {
-                    // Remove download with async Task
                     Task {
-                        await downloadManager.removeDownload(session)
+                        do {
+                            try await downloadManager.removeDownload(session)
+                        } catch {
+                            errorMessage = error.localizedDescription
+                            showError = true
+                        }
                     }
                 } label: {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.green)
                 }
-            } else if let download = downloadManager.downloads[session.id.uuidString], 
+            } else if let download = downloadManager.downloads[session.id.uuidString],
                       download.isDownloading {
                 // Downloading state
                 ZStack {
                     Circle()
                         .stroke(lineWidth: 2)
                         .opacity(0.3)
-                        .foregroundColor(.gray)
-                    
                     Circle()
-                        .trim(from: 0.0, to: CGFloat(download.progress))
-                        .stroke(style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
-                        .foregroundColor(.accentColor)
-                        .rotationEffect(Angle(degrees: 270.0))
-                    
+                        .trim(from: 0, to: CGFloat(download.progress))
+                        .stroke(lineWidth: 2)
+                        .rotationEffect(.degrees(-90))
                     Button {
-                        Task {
-                            await downloadManager.cancelDownload(session)
-                        }
+                        downloadManager.cancelDownload(session)
                     } label: {
                         Image(systemName: "xmark")
                             .font(.caption)
-                            .foregroundColor(.gray)
                     }
                 }
                 .frame(width: 24, height: 24)
@@ -49,7 +54,16 @@ struct DownloadButton: View {
                 // Download button
                 Button {
                     Task {
-                        await downloadManager.downloadSession(session)
+                        if storeManager.isSubscribed {
+                            do {
+                                try await downloadManager.downloadSession(session)
+                            } catch {
+                                errorMessage = error.localizedDescription
+                                showError = true
+                            }
+                        } else {
+                            showingPremiumSheet = true
+                        }
                     }
                 } label: {
                     Image(systemName: "arrow.down.circle")
@@ -58,7 +72,12 @@ struct DownloadButton: View {
             }
         }
         .sheet(isPresented: $showingPremiumSheet) {
-            PremiumContentSheet()
+            SubscriptionView()
+        }
+        .alert("Download Error", isPresented: $showError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(errorMessage)
         }
     }
 } 

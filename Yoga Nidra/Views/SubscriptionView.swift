@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SubscriptionView: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject private var subscriptionManager = SubscriptionManager.shared
+    @StateObject private var storeManager = StoreManager.shared
     
     var body: some View {
         VStack(spacing: 20) {
@@ -13,10 +13,10 @@ struct SubscriptionView: View {
             
             // Features
             VStack(alignment: .leading, spacing: 12) {
-                FeatureRow("Access all meditation sessions")
-                FeatureRow("New content added monthly")
-                FeatureRow("Background playback")
-                FeatureRow("Download for offline use")
+                FeatureRowView(text: "Access all meditation sessions")
+                FeatureRowView(text: "New content added monthly")
+                FeatureRowView(text: "Background playback")
+                FeatureRowView(text: "Download for offline use")
             }
             .padding(.vertical)
             
@@ -25,10 +25,15 @@ struct SubscriptionView: View {
             // Subscription Button
             Button {
                 Task {
-                    await subscriptionManager.purchase()
+                    do {
+                        try await storeManager.purchase()
+                    } catch {
+                        storeManager.errorMessage = error.localizedDescription
+                        storeManager.showError = true
+                    }
                 }
             } label: {
-                Text("\(subscriptionManager.trialText) • \(subscriptionManager.subscriptionPrice)/year")
+                Text("Start 7-day free trial • $59.99/year")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -36,11 +41,18 @@ struct SubscriptionView: View {
                     .foregroundColor(.white)
                     .cornerRadius(12)
             }
-            .disabled(subscriptionManager.isLoading)
+            .opacity(storeManager.isLoading ? 0.5 : 1)
+            .allowsHitTesting(!storeManager.isLoading)
             
+            // Restore Purchases Button
             Button("Restore Purchases") {
                 Task {
-                    await subscriptionManager.restorePurchases()
+                    do {
+                        try await storeManager.restorePurchases()
+                    } catch {
+                        storeManager.errorMessage = error.localizedDescription
+                        storeManager.showError = true
+                    }
                 }
             }
             .font(.caption)
@@ -51,22 +63,25 @@ struct SubscriptionView: View {
                 .foregroundColor(.secondary)
         }
         .padding()
-        .alert("Error", isPresented: $subscriptionManager.showError) {
+        .alert("Error", isPresented: $storeManager.showError) {
             Button("OK", role: .cancel) { }
         } message: {
-            Text(subscriptionManager.errorMessage ?? "Unknown error occurred")
+            Text(storeManager.errorMessage ?? "Unknown error occurred")
         }
-        .onChange(of: subscriptionManager.isSubscribed) { subscribed in
-            if subscribed {
+        .onChange(of: storeManager.isSubscribed) { _, newValue in
+            if newValue {
                 dismiss()
+                UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
             }
         }
-        .onAppear {
-            Task {
-                // Force a product refresh when view appears
-                await subscriptionManager.setupProducts()
-                subscriptionManager.verifySetup()
+        .task {
+            // Load products when view appears
+            do {
+                try await storeManager.loadProducts()
+            } catch {
+                storeManager.errorMessage = error.localizedDescription
+                storeManager.showError = true
             }
         }
     }
-} 
+}

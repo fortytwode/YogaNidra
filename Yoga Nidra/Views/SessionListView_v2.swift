@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SessionListView_v2: View {
-    let sessions = YogaNidraSession.previewData
+    let sessions = YogaNidraSession.allSessions
     @State private var selectedCategory: SessionCategory? = nil
     
     var filteredSessions: [YogaNidraSession] {

@@ -1,43 +1,54 @@
 import SwiftUI
 
 struct OnboardingContainerView: View {
-    @StateObject private var onboardingManager = OnboardingManager.shared
+    @AppStorage("shouldShowOnboarding") var shouldShowOnboarding = true
     @State private var currentPage = 0
     
     var body: some View {
         TabView(selection: $currentPage) {
-            WelcomeView(nextPage: { currentPage += 1 })
+            WelcomeView(nextPage: nextPage)
                 .tag(0)
             
-            BenefitsView(nextPage: { currentPage += 1 })
+            BenefitsView(nextPage: nextPage)
                 .tag(1)
             
-            SleepQualityView(nextPage: { currentPage += 1 })
+            GoalsView(nextPage: nextPage)
                 .tag(2)
             
-            FallAsleepView(nextPage: { currentPage += 1 })
+            SleepQualityView(nextPage: nextPage)
                 .tag(3)
             
-            WakeUpView(nextPage: { currentPage += 1 })
+            SleepPatternView(nextPage: nextPage)
                 .tag(4)
             
-            MorningTirednessView(nextPage: { currentPage += 1 })
+            SleepScienceView(nextPage: nextPage)
                 .tag(5)
             
-            SleepImpactView(nextPage: { currentPage += 1 })
+            FallAsleepView(nextPage: nextPage)
                 .tag(6)
             
-            FinalProfileView()
+            WakeUpView(nextPage: nextPage)
                 .tag(7)
+            
+            MorningTirednessView(nextPage: nextPage)
+                .tag(8)
+            
+            SleepFeelingsView(nextPage: nextPage)
+                .tag(9)
+            
+            FinalProfileView()
+                .tag(10)
         }
         .tabViewStyle(.page)
         .indexViewStyle(.page(backgroundDisplayMode: .always))
         .ignoresSafeArea()
-        .environmentObject(onboardingManager)
+        .preferredColorScheme(.dark)
+        .background(Color.black.edgesIgnoringSafeArea(.all))
+    }
+    
+    private func nextPage() {
+        withAnimation {
+            currentPage += 1
+        }
     }
 }
-
-#Preview {
-    OnboardingContainerView()
-        .preferredColorScheme(.dark)
-} 

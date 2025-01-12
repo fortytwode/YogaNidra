@@ -1,66 +1,58 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var onboardingManager = OnboardingManager.shared
+    @EnvironmentObject private var playerState: PlayerState
+    @StateObject private var audioManager = AudioManager.shared
     @State private var selectedTab = 0
-    @State private var tabBarHeight: CGFloat = 0
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            HomeView(selectedTab: $selectedTab)
-                .tabItem {
-                    Image(systemName: "house.fill")
-                    Text("Home")
+        NavigationStack {
+            ZStack(alignment: .bottom) {
+                // Base layer: Tab View
+                TabView(selection: $selectedTab) {
+                    HomeView(selectedTab: $selectedTab)
+                        .tabItem {
+                            Image(systemName: "house.fill")
+                            Text("Home")
+                        }
+                        .tag(0)
+                    
+                    SessionListView_v2()
+                        .tabItem {
+                            Image(systemName: "book.fill")
+                            Text("Library")
+                        }
+                        .tag(1)
+                    
+                    ProgressView()
+                        .tabItem {
+                            Image(systemName: "chart.bar.fill")
+                            Text("Progress")
+                        }
+                        .tag(2)
                 }
-                .tag(0)
-            
-            NavigationStack {
-                SessionListView_v2()
+                
+                // Middle layer: Mini Player - now tied to audio playback
+                if audioManager.isPlaying && !playerState.showFullPlayer,
+                   let session = audioManager.currentPlayingSession {
+                    VStack(spacing: 0) {
+                        MiniPlayerView(
+                            session: session,
+                            showFullPlayer: $playerState.showFullPlayer
+                        )
+                        .onTapGesture {
+                            playerState.showFullPlayer = true
+                        }
+                        Spacer().frame(height: 49)
+                    }
+                }
             }
-            .tabItem {
-                Image(systemName: "book.fill")
-                Text("Library")
-            }
-            .tag(1)
-            
-            NavigationStack {
-                ProgressTabView()
-            }
-            .tabItem {
-                Image(systemName: "chart.bar.fill")
-                Text("Progress")
-            }
-            .tag(2)
         }
-        .overlay(
-            GeometryReader { proxy in
-                Color.clear.preference(
-                    key: TabBarHeightPreferenceKey.self,
-                    value: proxy.safeAreaInsets.bottom + 49
-                )
+        .fullScreenCover(isPresented: $playerState.showFullPlayer) {
+            if let session = audioManager.currentPlayingSession {
+                SessionDetailView(session: session)
             }
-        )
-        .onPreferenceChange(TabBarHeightPreferenceKey.self) { height in
-            self.tabBarHeight = height
         }
-        .environmentObject(TabBarState(height: tabBarHeight))
-        .fullScreenCover(isPresented: $onboardingManager.shouldShowOnboarding) {
-            OnboardingContainerView()
-        }
-    }
-}
-
-struct TabBarHeightPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
-
-class TabBarState: ObservableObject {
-    @Published var height: CGFloat
-    
-    init(height: CGFloat) {
-        self.height = height
+        .preferredColorScheme(.dark)
     }
 }

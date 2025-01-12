@@ -2,7 +2,7 @@ import SwiftUI
 
 struct PremiumContentSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject private var subscriptionManager = SubscriptionManager.shared
+    @StateObject private var storeManager = StoreManager.shared
     @State private var showError = false
     @State private var errorMessage = ""
     
@@ -23,10 +23,10 @@ struct PremiumContentSheet: View {
             
             // Feature List
             VStack(alignment: .leading, spacing: 12) {
-                FeatureRow("Access all premium sessions")
-                FeatureRow("New content monthly")
-                FeatureRow("Background playback")
-                FeatureRow("Download for offline use")
+                FeatureRowView(text: "Access all premium sessions")
+                FeatureRowView(text: "New content monthly")
+                FeatureRowView(text: "Background playback")
+                FeatureRowView(text: "Download for offline use")
             }
             
             Spacer()
@@ -35,8 +35,8 @@ struct PremiumContentSheet: View {
             Button {
                 Task {
                     do {
-                        try await subscriptionManager.purchase()
-                        if subscriptionManager.isSubscribed {
+                        try await storeManager.purchase()
+                        if storeManager.isSubscribed {
                             dismiss()
                         }
                     } catch {
@@ -45,10 +45,10 @@ struct PremiumContentSheet: View {
                     }
                 }
             } label: {
-                if subscriptionManager.isLoading {
+                if storeManager.isLoading {
                     ProgressView()
                 } else {
-                    Text("\(subscriptionManager.trialText) • \(subscriptionManager.subscriptionPrice)/year")
+                    Text("Start 7-day free trial • $59.99/year")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -57,11 +57,18 @@ struct PremiumContentSheet: View {
                         .cornerRadius(12)
                 }
             }
-            .disabled(subscriptionManager.isLoading)
+            .opacity(storeManager.isLoading ? 0.5 : 1)
+            .allowsHitTesting(!storeManager.isLoading)
             
+            // Restore Purchases Button
             Button("Restore Purchases") {
                 Task {
-                    await subscriptionManager.restorePurchases()
+                    do {
+                        try await storeManager.restorePurchases()
+                    } catch {
+                        errorMessage = error.localizedDescription
+                        showError = true
+                    }
                 }
             }
             .font(.caption)
@@ -73,4 +80,4 @@ struct PremiumContentSheet: View {
             Text(errorMessage)
         }
     }
-} 
+}

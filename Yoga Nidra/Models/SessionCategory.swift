@@ -1,66 +1,65 @@
 import SwiftUI
 
-enum SessionCategory: String, CaseIterable, Identifiable {
-    case all = "All"
+enum SessionCategory: String, Codable {
     case quickSleep = "Quick Sleep"
     case deepSleep = "Deep Sleep"
     case powerNap = "Power Nap"
     case sleepAnxiety = "Sleep Anxiety"
     case travelJetLag = "Travel & Jet Lag"
     case sleepEnvironment = "Sleep Environment"
-    case beginnersPath = "Beginner's Path"
+    case all = "All"  // For filtering purposes
     
-    var id: SessionCategory { self }
-    
-    var description: String {
-        switch self {
-        case .all: return "All meditation sessions"
-        case .quickSleep: return "10-15 minute sleep sessions"
-        case .deepSleep: return "30-45 minute deep sleep practices"
-        case .powerNap: return "5-20 minute power naps"
-        case .sleepAnxiety: return "Relief from sleep anxiety"
-        case .travelJetLag: return "Travel and jet lag assistance"
-        case .sleepEnvironment: return "Adapt to sleep environments"
-        case .beginnersPath: return "Introduction to sleep practices"
-        }
+    static var allCases: [SessionCategory] {
+        [.quickSleep, .deepSleep, .powerNap, .sleepAnxiety, 
+         .travelJetLag, .sleepEnvironment]
     }
     
-    var duration: ClosedRange<TimeInterval> {
-        switch self {
-        case .all: return 300...3600 // 5-60 minutes
-        case .quickSleep: return 600...900 // 10-15 minutes
-        case .deepSleep: return 1800...2700 // 30-45 minutes
-        case .powerNap: return 300...1200 // 5-20 minutes
-        case .sleepAnxiety: return 900...1200 // 15-20 minutes
-        case .travelJetLag: return 900...1800 // 15-30 minutes
-        case .sleepEnvironment: return 900...1200 // 15-20 minutes
-        case .beginnersPath: return 600...1200 // 10-20 minutes
-        }
-    }
-    
+    // UI Properties
     var icon: String {
         switch self {
-        case .all: return "list.bullet"
-        case .quickSleep: return "moon.zzz.fill"
-        case .deepSleep: return "moon.stars.fill"
+        case .quickSleep: return "moon.stars.fill"
+        case .deepSleep: return "moon.zzz.fill"
         case .powerNap: return "powersleep"
-        case .sleepAnxiety: return "heart.fill"
-        case .travelJetLag: return "airplane"
+        case .sleepAnxiety: return "heart.circle.fill"
+        case .travelJetLag: return "airplane.circle.fill"
         case .sleepEnvironment: return "bed.double.fill"
-        case .beginnersPath: return "leaf.fill"
+        case .all: return "list.bullet"
         }
     }
     
     var color: Color {
         switch self {
-        case .all: return .blue
-        case .quickSleep: return .purple
-        case .deepSleep: return .indigo
+        case .quickSleep: return .blue
+        case .deepSleep: return .purple
         case .powerNap: return .orange
-        case .sleepAnxiety: return .red
+        case .sleepAnxiety: return .pink
         case .travelJetLag: return .green
-        case .sleepEnvironment: return .blue
-        case .beginnersPath: return .mint
+        case .sleepEnvironment: return .mint
+        case .all: return .gray
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .quickSleep: return "Short sessions for quick relaxation"
+        case .deepSleep: return "Deep relaxation for better sleep"
+        case .powerNap: return "Refresh and recharge"
+        case .sleepAnxiety: return "Calm your mind before sleep"
+        case .travelJetLag: return "Adjust to new time zones"
+        case .sleepEnvironment: return "Optimize your sleep space"
+        case .all: return "All sessions"
+        }
+    }
+    
+    var duration: ClosedRange<TimeInterval> {
+        switch self {
+        case .quickSleep: return 300...900     // 5-15 minutes
+        case .deepSleep: return 1200...2700    // 20-45 minutes
+        case .powerNap: return 600...1200      // 10-20 minutes
+        case .sleepAnxiety: return 900...1800  // 15-30 minutes
+        case .travelJetLag: return 900...1800  // 15-30 minutes
+        case .sleepEnvironment: return 600...1200 // 10-20 minutes
+        case .all: return 300...2700           // 5-45 minutes
         }
     }
 }

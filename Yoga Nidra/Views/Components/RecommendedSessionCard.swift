@@ -5,20 +5,6 @@ struct RecommendedSessionCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Header
-            HStack {
-                Text("Recommended for you")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                
-                Spacer()
-                
-                if session.isPremium {
-                    Image(systemName: "crown.fill")
-                        .foregroundColor(.yellow)
-                }
-            }
-            
             // Session Info
             HStack(spacing: 16) {
                 // Thumbnail
@@ -29,6 +15,10 @@ struct RecommendedSessionCard: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(session.title)
                         .font(.headline)
+                    
+                    Text(session.instructor)
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
                     
                     Text("\(Int(session.duration / 60)) minutes")
                         .font(.subheadline)
@@ -44,6 +34,13 @@ struct RecommendedSessionCard: View {
                             .foregroundColor(.accentColor)
                             .cornerRadius(8)
                     }
+                }
+                
+                Spacer()
+                
+                if session.isPremium {
+                    Image(systemName: "crown.fill")
+                        .foregroundColor(.yellow)
                 }
             }
         }

@@ -6,18 +6,19 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
     
     static let shared = AudioManager()
     
-    @Published var isPlaying = false
-    @Published var currentTime: TimeInterval = 0.0
-    
+    @Published var isPlaying: Bool = false
+    @Published var currentTime: TimeInterval = 0
+    @Published var currentPlayingSession: YogaNidraSession?
     private var audioPlayer: AVAudioPlayer?
-    private var currentPlayingSession: YogaNidraSession?
-
+    private var timer: Timer?
+    
     private override init() {
         super.init()
         UIApplication.shared.beginReceivingRemoteControlEvents()
         setupAudioSession()
         setupRemoteCommandCenter()
         setupNotifications()
+        setupTimeObserver()
     }
     
     // MARK: - Audio Session Setup
@@ -56,56 +57,65 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
         }
     }
     
-    func onPlaySession(session: YogaNidraSession) {
+    func onPlaySession(session: YogaNidraSession) async throws {
         if isPlaying {
             pause()
+            updateNowPlayingInfo()
         } else {
             if currentPlayingSession == session {
                 resume()
+                updateNowPlayingInfo()
             } else {
-                play(audioFileWithExtension: session.audioFileName)
+                try await play(audioFileWithExtension: session.audioFileName)
                 currentPlayingSession = session
+                updateNowPlayingInfo()
             }
         }
     }
     
     // MARK: - Playback Controls
-    private func play(audioFileWithExtension: String) {
-        let splits = audioFileWithExtension.split(separator: ".")
-        let fileName = splits.first
-        let fileExtension = splits.last
-        guard let fileName,
-              let fileExtension,
-              let url = Bundle.main.url(forResource: String(fileName), withExtension: String(fileExtension)) else {
-            print("Audio file not found.")
+    func play(audioFileWithExtension fileName: String) async throws {
+        // First try mp3
+        if let path = Bundle.main.path(forResource: fileName.replacingOccurrences(of: ".mp3", with: ""), 
+                                     ofType: "mp3") {
+            let url = URL(fileURLWithPath: path)
+            audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer?.delegate = self
+            audioPlayer?.play()
+            isPlaying = true
+            startTimer()
             return
         }
         
-        do {
+        // Then try m4a
+        if let path = Bundle.main.path(forResource: fileName.replacingOccurrences(of: ".m4a", with: ""), 
+                                     ofType: "m4a") {
+            let url = URL(fileURLWithPath: path)
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.delegate = self
-            audioPlayer?.prepareToPlay()
             audioPlayer?.play()
             isPlaying = true
-            updateNowPlayingInfo()
-        } catch {
-            print("Failed to play audio: \(error)")
+            startTimer()
+            return
         }
+        
+        print("❌ Could not find audio file:", fileName)
+        throw AudioError.fileNotFound
     }
     
     private func pause() {
         audioPlayer?.pause()
         isPlaying = false
-        updateNowPlayingInfo()
+        timer?.invalidate()
     }
     
     private func resume() {
         audioPlayer?.play()
         isPlaying = true
-        updateNowPlayingInfo()
+        startTimer()
     }
     
-    private func stop() {
+    public func stop() {
         audioPlayer?.stop()
         isPlaying = false
         audioPlayer?.currentTime = 0
@@ -198,4 +208,30 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
             break
         }
     }
+    
+    private func setupTimeObserver() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentTime = self.audioPlayer?.currentTime ?? 0
+        }
+    }
+    
+    private func startTimer() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentTime = self.audioPlayer?.currentTime ?? 0
+            self.updateNowPlayingInfo()
+        }
+    }
+    
+    // Clean up
+    deinit {
+        timer?.invalidate()
+    }
+}
+
+enum AudioError: Error {
+    case fileNotFound
 }
