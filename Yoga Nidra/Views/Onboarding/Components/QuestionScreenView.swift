@@ -26,11 +26,12 @@ struct QuestionScreenView: View {
             
             Text(question)
                 .font(.system(size: 32, weight: .bold))
+                .foregroundColor(.white)
                 .multilineTextAlignment(.center)
             
             Text(subtitle)
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                .foregroundColor(.white)
             
             VStack(spacing: 16) {
                 ForEach(options) { option in
@@ -48,27 +49,29 @@ struct QuestionScreenView: View {
                             
                             Text(option.text)
                                 .font(.headline)
+                                .foregroundColor(.white)
                             
                             Spacer()
                             
                             if selectedOption?.id == option.id {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.accentColor)
+                                    .foregroundColor(.white)
                             }
                         }
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(uiColor: .systemGray6))
+                                .fill(Color(white: 0.2))
                         )
                     }
-                    .foregroundColor(.primary)
+                    .foregroundColor(.white)
                 }
             }
             
             Spacer()
         }
         .padding(.horizontal, 24)
+        .background(Color.black)
     }
 }
 

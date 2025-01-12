@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 struct RadarChart: View {
     let metrics: [SleepMetric]

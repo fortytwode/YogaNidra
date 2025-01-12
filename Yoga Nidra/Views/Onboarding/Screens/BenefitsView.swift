@@ -5,95 +5,92 @@ struct BenefitsView: View {
     
     var body: some View {
         VStack(spacing: 32) {
-            Spacer()
-            
-            // Fair Trial Badge
-            HStack(spacing: 8) {
-                Image(systemName: "checkmark.seal.fill")
-                    .foregroundColor(.yellow)
-                Text("Fair Trial Policy")
+            // Header
+            VStack(spacing: 16) {
+                Text("✨ Fair Trial Policy")
                     .font(.headline)
+                    .foregroundColor(.white)
+                
+                Text("Yoga Nidra is free for\nyou to try")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                
+                Text("If you like it - we depend on your support to pay our sleep experts and meditation guides")
+                    .font(.body)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
             }
+            .padding(.top, 40)
             
-            // Main Message
-            Text("Yoga Nidra is free for you to try")
-                .font(.system(size: 32, weight: .bold))
-                .multilineTextAlignment(.center)
-            
-            Text("If you like it - we depend on your support to pay our sleep experts and meditation guides")
-                .font(.body)
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-            
-            // Value Comparison Card
-            HStack(spacing: 0) {
-                // Left side
-                VStack(alignment: .leading) {
-                    Text("Your sleep health")
-                        .font(.headline)
-                        .padding()
-                        .background(Color.purple.opacity(0.2))
-                        .cornerRadius(12)
+            // Comparison Box
+            HStack(spacing: 20) {
+                VStack(spacing: 8) {
+                    Text("🌙")
+                    Text("Your sleep...")
                 }
-                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color(white: 0.2))
+                .cornerRadius(12)
                 
                 Text("VS")
-                    .font(.headline)
-                    .padding(.horizontal)
+                    .foregroundColor(.white)
                 
-                // Right side
-                VStack(alignment: .trailing) {
-                    Text("Daily coffee")
-                        .font(.headline)
-                        .padding()
-                        .background(Color.yellow.opacity(0.2))
-                        .cornerRadius(12)
+                VStack(spacing: 8) {
+                    Text("☕️")
+                    Text("Daily coffee...")
                 }
-                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color(white: 0.2))
+                .cornerRadius(12)
             }
-            .padding(24)
-            .background(Color(uiColor: .systemGray6))
-            .cornerRadius(16)
+            .font(.headline)
+            .foregroundColor(.white)
+            .padding(.horizontal, 24)
             
-            // Benefits List
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Yoga Nidra helps you live longer and happier.")
+            // Benefits Box
+            VStack(alignment: .leading, spacing: 20) {
+                Text("Yoga Nidra helps you sleep better and live longer...")
                     .font(.headline)
+                    .foregroundColor(.white)
                 
-                VStack(alignment: .leading, spacing: 12) {
-                    benefitBullet("Proven to reduce stress by 44% after a single session")
-                    benefitBullet("Cuts the time to fall asleep by up to 37%")
-                    benefitBullet("20 minutes of Yoga Nidra can provide restorative benefits similar to 2-3 hours of sleep")
+                VStack(alignment: .leading, spacing: 16) {
+                    benefitRow(emoji: "📊", text: "Proven to reduce stress by 44%")
+                    benefitRow(emoji: "⏰", text: "Cuts the time to fall asleep by up to 37%")
+                    benefitRow(emoji: "✨", text: "20 minutes of Yoga Nidra can provide restorative benefits similar to 2-3 hours...")
                 }
             }
-            .padding(24)
-            .background(Color(uiColor: .systemGray6))
+            .padding(20)
+            .background(Color(white: 0.1))
             .cornerRadius(16)
+            .padding(.horizontal, 24)
             
             Spacer()
             
-            // Continue Button
             Button(action: nextPage) {
                 Text("That's fair!")
                     .font(.headline)
+                    .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.purple)
-                    .foregroundColor(.white)
+                    .background(Color(red: 0.5, green: 0.4, blue: 1.0))
                     .cornerRadius(12)
             }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 40)
         }
-        .padding(.horizontal, 24)
+        .background(Color.black.edgesIgnoringSafeArea(.all))
     }
     
-    private func benefitBullet(_ text: String) -> some View {
-        HStack(alignment: .top, spacing: 8) {
-            Text("•")
-                .foregroundColor(.purple)
+    private func benefitRow(emoji: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text(emoji)
+                .font(.title2)
             Text(text)
-                .font(.subheadline)
-                .foregroundColor(.gray)
+                .font(.body)
+                .foregroundColor(.white)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
