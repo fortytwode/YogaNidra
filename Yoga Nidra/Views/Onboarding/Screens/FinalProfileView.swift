@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct FinalProfileView: View {
-    @AppStorage("shouldShowOnboarding") var shouldShowOnboarding = true
+    @StateObject private var onboardingManager = OnboardingManager.shared
     @StateObject private var storeManager = StoreManager.shared
     @StateObject private var preferencesManager = PreferencesManager.shared
     @State private var isLoading = true
@@ -75,7 +75,7 @@ struct FinalProfileView: View {
                             }
                             
                             Button {
-                                shouldShowOnboarding = false
+                                onboardingManager.isOnboardingCompleted = true
                             } label: {
                                 Text("Skip for now")
                                     .foregroundColor(.gray)
@@ -89,7 +89,7 @@ struct FinalProfileView: View {
         }
         .onAppear {
             // Simulate analysis
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 isLoading = false
             }
         }

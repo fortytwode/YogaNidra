@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct OnboardingContainerView: View {
-    @AppStorage("shouldShowOnboarding") var shouldShowOnboarding = true
     @State private var currentPage = 0
     
     var body: some View {

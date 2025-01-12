@@ -3,6 +3,7 @@ import SwiftUI
 struct SubscriptionView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var storeManager = StoreManager.shared
+    @StateObject private var onboardingManager = OnboardingManager.shared
     
     var body: some View {
         VStack(spacing: 20) {
@@ -71,7 +72,6 @@ struct SubscriptionView: View {
         .onChange(of: storeManager.isSubscribed) { _, newValue in
             if newValue {
                 dismiss()
-                UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
             }
         }
         .task {

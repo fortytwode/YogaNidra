@@ -80,6 +80,7 @@ final class StoreManager: ObservableObject {
             // Update subscription state
             await MainActor.run {
                 isSubscribed = true
+                OnboardingManager.shared.isOnboardingCompleted = true
                 isInTrialPeriod = transaction.isUpgraded
                 if let expirationDate = transaction.expirationDate {
                     trialEndDate = expirationDate

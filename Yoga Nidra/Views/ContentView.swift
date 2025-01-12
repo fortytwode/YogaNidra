@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var onboardingManager = OnboardingManager.shared
     @EnvironmentObject private var playerState: PlayerState
     @StateObject private var audioManager = AudioManager.shared
     @State private var selectedTab = 0
@@ -52,6 +53,9 @@ struct ContentView: View {
             if let session = audioManager.currentPlayingSession {
                 SessionDetailView(session: session)
             }
+        }
+        .fullScreenCover(isPresented: $onboardingManager.shouldShowOnboarding) {
+            OnboardingContainerView()
         }
         .preferredColorScheme(.dark)
     }
