@@ -17,6 +17,8 @@ struct SessionDetailView: View {
                 Color.black.edgesIgnoringSafeArea(.all)
                 
                 VStack(spacing: 30) {
+                    Spacer()
+                    
                     // Session Image
                     Image(session.thumbnailUrl)
                         .resizable()

@@ -24,7 +24,7 @@ struct ContentView: View {
                         }
                         .tag(1)
                     
-                    ProgressView()
+                    ProgressTabView()
                         .tabItem {
                             Image(systemName: "chart.bar.fill")
                             Text("Progress")

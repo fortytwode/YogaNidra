@@ -27,9 +27,9 @@ struct YogaNidraSession: Identifiable, Codable, Equatable {
     }
     
     // Load all sessions from CSV
-    static var allSessions: [YogaNidraSession] {
+    static var allSessions: [YogaNidraSession] = {
         SessionDataParser.loadSessions()
-    }
+    }()
     
     // Keep minimal preview data for SwiftUI previews only
     static let preview = YogaNidraSession(
