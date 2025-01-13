@@ -17,39 +17,8 @@ struct DownloadButton: View {
     var body: some View {
         Group {
             if session.isDownloaded {
-                // Downloaded state
-                Button {
-                    Task {
-                        do {
-                            try await downloadManager.removeDownload(session)
-                        } catch {
-                            errorMessage = error.localizedDescription
-                            showError = true
-                        }
-                    }
-                } label: {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                }
-            } else if let download = downloadManager.downloads[session.id.uuidString],
-                      download.isDownloading {
-                // Downloading state
-                ZStack {
-                    Circle()
-                        .stroke(lineWidth: 2)
-                        .opacity(0.3)
-                    Circle()
-                        .trim(from: 0, to: CGFloat(download.progress))
-                        .stroke(lineWidth: 2)
-                        .rotationEffect(.degrees(-90))
-                    Button {
-                        downloadManager.cancelDownload(session)
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.caption)
-                    }
-                }
-                .frame(width: 24, height: 24)
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(.green)
             } else {
                 // Download button
                 Button {

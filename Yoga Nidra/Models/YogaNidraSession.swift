@@ -16,14 +16,20 @@ struct YogaNidraSession: Identifiable, Codable, Equatable {
         lhs.id == rhs.id
     }
     
-    // Add computed property for local URL
-    var localUrl: URL {
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("\(id.uuidString).m4a")
+    var fileName: String {
+        audioFileName.split(separator: ".").first?.description ?? ""
     }
     
+    var fileExtension: String {
+        audioFileName.split(separator: ".").last?.description ?? ""
+    }
+    
+    @MainActor
     var isDownloaded: Bool {
-        FileManager.default.fileExists(atPath: localUrl.path)
+        guard let fileURL = DownloadManager.shared.fileURLForSession(self) else {
+            return false
+        }
+        return FileManager.default.fileExists(atPath: fileURL.path(percentEncoded: false))
     }
     
     // Load all sessions from CSV

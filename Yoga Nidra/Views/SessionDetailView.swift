@@ -41,6 +41,12 @@ struct SessionDetailView: View {
                         Text("\(durationInMinutes) minutes")
                             .font(.subheadline)
                             .foregroundColor(.gray)
+                        
+                        HStack {
+                            Spacer()
+                            DownloadButton(session: session)
+                            Spacer()
+                        }
                     }
                     
                     Spacer()

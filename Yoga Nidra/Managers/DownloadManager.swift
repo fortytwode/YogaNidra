@@ -2,80 +2,69 @@ import Foundation
 
 @MainActor
 class DownloadManager: ObservableObject {
+    
     static let shared = DownloadManager()
-    @Published var downloads: [String: Download] = [:]
     private let storeManager = StoreManager.shared
     
-    struct Download {
-        var progress: Float
-        var task: URLSessionDownloadTask
-        var isDownloading: Bool
-    }
-    
-    private let defaults = UserDefaults.standard
-    private let downloadedSessionsKey = "downloadedSessions"
-    
     func downloadSession(_ yogaNidraSession: YogaNidraSession) async throws {
+        // Log the start of the download process
+        print("📥 Starting download for session: \(yogaNidraSession.fileName).\(yogaNidraSession.fileExtension)")
+        
         // Check subscription status asynchronously
-        guard await storeManager.isSubscribed else { return }
-        
-        // Construct audio URL from fileName
-        let baseUrl = "https://your-base-url.com/audio/"
-        let audioUrl = baseUrl + yogaNidraSession.audioFileName
-        
-        guard let url = URL(string: audioUrl) else {
-            throw DownloadError.invalidURL
+        guard storeManager.isSubscribed else {
+            print("❌ User is not subscribed. Download aborted.")
+            return
         }
         
-        // Create URLSession with delegate for progress tracking
-        let urlSession = URLSession(configuration: .default)
-        
-        // Track download state
-        let task = urlSession.downloadTask(with: url)
-        DispatchQueue.main.async {
-            self.downloads[yogaNidraSession.id.uuidString] = Download(
-                progress: 0,
-                task: task,
-                isDownloading: true
-            )
+        // Get file URLs
+        guard let to = fileURLForSession(yogaNidraSession),
+              let path = Bundle.main.path(forResource: yogaNidraSession.fileName,
+                                          ofType: yogaNidraSession.fileExtension) else {
+            print("⚠️ File paths could not be resolved. Check file name or extension.")
+            return
         }
         
-        // Use async/await API for download
-        let (tempUrl, _) = try await urlSession.download(from: url)
+        let from = URL(fileURLWithPath: path)
         
-        // Move downloaded file to documents directory
-        try FileManager.default.moveItem(at: tempUrl, to: yogaNidraSession.localUrl)
-        
-        // Clear download state
-        DispatchQueue.main.async {
-            self.downloads.removeValue(forKey: yogaNidraSession.id.uuidString)
+        // Attempt file copy
+        do {
+            try FileManager.default.copyItem(at: from, to: to)
+            print("✅ Successfully copied file to \(to.path)")
+        } catch {
+            print("❌ Error copying file: \(error.localizedDescription)")
+            throw error
         }
+        objectWillChange.send()
     }
     
-    func cancelDownload(_ yogaNidraSession: YogaNidraSession) {
-        downloads[yogaNidraSession.id.uuidString]?.task.cancel()
-        downloads.removeValue(forKey: yogaNidraSession.id.uuidString)
+    func fileURLForSession(_ yogaNidraSession: YogaNidraSession) -> URL? {
+        guard let storageFolder = storageFolder() else {
+            print("⚠️ Unable to locate storage folder.")
+            return nil
+        }
+        let fileURL = storageFolder.appendingPathComponent("\(yogaNidraSession.fileName).\(yogaNidraSession.fileExtension)")
+        print("📂 Resolved file URL: \(fileURL.path)")
+        return fileURL
     }
     
-    func removeDownload(_ yogaNidraSession: YogaNidraSession) async throws {
-        guard await storeManager.isSubscribed else { return }
-        
-        if FileManager.default.fileExists(atPath: yogaNidraSession.localUrl.path) {
-            try FileManager.default.removeItem(at: yogaNidraSession.localUrl)
+    private func storageFolder() -> URL? {
+        let fileManager = FileManager.default
+        guard let folder = fileManager
+            .urls(for: .documentDirectory, in: .userDomainMask)
+            .first?
+            .appendingPathComponent("YogaNidraSessions") else {
+            print("❌ Could not resolve documents directory.")
+            return nil
         }
+        
+        // Attempt to create the folder if it doesn’t exist
+        do {
+            try fileManager.createDirectory(at: folder, withIntermediateDirectories: true, attributes: nil)
+            print("📁 Created storage folder at \(folder.path)")
+        } catch {
+            print("⚠️ Error creating storage folder: \(error.localizedDescription)")
+            return nil
+        }
+        return folder
     }
 }
-
-enum DownloadError: LocalizedError {
-    case invalidURL
-    case fileMoveError(Error)
-    
-    var errorDescription: String? {
-        switch self {
-        case .invalidURL:
-            return "Invalid download URL"
-        case .fileMoveError(let error):
-            return "Failed to save download: \(error.localizedDescription)"
-        }
-    }
-} 
