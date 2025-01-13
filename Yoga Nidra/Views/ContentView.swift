@@ -50,7 +50,7 @@ struct ContentView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $playerState.showFullPlayer) {
+        .sheet(isPresented: $playerState.showFullPlayer) {
             if let session = audioManager.currentPlayingSession {
                 SessionDetailView(session: session)
             }
