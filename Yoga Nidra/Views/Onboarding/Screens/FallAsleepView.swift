@@ -25,6 +25,23 @@ struct FallAsleepView: View {
                 nextPage()
             }
         )
+        .background(
+            ZStack {
+                Image("mountain-lake-twilight")
+                    .resizable()
+                    .scaledToFill()
+                
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.black.opacity(0.3),
+                        Color.black.opacity(0.5)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            .ignoresSafeArea()
+        )
     }
 }
 

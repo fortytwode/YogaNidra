@@ -17,6 +17,7 @@ struct WelcomeView: View {
                 .font(.system(size: 36, weight: .bold))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
+                .textShadowEffect()
             
             // Subheader
             VStack(spacing: 8) {
@@ -27,34 +28,39 @@ struct WelcomeView: View {
             }
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
+            .foregroundColor(.white)
+            .textShadowEffect()
             
             // Benefits and Pain Points
             VStack(alignment: .leading, spacing: 24) {
                 Text("😴 Experience deep restorative sleep.")
                     .font(.title3)
                     .foregroundColor(.white)
+                    .textShadowEffect()
                 
                 VStack(alignment: .leading, spacing: 16) {
                     Text("❌ Say goodbye to:")
                         .font(.title3)
                         .foregroundColor(.white)
+                        .textShadowEffect()
                     
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            Spacer().frame(width: 24)  // 3 space offset
+                            Spacer().frame(width: 24)
                             Label("Restless nights", systemImage: "moon.zzz.fill")
                         }
                         HStack {
-                            Spacer().frame(width: 24)  // 3 space offset
+                            Spacer().frame(width: 24)
                             Label("Sleepless hours", systemImage: "clock.fill")
                         }
                         HStack {
-                            Spacer().frame(width: 24)  // 3 space offset
+                            Spacer().frame(width: 24)
                             Label("Racing thoughts", systemImage: "brain.head.profile")
                         }
                     }
                     .font(.body)
                     .foregroundColor(.white)
+                    .textShadowEffect()
                 }
             }
             .padding(.horizontal, 24)
@@ -62,7 +68,7 @@ struct WelcomeView: View {
             Spacer()
             
             Button(action: nextPage) {
-                Text("Let's go")
+                Text("Start your journey")
                     .font(.headline)
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
@@ -73,11 +79,33 @@ struct WelcomeView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
         }
-        .background(Color.black)
+        .background(
+            ZStack {
+                Image("northern-lights")
+                    .resizable()
+                    .scaledToFill()
+                
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.black.opacity(0.3),
+                        Color.black.opacity(0.5)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            .ignoresSafeArea()
+        )
+    }
+}
+
+extension View {
+    func textShadowEffect() -> some View {
+        self.shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
     }
 }
 
 #Preview {
     WelcomeView(nextPage: {})
         .preferredColorScheme(.dark)
-} 
+}

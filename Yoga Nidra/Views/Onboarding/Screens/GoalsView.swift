@@ -14,25 +14,23 @@ struct GoalsView: View {
     
     var body: some View {
         VStack(spacing: 24) {
+            Spacer()
+            
             // Introduction text
             VStack(spacing: 16) {
-                VStack(spacing: 8) {
-                    Text("Let's find out your sleep profile with this quick quiz.")
-                        .font(.body)
-                        .foregroundColor(.white)
-                    Text("...so we can personalize your journey.")
-                        .font(.body)
-                        .foregroundColor(.white)
-                }
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+                Text("Let's find out your sleep profile with this quick quiz.")
+                    .font(.body)
+                    .foregroundColor(.white)
                 
                 Text("What brings you here?")
-                    .font(.title)
-                    .fontWeight(.bold)
+                    .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.white)
             }
-            .padding(.top, 40)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal)
+            
+            Spacer()
+                .frame(height: 20)
             
             // Goals selection
             VStack(spacing: 16) {
@@ -56,6 +54,14 @@ struct GoalsView: View {
                     }
                 }
                 
+                Text("This allows us to make a custom-tailored experience for you")
+                    .font(.subheadline)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 24)
+                    .padding(.horizontal)
+                    .fixedSize(horizontal: false, vertical: true)
+                
                 Text("(takes < 2 mins)")
                     .font(.subheadline)
                     .foregroundColor(.white)
@@ -65,6 +71,23 @@ struct GoalsView: View {
             
             Spacer()
         }
-        .background(Color.black.edgesIgnoringSafeArea(.all))
+        .background(
+            ZStack {
+                Image("mountain-lake-twilight")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.black.opacity(0.3),
+                        Color.black.opacity(0.5)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            }
+        )
     }
-} 
+}

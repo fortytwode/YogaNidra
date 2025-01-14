@@ -11,16 +11,18 @@ struct BenefitsView: View {
                     .font(.headline)
                     .foregroundColor(.white)
                 
-                Text("Yoga Nidra is free for\nyou to try")
+                Text("Yoga Nidra is free for\nyou to try...")
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                 
-                Text("If you like it - we depend on your support to pay our sleep experts and meditation guides")
+                Text("Your support helps our team create more meditations and share the gift of better sleep with those who need it the most...")
                     .font(.body)
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.top, 40)
             
@@ -39,7 +41,9 @@ struct BenefitsView: View {
                 
                 VStack(spacing: 8) {
                     Text("☕️")
-                    Text("Daily coffee...")
+                    Text("Price of a\ndaily coffee...")
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding()
                 .background(Color(white: 0.2))
@@ -51,14 +55,14 @@ struct BenefitsView: View {
             
             // Benefits Box
             VStack(alignment: .leading, spacing: 20) {
-                Text("Yoga Nidra helps you sleep better and live longer...")
+                Text("The science behind Yoga Nidra...")
                     .font(.headline)
                     .foregroundColor(.white)
                 
                 VStack(alignment: .leading, spacing: 16) {
                     benefitRow(emoji: "📊", text: "Proven to reduce stress by 44%")
                     benefitRow(emoji: "⏰", text: "Cuts the time to fall asleep by up to 37%")
-                    benefitRow(emoji: "✨", text: "20 minutes of Yoga Nidra can provide restorative benefits similar to 2-3 hours...")
+                    benefitRow(emoji: "✨", text: "20 min Yoga Nidra = 2-3 hours of restorative benefits")
                 }
             }
             .padding(20)
@@ -69,18 +73,34 @@ struct BenefitsView: View {
             Spacer()
             
             Button(action: nextPage) {
-                Text("That's fair!")
+                Text("Continue →")
                     .font(.headline)
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color(red: 0.5, green: 0.4, blue: 1.0))
+                    .background(Color.white)
                     .cornerRadius(12)
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
         }
-        .background(Color.black.edgesIgnoringSafeArea(.all))
+        .background(
+            ZStack {
+                Image("northern-lights")
+                    .resizable()
+                    .scaledToFill()
+                
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.black.opacity(0.3),
+                        Color.black.opacity(0.5)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            .ignoresSafeArea()
+        )
     }
     
     private func benefitRow(emoji: String, text: String) -> some View {
@@ -115,4 +135,3 @@ struct BenefitsView: View {
             }
         }
     }
-

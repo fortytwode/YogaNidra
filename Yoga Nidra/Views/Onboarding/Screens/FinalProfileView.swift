@@ -79,7 +79,23 @@ struct FinalProfileView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
         }
-        .background(Color.black.edgesIgnoringSafeArea(.all))
+        .background(
+            ZStack {
+                Image("mountain-lake-twilight")
+                    .resizable()
+                    .scaledToFill()
+                
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.black.opacity(0.3),
+                        Color.black.opacity(0.5)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            .ignoresSafeArea()
+        )
     }
     
     private func metricRow(icon: String, title: String, highlight: String) -> some View {
