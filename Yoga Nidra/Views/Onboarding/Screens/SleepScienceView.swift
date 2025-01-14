@@ -5,53 +5,63 @@ struct SleepScienceView: View {
     
     var body: some View {
         VStack(spacing: 32) {
-            Spacer()
-            
-            Text("Your sleep can improve dramatically")
-                .font(.system(size: 32, weight: .bold))
-                .foregroundColor(.white)
-                .multilineTextAlignment(.center)
-            
-            Text("Research shows Yoga Nidra helps:")
-                .font(.title3)
-                .foregroundColor(.white)
+            VStack(spacing: 16) {
+                Text("Based on your responses, Yoga Nidra can help you get deeper, more restorative sleep.")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 60)
+                
+                Text("Yoga Nidra practitioners report...")
+                    .font(.title3)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, 24)
             
             VStack(spacing: 24) {
-                benefitRow(
-                    icon: "clock.fill",
-                    highlight: "30 minutes",
-                    description: "Reduce time to fall asleep"
-                )
+                // Container 1: Physiological Benefits
+                VStack(alignment: .leading, spacing: 16) {
+                    benefitRow(emoji: "💗", text: "Improved heart rate variability")
+                    benefitRow(emoji: "⬇️", text: "27% reduction in cortisol levels")
+                    benefitRow(emoji: "🧘‍♀️", text: "Enhanced parasympathetic activation")
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color(white: 0.2))
+                .cornerRadius(16)
                 
-                benefitRow(
-                    icon: "waveform.path.ecg",
-                    highlight: "75%",
-                    description: "Increase deep sleep by over"
-                )
-                
-                benefitRow(
-                    icon: "moon.zzz.fill",
-                    highlight: "",
-                    description: "Improve sleep maintenance"
-                )
+                // Container 2: Sleep Benefits
+                VStack(alignment: .leading, spacing: 16) {
+                    benefitRow(emoji: "🌊", text: "Increased slow-wave sleep")
+                    benefitRow(emoji: "🌅", text: "Improved morning alertness")
+                    benefitRow(emoji: "✨", text: "Reduced nighttime awakenings")
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color(white: 0.2))
+                .cornerRadius(16)
             }
-            .padding(24)
-            .background(Color(white: 0.2))
-            .cornerRadius(16)
+            .padding(.horizontal, 24)
             
             Spacer()
             
             Button(action: nextPage) {
-                Text("Continue")
-                    .font(.headline)
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
+                HStack {
+                    Text("Tell us more")
+                    Text("→")
+                }
+                .font(.headline)
+                .foregroundColor(.black)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.white)
+                .cornerRadius(12)
             }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 40)
         }
-        .padding(.horizontal, 24)
         .background(
             ZStack {
                 Image("mountain-lake-twilight")
@@ -71,26 +81,17 @@ struct SleepScienceView: View {
         )
     }
     
-    private func benefitRow(icon: String, highlight: String, description: String) -> some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
+    private func benefitRow(emoji: String, text: String) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            Text(emoji)
                 .font(.title2)
+            Text(text)
+                .font(.body)
                 .foregroundColor(.white)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                if !highlight.isEmpty {
-                    Text(highlight)
-                        .font(.headline)
-                        .foregroundColor(.white)
-                }
-                Text(description)
-                    .font(.body)
-                    .foregroundColor(.white)
-            }
         }
     }
 }
 
 #Preview {
     SleepScienceView(nextPage: {})
-} 
+}

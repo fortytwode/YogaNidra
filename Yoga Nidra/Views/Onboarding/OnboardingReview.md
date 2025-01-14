@@ -1,116 +1,129 @@
-# Onboarding Flow
+# Yoga Nidra - Onboarding Flow Review
 
-## Screen Order and Content
+## Overview
+The onboarding process is designed to understand user's sleep patterns, challenges, and preferences while educating them about Yoga Nidra's benefits. The flow concludes with a personalized sleep profile and a trial offer.
 
+## Screen Flow
 1. **WelcomeView**
-   - Hero image showing peaceful sleep
-   - Main message: "Wake up rejuvenated. Every day."
-   - Key benefits:
-     - 😴 Experience deep restorative sleep
-     - ❌ Addresses pain points:
-       - 🌙 Restless nights
-       - ⏰ Sleepless hours
-       - 🧠 Racing thoughts
+   - Initial welcome screen
+   - CTA: "Start your journey →"
+   - Background: Calming nature scene
 
-2. **BenefitsView (Fair Trial Policy)**
-   - Header: "✨ Fair Trial Policy"
-   - Main title: "Yoga Nidra is free for you to try"
-   - Supportive text: "If you like it - we depend on your support to pay our sleep experts and meditation guides"
-   - Comparison section:
-     - "Your sleep..." vs "Daily coffee..."
-   - Benefits box:
-     - Title: "Yoga Nidra helps you live longer and happier."
-     - Bullet points:
-       - 📊 Proven to reduce stress by 44% after a...
-       - ⏰ Cuts the time to fall asleep by up to 37%
-       - ✨ 20 minutes of Yoga Nidra can provide restorative benefits similar to 2-3 hours...
-   - Action button: "That's fair!"
+2. **BenefitsView**
+   - Detailed explanation of Yoga Nidra practice
+   - CTA: "Continue →"
+   - Focus on educational content
+   - Understanding the practice basics
 
-3. **GoalsView**
-   - Title: "What brings you here?"
+3. **ExplanationView**
+   - Highlights key benefits of Yoga Nidra
+   - Fair trial policy explanation
+   - Comparison with daily habits
+   - Scientific benefits presentation
+
+4. **GoalsView**
+   - "What brings you here?"
    - Multiple choice selection
-   - Options:
-     - 😴 Better Sleep Quality
-     - 😌 Stress Reduction
-     - 🧘‍♀️ Deep Relaxation
-     - 🎯 Focus Enhancement
-     - ⚡️ Energy Improvement
+   - Goals like Better Sleep, Stress Reduction, etc.
+   - Personalizes user journey
 
-4. **SleepQualityView**
-   - Title: "How satisfied are you with your sleep?"
-   - Slider selection (1-5)
-   - Visual feedback based on selection
-   - Empathetic response to user's current situation
+5. **SleepQualityView**
+   - Assesses user's current sleep quality
+   - Interactive rating system
+   - Captures baseline sleep metrics
 
-5. **SleepPatternView**
-   - Title: "How many hours do you usually sleep?"
-   - Time range selector
-   - Visual representation of sleep duration
-   - Brief explanation of recommended sleep duration
-
-6. **SleepScienceView**
-   - Title: "The Science Behind Yoga Nidra"
-   - Key research findings
-   - Benefits backed by studies:
-     - 🧠 Reduced anxiety and stress
-     - 💤 Improved sleep quality
-     - ⚡️ Enhanced cognitive function
-     - 🎯 Better focus and concentration
+6. **SleepPatternView**
+   - Captures typical sleep duration
+   - Time range selection
+   - Sleep schedule understanding
 
 7. **FallAsleepView**
-   - Title: "How long does it take you to fall asleep?"
-   - Time options:
-     - < 15 minutes
-     - 15-30 minutes
-     - 30-60 minutes
-     - > 60 minutes
-   - Supportive message based on selection
+   - Time to fall asleep assessment
+   - Duration options (15min to 60min+)
+   - Initial sleep difficulty measure
 
-8. **WakeUpView**
-   - Title: "Do you wake up during the night?"
-   - Frequency options:
-     - Rarely/Never
-     - 1-2 times
-     - 3-4 times
-     - More than 4 times
-   - Brief explanation of normal sleep cycles
+8. **SleepScienceView**
+   - Educational content about sleep science
+   - Connection between Yoga Nidra and sleep quality
+   - Scientific backing for the practice
+   - Explains why falling asleep can be challenging
 
-9. **MorningTirednessView**
-   - Title: "How do you feel in the morning?"
-   - Mood selection:
-     - 😴 Still tired
-     - 😐 Somewhat rested
-     - 😊 Well rested
-     - 🌟 Energized
-   - Encouraging message about potential improvement
+9. **WakeUpView**
+   - Night waking frequency
+   - Sleep continuity assessment
+   - Sleep cycle education
 
-10. **SleepFeelingsView**
-    - Title: "Your relationship with sleep"
-    - Multiple choice selection:
-      - 😟 Anxiety about sleep
-      - 🤔 Racing thoughts
-      - 😤 Frustration with sleep
-      - 😮‍💨 Physical tension
-    - Supportive message about addressing concerns
+10. **MorningTirednessView**
+    - Morning energy assessment
+    - Wake-up quality measurement
+    - Morning mood tracking
 
-11. **FinalProfileView**
-    - Summary of user's responses
-    - Personalized recommendation
-    - Subscription options:
-      - Free trial details
-      - Premium features
-      - Pricing plans
-    - Get started button
+11. **SleepFeelingsView**
+    - Emotional aspects of sleep
+    - Sleep anxiety assessment
+    - Mental state during bedtime
 
-## Navigation
-- Each screen has a "Continue" button
-- Linear progression through screens
-- Final screen leads to main app
-- No back navigation to encourage completion
+12. **RelaxationObstaclesView**
+    - Identifies barriers to relaxation
+    - Common sleep obstacles
+    - Personalization factors
 
-## Design Guidelines
-- Dark theme throughout
-- Consistent padding (24pt horizontal)
-- Clear, readable text (white on dark background)
-- Emoji usage for visual engagement
-- Supportive, encouraging tone 
+13. **SleepImpactView**
+    - How sleep affects daily life
+    - Impact assessment
+    - Quality of life factors
+
+14. **FinalProfileView**
+    - Displays personalized sleep profile
+    - Shows radar chart of sleep metrics
+    - CTA: "Next step →"
+
+15. **PaywallView**
+    - Trial offer presentation
+    - Background: mountain-lake-twilight image with gradient
+    - Primary CTA: "Start free trial"
+    - Secondary: "Restore purchases"
+    - Skip option (X button)
+
+## Technical Implementation
+- Uses SwiftUI for modern, fluid UI
+- TabView with .page style for smooth transitions
+- Background images with gradients for visual appeal
+- Consistent navigation pattern with next/back functionality
+- State management through OnboardingManager
+- In-app purchase handling via StoreManager
+
+## Data Collection
+- Sleep quality metrics
+- Schedule preferences
+- Emotional factors
+- Obstacles and challenges
+- Impact assessment
+- Goal setting
+- Morning energy levels
+- Sleep initiation time
+- Night waking frequency
+
+## User Experience
+- Progressive disclosure of information
+- Educational content mixed with data collection
+- Visual feedback and engagement
+- Clear call-to-actions
+- Easy navigation
+- Option to skip trial
+- Comprehensive sleep assessment
+
+## Integration Points
+- OnboardingManager for flow control
+- StoreManager for trial/purchase handling
+- UserPreferences for data storage
+- Analytics for user journey tracking
+
+## Future Considerations
+- A/B testing of CTAs
+- Localization support
+- Accessibility improvements
+- Additional personalization options
+- Enhanced analytics tracking
+- Question branching based on responses
+- Dynamic content based on user goals

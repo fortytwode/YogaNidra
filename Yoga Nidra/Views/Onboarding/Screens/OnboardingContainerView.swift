@@ -5,44 +5,64 @@ struct OnboardingContainerView: View {
     
     var body: some View {
         TabView(selection: $currentPage) {
+            // Information screens (no progress bar)
             WelcomeView(nextPage: nextPage)
                 .tag(0)
             
-            BenefitsView(nextPage: nextPage)
+            GoalsView(nextPage: nextPage)
                 .tag(1)
             
             ExplanationView(nextPage: nextPage)
                 .tag(2)
             
-            GoalsView(nextPage: nextPage)
+            BenefitsView(nextPage: nextPage)
                 .tag(3)
             
-            SleepQualityView(nextPage: nextPage)
-                .tag(4)
+            // Question screens (with progress bar)
+            OnboardingQuestionWrapper(currentStep: 1) {
+                SleepQualityView(nextPage: nextPage)
+            }
+            .tag(4)
             
-            SleepPatternView(nextPage: nextPage)
-                .tag(5)
+            OnboardingQuestionWrapper(currentStep: 2) {
+                SleepPatternView(nextPage: nextPage)
+            }
+            .tag(5)
             
-            SleepScienceView(nextPage: nextPage)
-                .tag(6)
+            OnboardingQuestionWrapper(currentStep: 3) {
+                FallAsleepView(nextPage: nextPage)
+            }
+            .tag(6)
             
-            FallAsleepView(nextPage: nextPage)
-                .tag(7)
+            OnboardingQuestionWrapper(currentStep: 4) {
+                SleepScienceView(nextPage: nextPage)
+            }
+            .tag(7)
             
-            WakeUpView(nextPage: nextPage)
-                .tag(8)
+            OnboardingQuestionWrapper(currentStep: 5) {
+                WakeUpView(nextPage: nextPage)
+            }
+            .tag(8)
             
-            MorningTirednessView(nextPage: nextPage)
-                .tag(9)
+            OnboardingQuestionWrapper(currentStep: 6) {
+                RelaxationObstaclesView(nextPage: nextPage)
+            }
+            .tag(9)
             
-            SleepFeelingsView(nextPage: nextPage)
-                .tag(10)
+            OnboardingQuestionWrapper(currentStep: 7) {
+                SleepImpactView(nextPage: nextPage)
+            }
+            .tag(10)
             
-            FinalProfileView()
+            // Final Profile (no progress bar)
+            FinalProfileView(nextPage: nextPage)
                 .tag(11)
+            
+            // Paywall (no progress bar)
+            PaywallView()
+                .tag(12)
         }
-        .tabViewStyle(.page)
-        .indexViewStyle(.page(backgroundDisplayMode: .always))
+        .tabViewStyle(.page(indexDisplayMode: .never))
         .ignoresSafeArea()
         .preferredColorScheme(.dark)
         .background(Color.black.edgesIgnoringSafeArea(.all))

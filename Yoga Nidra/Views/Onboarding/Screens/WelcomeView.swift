@@ -68,13 +68,13 @@ struct WelcomeView: View {
             Spacer()
             
             Button(action: nextPage) {
-                Text("Start your journey")
+                Text("Start your journey →")
                     .font(.headline)
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color.white)
-                    .cornerRadius(10)
+                    .cornerRadius(12)
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 40)

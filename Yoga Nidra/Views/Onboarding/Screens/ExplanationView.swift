@@ -44,7 +44,7 @@ struct ExplanationView: View {
             Spacer()
             
             Button(action: nextPage) {
-                Text("Continue")
+                Text("Continue →")
                     .font(.headline)
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)

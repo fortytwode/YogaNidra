@@ -12,53 +12,55 @@ struct SessionCard: View {
     let session: YogaNidraSession
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 8) {
             // Thumbnail with overlays
-            Image(session.thumbnailUrl)
-                .resizable()
-                .scaledToFill()
-                .frame(height: 160)
-                .clipped()
-                .cornerRadius(12)
-                .overlay(alignment: .bottomLeading) {
-                    HStack {
-                        Text("\(Int(session.duration / 60)) min")
-                            .font(.subheadline)
-                            .foregroundColor(.white)
-                        if session.isPremium {
-                            Image(systemName: "crown.fill")
-                                .foregroundColor(.yellow)
-                        }
-                    }
-                    .padding(12)
-                }
-                .overlay(alignment: .bottomTrailing) {
-                    Image(systemName: "play.fill")
-                        .foregroundColor(.white)
-                        .padding(8)
-                        .background(Circle().fill(Color.white.opacity(0.2)))
-                        .padding(12)
-                }
-            
-            // Fixed padding between image and text
-            Spacer().frame(height: 12)
-            
-            // Title and instructor in fixed height container
-            VStack(alignment: .leading, spacing: 4) {
-                Text(session.title)
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .frame(height: 50, alignment: .top)
+            ZStack(alignment: .bottomLeading) {
+                Image(session.thumbnailUrl)
+                    .resizable()
+                    .aspectRatio(1, contentMode: .fill)
+                    .frame(height: 160)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [.clear, .black.opacity(0.6)]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                    )
                 
-                Text(session.instructor)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                // Duration and Premium overlay
+                HStack {
+                    Text("\(Int(session.duration / 60)) min")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                    
+                    if session.isPremium {
+                        Image(systemName: "crown.fill")
+                            .foregroundColor(.yellow)
+                    }
+                }
+                .padding(12)
+                
+                // Play button overlay
+                Image(systemName: "play.circle.fill")
+                    .font(.system(size: 32))
+                    .foregroundColor(.white)
+                    .padding(12)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             }
-            .padding(.horizontal, 4)
+            
+            // Title and instructor below thumbnail
+            Text(session.title)
+                .font(.headline)
+                .foregroundColor(.white)
+            
+            Text(session.instructor)
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.9))
         }
     }
 }
