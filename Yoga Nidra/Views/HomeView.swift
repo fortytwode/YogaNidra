@@ -116,7 +116,7 @@ struct HomeView: View {
             }
             .frame(maxWidth: .infinity)
             .padding()
-            .background(Color.white.opacity(0.1))
+            .background(Color.white.opacity(0.3))
             .cornerRadius(12)
             .foregroundColor(.white)
             .padding(.horizontal, 24)

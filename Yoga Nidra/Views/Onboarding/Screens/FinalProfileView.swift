@@ -91,6 +91,7 @@ struct FinalProfileView: View {
                 Spacer(minLength: 24)
             }
         }
+        .padding()
         .safeAreaInset(edge: .bottom) {
             // Next Step Button
             Button(action: nextPage) {
@@ -164,12 +165,6 @@ struct FinalProfileView: View {
                 .background(Color(white: 0.3))
                 .cornerRadius(8)
         }
-    }
-    
-    private func startFreeTrial() {
-        // Implement trial start logic
-        onboardingManager.isOnboardingCompleted = true
-        dismiss()
     }
     
     private func calculateSleepQuality() -> Double {

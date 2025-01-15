@@ -36,6 +36,7 @@ struct RecommendedSessionCard: View {
                     .font(.caption)
                     .foregroundColor(.accentColor)
             }
+            .multilineTextAlignment(.leading)
             
             Spacer()
             

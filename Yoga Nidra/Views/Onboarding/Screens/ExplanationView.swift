@@ -55,6 +55,7 @@ struct ExplanationView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
         }
+        .padding()
         .background(
             ZStack {
                 Image("starlit-mountains")

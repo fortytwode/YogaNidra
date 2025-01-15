@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OnboardingContainerView: View {
     @State private var currentPage = 0
+    @EnvironmentObject var audioManager: AudioManager
     
     var body: some View {
         TabView(selection: $currentPage) {
@@ -66,6 +67,9 @@ struct OnboardingContainerView: View {
         .ignoresSafeArea()
         .preferredColorScheme(.dark)
         .background(Color.black.edgesIgnoringSafeArea(.all))
+        .onLoad {
+            try? audioManager.play(audioFileWithExtension: "calm-ambient.mp3")
+        }
     }
     
     private func nextPage() {

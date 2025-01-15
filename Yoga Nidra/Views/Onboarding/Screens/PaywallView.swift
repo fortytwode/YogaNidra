@@ -3,7 +3,6 @@ import SwiftUI
 struct PaywallView: View {
     @EnvironmentObject private var storeManager: StoreManager
     @EnvironmentObject private var onboardingManager: OnboardingManager
-    @Environment(\.dismiss) private var dismiss
     @State private var showError = false
     @State private var errorMessage = ""
     
@@ -13,7 +12,6 @@ struct PaywallView: View {
                 Spacer()
                 Button {
                     onboardingManager.isOnboardingCompleted = true
-                    dismiss()
                 } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 20, weight: .medium))
@@ -55,7 +53,7 @@ struct PaywallView: View {
                 Button {
                     Task {
                         do {
-                            try await storeManager.purchase()
+                            try await storeManager.purchase(duringOnboarinng: true)
                         } catch {
                             errorMessage = error.localizedDescription
                             showError = true
@@ -75,7 +73,7 @@ struct PaywallView: View {
                 Button {
                     Task {
                         do {
-                            try await storeManager.restorePurchases()
+                            try await storeManager.restorePurchases(duringOnboarinng: true)
                         } catch {
                             errorMessage = error.localizedDescription
                             showError = true
@@ -90,6 +88,7 @@ struct PaywallView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
         }
+        .padding()
         .background(
             ZStack {
                 Image("mountain-lake-twilight")
@@ -112,12 +111,6 @@ struct PaywallView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(errorMessage)
-        }
-        .onChange(of: storeManager.isSubscribed) { _, newValue in
-            if newValue {
-                onboardingManager.isOnboardingCompleted = true
-                dismiss()
-            }
         }
     }
 }

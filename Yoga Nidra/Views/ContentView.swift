@@ -55,9 +55,6 @@ struct ContentView: View {
                 SessionDetailView(session: session)
             }
         }
-        .fullScreenCover(isPresented: $onboardingManager.shouldShowOnboarding) {
-            OnboardingContainerView()
-        }
         .preferredColorScheme(.dark)
         .task {
             // Load products when view appears

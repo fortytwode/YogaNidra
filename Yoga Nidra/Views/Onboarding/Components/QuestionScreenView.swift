@@ -70,7 +70,7 @@ struct QuestionScreenView: View {
             
             Spacer()
         }
-        .padding(.horizontal, 24)
+        .padding()
         .background(
             ZStack {
                 Image("mountain-lake-twilight")

@@ -20,32 +20,33 @@ struct SleepScienceView: View {
             }
             .padding(.horizontal, 24)
             
-            VStack(spacing: 24) {
-                // Container 1: Physiological Benefits
-                VStack(alignment: .leading, spacing: 16) {
-                    benefitRow(emoji: "💗", text: "Improved heart rate variability")
-                    benefitRow(emoji: "⬇️", text: "27% reduction in cortisol levels")
-                    benefitRow(emoji: "🧘‍♀️", text: "Enhanced parasympathetic activation")
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Container 1: Physiological Benefits
+                    VStack(alignment: .leading, spacing: 16) {
+                        benefitRow(emoji: "💗", text: "Improved heart rate variability")
+                        benefitRow(emoji: "⬇️", text: "27% reduction in cortisol levels")
+                        benefitRow(emoji: "🧘‍♀️", text: "Enhanced parasympathetic activation")
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color(white: 0.2))
+                    .cornerRadius(16)
+                    
+                    // Container 2: Sleep Benefits
+                    VStack(alignment: .leading, spacing: 16) {
+                        benefitRow(emoji: "🌊", text: "Increased slow-wave sleep")
+                        benefitRow(emoji: "🌅", text: "Improved morning alertness")
+                        benefitRow(emoji: "✨", text: "Reduced nighttime awakenings")
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color(white: 0.2))
+                    .cornerRadius(16)
                 }
                 .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color(white: 0.2))
-                .cornerRadius(16)
-                
-                // Container 2: Sleep Benefits
-                VStack(alignment: .leading, spacing: 16) {
-                    benefitRow(emoji: "🌊", text: "Increased slow-wave sleep")
-                    benefitRow(emoji: "🌅", text: "Improved morning alertness")
-                    benefitRow(emoji: "✨", text: "Reduced nighttime awakenings")
-                }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color(white: 0.2))
-                .cornerRadius(16)
             }
-            .padding(.horizontal, 24)
-            
-            Spacer()
+            .scrollIndicators(.visible)
             
             Button(action: nextPage) {
                 HStack {
@@ -62,6 +63,7 @@ struct SleepScienceView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
         }
+        .padding()
         .background(
             ZStack {
                 Image("mountain-lake-twilight")

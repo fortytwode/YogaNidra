@@ -84,6 +84,7 @@ struct BenefitsView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
         }
+        .padding()
         .background(
             ZStack {
                 Image("northern-lights")

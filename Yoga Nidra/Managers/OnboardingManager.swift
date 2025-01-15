@@ -15,7 +15,7 @@ final class OnboardingManager: ObservableObject {
     @Published
     var shouldShowOnboarding: Bool
     
-    var isOnboardingCompleted: Bool {
+    @Published var isOnboardingCompleted: Bool {
         didSet {
             UserDefaults.standard.set(isOnboardingCompleted, forKey: "isOnboardingCompleted")
             shouldShowOnboarding = !isOnboardingCompleted
@@ -23,7 +23,8 @@ final class OnboardingManager: ObservableObject {
     }
     
     private init() {
-        isOnboardingCompleted = UserDefaults.standard.bool(forKey: "isOnboardingCompleted")
-        shouldShowOnboarding = !isOnboardingCompleted
+        let isOnboardingCompleted = UserDefaults.standard.bool(forKey: "isOnboardingCompleted")
+        self.isOnboardingCompleted = isOnboardingCompleted
+        self.shouldShowOnboarding = !isOnboardingCompleted
     }
 }

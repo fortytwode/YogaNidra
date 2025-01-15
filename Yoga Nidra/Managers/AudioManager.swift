@@ -12,6 +12,7 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
     private var audioPlayer: AVAudioPlayer?
     private var timer: Timer?
     
+    @MainActor
     private override init() {
         super.init()
         UIApplication.shared.beginReceivingRemoteControlEvents()
@@ -66,7 +67,7 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
                 resume()
                 updateNowPlayingInfo()
             } else {
-                try await play(audioFileWithExtension: session.audioFileName)
+                try play(audioFileWithExtension: session.audioFileName)
                 currentPlayingSession = session
                 updateNowPlayingInfo()
             }
@@ -74,7 +75,7 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
     }
     
     // MARK: - Playback Controls
-    func play(audioFileWithExtension fileName: String) async throws {
+    func play(audioFileWithExtension fileName: String) throws {
         // First try mp3
         if let path = Bundle.main.path(forResource: fileName.replacingOccurrences(of: ".mp3", with: ""), 
                                      ofType: "mp3") {
@@ -213,7 +214,9 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
-            self.currentTime = self.audioPlayer?.currentTime ?? 0
+            Task { @MainActor in
+                self.currentTime = self.audioPlayer?.currentTime ?? 0
+            }
         }
     }
     
@@ -221,8 +224,10 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
-            self.currentTime = self.audioPlayer?.currentTime ?? 0
-            self.updateNowPlayingInfo()
+            Task { @MainActor in
+                self.currentTime = self.audioPlayer?.currentTime ?? 0
+                self.updateNowPlayingInfo()
+            }
         }
     }
     
