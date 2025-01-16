@@ -41,7 +41,7 @@ class SessionDataParser {
                 return YogaNidraSession(
                     id: UUID(),
                     title: columns[0].trimmingCharacters(in: .whitespacesAndNewlines),
-                    description: "A guided meditation session with \(columns[5].trimmingCharacters(in: .whitespacesAndNewlines))",
+                    description: columns[9].trimmingCharacters(in: .whitespacesAndNewlines),
                     duration: Int(columns[1]) ?? 0,
                     thumbnailUrl: columns[4].trimmingCharacters(in: .whitespacesAndNewlines),
                     audioFileName: columns[3].trimmingCharacters(in: .whitespacesAndNewlines),

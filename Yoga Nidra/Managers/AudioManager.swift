@@ -75,13 +75,16 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
     }
     
     // MARK: - Playback Controls
-    func play(audioFileWithExtension fileName: String) throws {
+    func play(audioFileWithExtension fileName: String, loop: Bool = false) throws {
         // First try mp3
         if let path = Bundle.main.path(forResource: fileName.replacingOccurrences(of: ".mp3", with: ""), 
                                      ofType: "mp3") {
             let url = URL(fileURLWithPath: path)
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.delegate = self
+            if loop {
+                audioPlayer?.numberOfLoops = -1
+            }
             audioPlayer?.play()
             isPlaying = true
             startTimer()

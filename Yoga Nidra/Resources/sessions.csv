@@ -1,19 +1,19 @@
-title,duration,category,audioFileName,thumbnailUrl,instructor,premium,txt_file_name,Eleven Labs name
-Afternoon Reset,1053,Power Nap,Afternoon_Reset_Aria.mp3,Afternoon_Reset,Aria,y,Afternoon_Reset_20min_v1.txt,Brittney
-Late Night Calming,897,Quick Sleep,Late_Night_Calming_Aria.mp3,Late_Night_Calming,Aria,,Late_Night_Calming_15min_v1.txt,Brittney
-Racing Mind Relief,863,Sleep Anxiety,Racing_Mind_Relief_Aria.mp3,Racing_Mind_Relief,Aria,y,Racing_Mind_Relief_20min_v1.txt,Brittney
-Hotel Room Rest,1021,Travel & Jet Lag,Hotel_Room_Rest_Aria.mp3,Hotel_Room_Rest,Aria,y,Hotel_Room_Rest_15min_v1.txt,Brittney
-Sleep Restoration,767,Deep Sleep,Sleep_Restoration_Drew.mp3,Sleep_Restoration,Drew,y,Sleep_Restoration_30min_v1.txt,Joseph - Guided Meditation
-Peaceful Night,1072,Sleep Anxiety,Peaceful_Night_Drew.mp3,Peaceful_Night,Drew,,Peaceful_Night_20min_v1.txt,Joseph - Guided Meditation
-Unfamiliar Place,802,Sleep Environment,Unfamiliar_Place_Drew.mp3,Unfamiliar_Place,Drew,y,Unfamiliar_Place_20min_v1.txt,Joseph - Guided Meditation
-Complete Yoga Nidra,837,Deep Sleep,Complete_Yoga_Nidra_Drew.mp3,Complete_Yoga_Nidra,Drew,,Complete_Yoga_Nidra_45min_v1.txt,Joseph - Guided Meditation
-Lunch Break Rest,788,Power Nap,Lunch_Break_Rest_Lana.mp3,Lunch_Break_Rest,Lana,y,Lunch_Break_Rest_15min_v1.txt,Lana - Meditation
-Bedtime Wind-Down,904,Quick Sleep,Bedtime_Wind-Down_Lana.mp3,Bedtime_Wind-Down,Lana,y,Bedtime_Wind-Down_10min_v1.txt,Lana - Meditation
-Noisy Environment,615,Sleep Environment,Noisy_Environment_Lana.mp3,Noisy_Environment,Lana,,Noisy_Environment_15min_v1.txt,Lana - Meditation
-Middle of Night Reset,435,Quick Sleep,Middle_of_Night_Reset_Matt.mp3,Middle_of_Night_Reset,James,,Middle_of_Night_Reset_10min_v1.txt,Jameson - Guided Meditation & Narration
-Timezone Adjustment,901,Travel & Jet Lag,Timezone_Adjustment_Matt.mp3,Timezone_Adjustment,James,y,Timezone_Adjustment_30min_v1.txt,Jameson - Guided Meditation & Narration
-Deep Relaxation Journey,817,Deep Sleep,Deep_Relaxation_Journey_Matt.mp3,Deep_Relaxation_Journey,James,y,Deep_Relaxation_Journey_40min_v1.txt,Jameson - Guided Meditation & Narration
-Quick Refresh,169,Power Nap,Quick_Refresh_Matt.mp3,Quick_Refresh,James,,Quick_Refresh_5min_v1.txt,Jameson - Guided Meditation & Narration
-Anxiety to Sleep,1001,Sleep Anxiety,Anxiety_to_Sleep_Sophia.mp3,Anxiety_to_Sleep,Sophia,y,Anxiety_to_Sleep_15min_v1.txt,Natasha - Gentle Meditation 
-Temperature Discomfort,898,Sleep Environment,Temperature_Discomfort_Sophia.mp3,Temperature_Discomfort,Sophia,y,Temperature_Discomfort_15min_v1.txt,Natasha - Gentle Meditation 
-Travel Recovery,546,Travel & Jet Lag,Travel_Recovery_Sophia.mp3,Travel_Recovery,Sophia,y,Travel_Recovery_20min_v1.txt,Natasha - Gentle Meditation 
+title,duration,category,audioFileName,thumbnailUrl,instructor,premium,txt_file_name,Eleven Labs name,tract desctiption
+Afternoon Reset,1053,Power Nap,Afternoon_Reset_Aria.mp3,Afternoon_Reset,Aria,y,Afternoon_Reset_20min_v1.txt,Brittney,track description 1
+Late Night Calming,897,Quick Sleep,Late_Night_Calming_Aria.mp3,Late_Night_Calming,Aria,,Late_Night_Calming_15min_v1.txt,Brittney,track description 2
+Racing Mind Relief,863,Sleep Anxiety,Racing_Mind_Relief_Aria.mp3,Racing_Mind_Relief,Aria,y,Racing_Mind_Relief_20min_v1.txt,Brittney,track description 3
+Hotel Room Rest,1021,Travel & Jet Lag,Hotel_Room_Rest_Aria.mp3,Hotel_Room_Rest,Aria,y,Hotel_Room_Rest_15min_v1.txt,Brittney,track description 4
+Sleep Restoration,767,Deep Sleep,Sleep_Restoration_Drew.mp3,Sleep_Restoration,Drew,y,Sleep_Restoration_30min_v1.txt,Joseph - Guided Meditation,track description 5
+Peaceful Night,1072,Sleep Anxiety,Peaceful_Night_Drew.mp3,Peaceful_Night,Drew,,Peaceful_Night_20min_v1.txt,Joseph - Guided Meditation,track description 6
+Unfamiliar Place,802,Sleep Environment,Unfamiliar_Place_Drew.mp3,Unfamiliar_Place,Drew,y,Unfamiliar_Place_20min_v1.txt,Joseph - Guided Meditation,track description 7
+Complete Yoga Nidra,837,Deep Sleep,Complete_Yoga_Nidra_Drew.mp3,Complete_Yoga_Nidra,Drew,,Complete_Yoga_Nidra_45min_v1.txt,Joseph - Guided Meditation,track description 8
+Lunch Break Rest,788,Power Nap,Lunch_Break_Rest_Lana.mp3,Lunch_Break_Rest,Lana,y,Lunch_Break_Rest_15min_v1.txt,Lana - Meditation,track description 9
+Bedtime Wind-Down,904,Quick Sleep,Bedtime_Wind-Down_Lana.mp3,Bedtime_Wind-Down,Lana,y,Bedtime_Wind-Down_10min_v1.txt,Lana - Meditation,track description 10
+Noisy Environment,615,Sleep Environment,Noisy_Environment_Lana.mp3,Noisy_Environment,Lana,,Noisy_Environment_15min_v1.txt,Lana - Meditation,track description 11
+Middle of Night Reset,435,Quick Sleep,Middle_of_Night_Reset_Matt.mp3,Middle_of_Night_Reset,James,,Middle_of_Night_Reset_10min_v1.txt,Jameson - Guided Meditation & Narration,track description 12
+Timezone Adjustment,901,Travel & Jet Lag,Timezone_Adjustment_Matt.mp3,Timezone_Adjustment,James,y,Timezone_Adjustment_30min_v1.txt,Jameson - Guided Meditation & Narration,track description 13
+Deep Relaxation Journey,817,Deep Sleep,Deep_Relaxation_Journey_Matt.mp3,Deep_Relaxation_Journey,James,y,Deep_Relaxation_Journey_40min_v1.txt,Jameson - Guided Meditation & Narration,track description 14
+Quick Refresh,169,Power Nap,Quick_Refresh_Matt.mp3,Quick_Refresh,James,,Quick_Refresh_5min_v1.txt,Jameson - Guided Meditation & Narration,track description 15
+Anxiety to Sleep,1001,Sleep Anxiety,Anxiety_to_Sleep_Sophia.mp3,Anxiety_to_Sleep,Sophia,y,Anxiety_to_Sleep_15min_v1.txt,Natasha - Gentle Meditation,track description 16
+Temperature Discomfort,898,Sleep Environment,Temperature_Discomfort_Sophia.mp3,Temperature_Discomfort,Sophia,y,Temperature_Discomfort_15min_v1.txt,Natasha - Gentle Meditation,track description 17
+Travel Recovery,546,Travel & Jet Lag,Travel_Recovery_Sophia.mp3,Travel_Recovery,Sophia,y,Travel_Recovery_20min_v1.txt,Natasha - Gentle Meditation,track description 18

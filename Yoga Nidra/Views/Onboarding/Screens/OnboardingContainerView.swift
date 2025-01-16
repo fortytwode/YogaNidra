@@ -68,7 +68,7 @@ struct OnboardingContainerView: View {
         .preferredColorScheme(.dark)
         .background(Color.black.edgesIgnoringSafeArea(.all))
         .onLoad {
-            try? audioManager.play(audioFileWithExtension: "calm-ambient.mp3")
+            try? audioManager.play(audioFileWithExtension: "calm-ambient.mp3", loop: true)
         }
     }
     

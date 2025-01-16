@@ -33,6 +33,9 @@ struct SessionDetailView: View {
                         Text(session.title)
                             .font(.title)
                             .foregroundColor(.white)
+                        Text(session.description)
+                            .font(.title3)
+                            .foregroundColor(.white)
                         
                         Text("with \(session.instructor)")
                             .font(.subheadline)
