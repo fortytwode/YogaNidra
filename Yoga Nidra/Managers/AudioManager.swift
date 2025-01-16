@@ -1,5 +1,6 @@
 import AVFoundation
 import MediaPlayer
+import SwiftUI
 
 @MainActor
 final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
@@ -8,6 +9,7 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
     
     @Published var isPlaying: Bool = false
     @Published var currentTime: TimeInterval = 0
+    @Published var srubPostion = 0.0
     @Published var currentPlayingSession: YogaNidraSession?
     private var audioPlayer: AVAudioPlayer?
     private var timer: Timer?
@@ -19,7 +21,6 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
         setupAudioSession()
         setupRemoteCommandCenter()
         setupNotifications()
-        setupTimeObserver()
     }
     
     // MARK: - Audio Session Setup
@@ -107,6 +108,26 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
         throw AudioError.fileNotFound
     }
     
+    func skip(_ direction: SkipDirection, by seconds: TimeInterval) {
+        guard let audioPlayer else { return }
+        let newTime: TimeInterval
+        switch direction {
+        case .forward:
+            newTime = min(audioPlayer.currentTime + seconds, audioPlayer.duration)
+        case .backward:
+            newTime = max(audioPlayer.currentTime - seconds, 0)
+        }
+        audioPlayer.currentTime = newTime
+        updateCurrentPlayerTime(time: newTime)
+    }
+    
+    func onScrub(fraction: Double) {
+        guard let audioPlayer else { return }
+        let newTime: TimeInterval = fraction * audioPlayer.duration
+        audioPlayer.currentTime = newTime
+        updateCurrentPlayerTime(time: newTime)
+    }
+    
     private func pause() {
         audioPlayer?.pause()
         isPlaying = false
@@ -123,6 +144,7 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
         audioPlayer?.stop()
         isPlaying = false
         audioPlayer?.currentTime = 0
+        updateCurrentPlayerTime(time: 0)
         currentPlayingSession = nil
         updateNowPlayingInfo()
     }
@@ -213,30 +235,35 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
         }
     }
     
-    private func setupTimeObserver() {
+    private func startTimer() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
             guard let self = self else { return }
-            Task { @MainActor in
-                self.currentTime = self.audioPlayer?.currentTime ?? 0
+            Task { @MainActor [weak self] in
+                self?.updateCurrentPlayerTime(time: self?.audioPlayer?.currentTime)
+                self?.updateNowPlayingInfo()
             }
         }
     }
     
-    private func startTimer() {
-        timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
-            Task { @MainActor in
-                self.currentTime = self.audioPlayer?.currentTime ?? 0
-                self.updateNowPlayingInfo()
-            }
+    private func updateCurrentPlayerTime(time: TimeInterval?) {
+        guard let time, let audioPlayer else { return }
+        let totalDuration = audioPlayer.duration
+        let scrubTime = Double(time) / Double(totalDuration)
+        withAnimation {
+            currentTime = time
+            srubPostion = scrubTime
         }
     }
     
     // Clean up
     deinit {
         timer?.invalidate()
+    }
+    
+    enum SkipDirection {
+        case forward
+        case backward
     }
 }
 

@@ -52,8 +52,12 @@ struct SessionDetailView: View {
                     VStack(spacing: 30) {
                         // Progress Slider and Time
                         VStack(spacing: 8) {
-                            Slider(value: .constant(audioManager.currentTime),
-                                   in: 0...Double(session.duration))
+                            Slider(value: Binding(get: {
+                                audioManager.srubPostion
+                            }, set: { value in
+                                audioManager.onScrub(fraction: value)
+                            }),
+                                   in: 0...1)
                                 .tint(.white)
                             
                             HStack {
@@ -63,12 +67,17 @@ struct SessionDetailView: View {
                             }
                             .font(.system(size: 12))
                             .foregroundColor(.white)
+                            .transaction { transaction in
+                                transaction.animation = nil
+                            }
                         }
                         .padding(.horizontal)
                         
                         // Control Buttons
                         HStack(spacing: 60) {
-                            Button(action: { /* Skip backward */ }) {
+                            Button {
+                                audioManager.skip(.backward, by: 15)
+                            } label: {
                                 Image(systemName: "gobackward.15")
                                     .font(.title)
                                     .foregroundColor(.white)
@@ -90,7 +99,9 @@ struct SessionDetailView: View {
                                     .background(Circle().fill(Color.white.opacity(0.2)))
                             }
                             
-                            Button(action: { /* Skip forward */ }) {
+                            Button {
+                                audioManager.skip(.forward, by: 15)
+                            } label: {
                                 Image(systemName: "goforward.15")
                                     .font(.title)
                                     .foregroundColor(.white)
