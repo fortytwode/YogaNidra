@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct HomeView: View {
+    @StateObject var router = Router<HomeTabDestination>()
+    @EnvironmentObject var sheetPresenter: Presenter
     let sessions = YogaNidraSession.allSessions
     @Binding var selectedTab: Int
     
@@ -20,7 +22,7 @@ struct HomeView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $router.path) {
             ScrollView {
                 VStack(spacing: 24) {
                     // Header with image background
@@ -33,6 +35,13 @@ struct HomeView: View {
                 .padding(.vertical)
             }
             .navigationTitle("Yoga Nidra")
+            .environmentObject(router)
+            .navigationDestination(for: HomeTabDestination.self) { destination in
+                switch destination {
+                case .none:
+                    Text("No view for HomeTabDestination")
+                }
+            }
         }
     }
     
@@ -55,7 +64,9 @@ struct HomeView: View {
                 GridItem(.flexible())
             ], spacing: 16) {
                 ForEach(sessions.prefix(2), id: \.id) { session in
-                    NavigationLink(destination: SessionDetailView(session: session)) {
+                    Button {
+                        sheetPresenter.present(.sessionDetials(session))
+                    } label: {
                         SessionCard(session: session)
                     }
                 }
@@ -104,7 +115,9 @@ struct HomeView: View {
             
             VStack(spacing: 12) {
                 ForEach(recommendedSessions) { session in
-                    NavigationLink(destination: SessionDetailView(session: session)) {
+                    Button {
+                        sheetPresenter.present(.sessionDetials(session))
+                    } label: {
                         RecommendedSessionCard(session: session)
                     }
                 }

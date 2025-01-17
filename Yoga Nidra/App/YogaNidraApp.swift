@@ -7,6 +7,7 @@ struct YogaNidraApp: App {
     @StateObject private var storeManager = StoreManager.shared
     @StateObject private var onboardingManager = OnboardingManager.shared
     @StateObject private var audioManager = AudioManager.shared
+    @StateObject private var sheetPresenter = Presenter()
     
     var body: some Scene {
         WindowGroup {
@@ -17,11 +18,14 @@ struct YogaNidraApp: App {
                     OnboardingContainerView()
                 }
             }
-            .environmentObject(progressManager)
-            .environmentObject(playerState)
-            .environmentObject(storeManager)
-            .environmentObject(onboardingManager)
-            .environmentObject(audioManager)
+            .sheet(item: $sheetPresenter.presenation) { destination in
+                switch destination {
+                case .sessionDetials(let session):
+                    SessionDetailView(session: session)
+                case .subscriptionPaywall:
+                    SubscriptionView()
+                }
+            }
             .onReceive(onboardingManager.$isOnboardingCompleted) { isCompleted in
                 guard isCompleted else { return }
                 audioManager.stop()
@@ -44,6 +48,12 @@ struct YogaNidraApp: App {
                     break
                 }
             }
+            .environmentObject(progressManager)
+            .environmentObject(playerState)
+            .environmentObject(storeManager)
+            .environmentObject(onboardingManager)
+            .environmentObject(audioManager)
+            .environmentObject(sheetPresenter)
         }
     }
 }

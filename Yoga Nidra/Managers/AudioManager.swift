@@ -59,19 +59,28 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
         }
     }
     
-    func onPlaySession(session: YogaNidraSession) async throws {
-        if isPlaying {
-            pause()
-            updateNowPlayingInfo()
+    func onPauseSession() {
+        pause()
+        updateNowPlayingInfo()
+    }
+    
+    func onResumeSession() {
+        resume()
+        updateNowPlayingInfo()
+    }
+    
+    func onStopSession() {
+        stop()
+        updateNowPlayingInfo()
+    }
+    
+    func onPlaySession(session: YogaNidraSession) throws {
+        if currentPlayingSession == session {
+            onResumeSession()
         } else {
-            if currentPlayingSession == session {
-                resume()
-                updateNowPlayingInfo()
-            } else {
-                try play(audioFileWithExtension: session.audioFileName)
-                currentPlayingSession = session
-                updateNowPlayingInfo()
-            }
+            try play(audioFileWithExtension: session.audioFileName)
+            currentPlayingSession = session
+            updateNowPlayingInfo()
         }
     }
     

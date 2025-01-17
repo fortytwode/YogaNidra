@@ -101,10 +101,13 @@ struct CategoryHeaderView: View {
 }
 
 struct SessionRowView: View {
+    @EnvironmentObject var sheetPresenter: Presenter
     let session: YogaNidraSession
     
     var body: some View {
-        NavigationLink(destination: SessionDetailView(session: session)) {
+        Button {
+            sheetPresenter.present(.sessionDetials(session))
+        } label: {
             HStack(spacing: 16) {
                 // Session Info
                 VStack(alignment: .leading, spacing: 8) {
@@ -144,30 +147,28 @@ struct CategoryInfoView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 20) {
-                Image(systemName: category.icon)
-                    .font(.system(size: 60))
-                    .foregroundColor(category.color)
-                
-                Text(category.rawValue)
-                    .font(.title)
-                    .bold()
-                
-                Text(category.description)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                
-                // Additional category-specific information could go here
-                
-                Spacer()
-            }
-            .padding()
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
-                }
+        VStack(spacing: 20) {
+            Image(systemName: category.icon)
+                .font(.system(size: 60))
+                .foregroundColor(category.color)
+            
+            Text(category.rawValue)
+                .font(.title)
+                .bold()
+            
+            Text(category.description)
+                .multilineTextAlignment(.center)
+                .padding()
+            
+            // Additional category-specific information could go here
+            
+            Spacer()
+        }
+        .padding()
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Done") { dismiss() }
             }
         }
     }

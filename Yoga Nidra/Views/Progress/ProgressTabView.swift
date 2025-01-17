@@ -1,10 +1,11 @@
 import SwiftUI
 
 struct ProgressTabView: View {
+    @StateObject var router = Router<ProgressTabDestination>()
     @EnvironmentObject var progressManager: ProgressManager
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $router.path) {
             ScrollView {
                 VStack(spacing: 24) {
                     StatsGridView()
@@ -25,6 +26,13 @@ struct ProgressTabView: View {
                 .padding(.vertical)
             }
             .navigationTitle("Your Progress")
+            .environmentObject(router)
+            .navigationDestination(for: ProgressTabDestination.self) { destination in
+                switch destination {
+                case .none:
+                    Text("No view for ProgressTabDestination")
+                }
+            }
         }
     }
 }
