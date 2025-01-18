@@ -2,12 +2,13 @@ import SwiftUI
 import AVFoundation
 
 struct SessionDetailView: View {
-    @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var playerState: PlayerState
-    @StateObject private var audioManager = AudioManager.shared
     let session: YogaNidraSession
+    
+    @StateObject private var audioManager = AudioManager.shared
     @StateObject private var storeManager = StoreManager.shared
-    @State private var showingSubscriptionSheet = false
+    @EnvironmentObject private var playerState: PlayerState
+    @EnvironmentObject private var sheetPresenter: Presenter
+    
     
     private var durationInMinutes: Int {
         Int(ceil(Double(session.duration) / 60.0))
@@ -84,12 +85,10 @@ struct SessionDetailView: View {
                             }
                             
                             Button {
-                                Task {
-                                    if session.isPremium && !storeManager.isSubscribed {
-                                        showingSubscriptionSheet = true
-                                    } else {
-                                        try await audioManager.onPlaySession(session: session)
-                                    }
+                                if audioManager.isPlaying {
+                                    audioManager.onPauseSession()
+                                } else {
+                                    startPlaying()
                                 }
                             } label: {
                                 Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
@@ -114,8 +113,17 @@ struct SessionDetailView: View {
             }
         }
         .edgesIgnoringSafeArea(.all)
-        .sheet(isPresented: $showingSubscriptionSheet) {
-            SubscriptionView()
+        .onAppear {
+            guard audioManager.isPlaying else { return }
+            startPlaying()
+        }
+    }
+    
+    private func startPlaying() {
+        do {
+            try audioManager.onPlaySession(session: session)
+        } catch {
+            print("Failed to play session: \(error)")
         }
     }
     

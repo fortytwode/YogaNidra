@@ -32,12 +32,15 @@ struct QuickPickCard: View {
 }
 
 struct RecentlyPlayedList: View {
+    @EnvironmentObject var sheetPresenter: Presenter
     let sessions: [YogaNidraSession]
     
     var body: some View {
         VStack(spacing: 12) {
             ForEach(sessions) { session in
-                NavigationLink(destination: SessionDetailView(session: session)) {
+                Button {
+                    sheetPresenter.present(.sessionDetials(session))
+                } label: {
                     HStack {
                         VStack(alignment: .leading) {
                             Text(session.title)

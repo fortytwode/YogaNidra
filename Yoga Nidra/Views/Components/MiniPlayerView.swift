@@ -3,7 +3,6 @@ import SwiftUI
 struct MiniPlayerView: View {
     let session: YogaNidraSession
     @StateObject private var audioManager = AudioManager.shared
-    @Binding var showFullPlayer: Bool
     
     var body: some View {
         VStack(spacing: 0) {
@@ -24,15 +23,16 @@ struct MiniPlayerView: View {
                     Text(formatTime(audioManager.currentTime))
                         .font(.caption)
                         .foregroundColor(.gray)
+                        .transaction { transaction in
+                            transaction.animation = nil
+                        }
                 }
                 
                 Spacer()
                 
                 // Play/Pause Button
                 Button {
-                    Task {
-                        try await audioManager.onPlaySession(session: session)
-                    }
+                    audioManager.onStopSession()
                 } label: {
                     Image(systemName: audioManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
                         .font(.title)
@@ -54,9 +54,6 @@ struct MiniPlayerView: View {
 // Preview
 struct MiniPlayerView_Previews: PreviewProvider {
     static var previews: some View {
-        MiniPlayerView(
-            session: .preview,
-            showFullPlayer: .constant(false)
-        )
+        MiniPlayerView(session: .preview)
     }
 } 

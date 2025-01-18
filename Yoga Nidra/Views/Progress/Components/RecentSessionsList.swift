@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RecentSessionsList: View {
     @EnvironmentObject var progressManager: ProgressManager
+    @EnvironmentObject var sheetPresenter: Presenter
     
     var recentSessions: [(YogaNidraSession, SessionProgress)] {
         progressManager.sessionProgress
@@ -23,7 +24,9 @@ struct RecentSessionsList: View {
                     .padding()
             } else {
                 ForEach(recentSessions, id: \.0.id) { session, progress in
-                    NavigationLink(destination: SessionDetailView(session: session)) {
+                    Button {
+                        sheetPresenter.present(.sessionDetials(session))
+                    } label: {
                         RecentSessionRow(session: session, progress: progress)
                     }
                 }

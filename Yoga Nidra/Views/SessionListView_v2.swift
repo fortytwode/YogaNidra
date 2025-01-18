@@ -3,6 +3,8 @@ import SwiftUI
 struct SessionListView_v2: View {
     let sessions = YogaNidraSession.allSessions
     @State private var selectedCategory: SessionCategory? = nil
+    @StateObject var router = Router<LibraryTabDestination>()
+    @EnvironmentObject var sheetPresenter: Presenter
     
     var filteredSessions: [YogaNidraSession] {
         guard let category = selectedCategory else {
@@ -12,7 +14,7 @@ struct SessionListView_v2: View {
     }
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $router.path) {
             ScrollView {
                 VStack(spacing: 24) {
                     // Category filters
@@ -40,7 +42,9 @@ struct SessionListView_v2: View {
                         GridItem(.flexible())
                     ], spacing: 16) {
                         ForEach(filteredSessions) { session in
-                            NavigationLink(destination: SessionDetailView(session: session)) {
+                            Button {
+                                sheetPresenter.present(.sessionDetials(session))
+                            } label: {
                                 SessionCard(session: session)
                             }
                         }
@@ -53,6 +57,13 @@ struct SessionListView_v2: View {
             .background(Color.black)
             .onAppear {
                 print("ScrollView appeared")
+            }
+            .environmentObject(router)
+            .navigationDestination(for: LibraryTabDestination.self) { destination in
+                switch destination {
+                case .none:
+                    Text("No view for LibraryTabDestination")
+                }
             }
         }
         .preferredColorScheme(.dark)
