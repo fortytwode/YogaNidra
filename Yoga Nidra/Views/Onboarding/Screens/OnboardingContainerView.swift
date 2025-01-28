@@ -55,13 +55,17 @@ struct OnboardingContainerView: View {
             }
             .tag(10)
             
+            // Loading/Analysis screen
+            ProcessingDataView(nextPage: nextPage)
+                .tag(11)
+            
             // Final Profile (no progress bar)
             FinalProfileView(nextPage: nextPage)
-                .tag(11)
+                .tag(12)
             
             // Paywall (no progress bar)
             PaywallView()
-                .tag(12)
+                .tag(13)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .ignoresSafeArea()

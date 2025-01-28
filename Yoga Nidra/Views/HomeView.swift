@@ -16,9 +16,8 @@ struct HomeView: View {
     }
     
     var recommendedSessions: [YogaNidraSession] {
-        let premiumSessions = sessions.filter { $0.isPremium }.prefix(3)
-        let nonPremiumSession = sessions.filter { !$0.isPremium }.prefix(1)
-        return Array(nonPremiumSession + premiumSessions)
+        // Get 4 sessions total, sorted alphabetically
+        return Array(sessions.sorted { $0.title < $1.title }.prefix(4))
     }
     
     var body: some View {

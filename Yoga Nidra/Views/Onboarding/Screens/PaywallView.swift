@@ -8,16 +8,7 @@ struct PaywallView: View {
     
     var body: some View {
         VStack(spacing: 24) {
-            HStack {
-                Spacer()
-                Button {
-                    onboardingManager.isOnboardingCompleted = true
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 20, weight: .medium))
-                        .foregroundColor(.white)
-                }
-            }
+            Spacer()
             
             VStack(spacing: 8) {
                 Text("Start Your Journey")
@@ -60,14 +51,18 @@ struct PaywallView: View {
                         }
                     }
                 } label: {
-                    Text("Start free trial")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(.white)
-                        .foregroundColor(.black)
-                        .cornerRadius(16)
+                    VStack(spacing: 4) {
+                        Text("Start free trial")
+                            .font(.headline)
+                        Text("Then \(storeManager.subscriptionPrice)/year")
+                            .font(.subheadline)
+                            .foregroundColor(.black.opacity(0.8))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(.white)
+                    .foregroundColor(.black)
+                    .cornerRadius(16)
                 }
                 
                 Button {
