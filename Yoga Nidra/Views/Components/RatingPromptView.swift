@@ -3,7 +3,6 @@ import StoreKit
 
 struct RatingPromptView: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var ratingManager: RatingManager
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
@@ -36,7 +35,7 @@ struct RatingPromptView: View {
             // Buttons
             VStack(spacing: 12) {
                 Button {
-                    ratingManager.rateApp()
+                    RatingManager.shared.rateApp()
                     dismiss()
                 } label: {
                     Text("Rate on App Store")
