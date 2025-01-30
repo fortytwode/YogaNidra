@@ -42,61 +42,54 @@ struct FavoritesView: View {
                 .background(Color.white.opacity(0.05))
                 .cornerRadius(12)
             } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(favoritesManager.favoriteSessions) { session in
-                            Button {
-                                // Try to play immediately
-                                do {
-                                    try audioManager.onPlaySession(session: session)
-                                } catch {
-                                    print("Failed to play session: \(error)")
-                                }
-                                // Also show the details sheet
-                                sheetPresenter.present(.sessionDetials(session))
-                            } label: {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    ZStack(alignment: .bottomLeading) {
-                                        Image(session.thumbnailUrl)
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                            .frame(width: 160, height: 160)
-                                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                                        
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [.clear, .black.opacity(0.6)]),
-                                            startPoint: .top,
-                                            endPoint: .bottom
-                                        )
-                                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                                        
-                                        HStack {
-                                            Text("\(Int(session.duration / 60)) min")
-                                                .font(.caption)
-                                                .foregroundColor(.white)
-                                                .padding(.horizontal, 8)
-                                                .padding(.vertical, 4)
-                                        }
-                                        .padding(8)
-                                    }
-                                    
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(session.title)
-                                            .font(.headline)
-                                            .foregroundColor(.white)
-                                            .lineLimit(2)
-                                        
-                                        Text(session.instructor)
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
-                                            .lineLimit(1)
-                                    }
-                                }
-                                .frame(width: 160)
+                VStack(spacing: 12) {
+                    ForEach(favoritesManager.favoriteSessions) { session in
+                        Button {
+                            do {
+                                try audioManager.onPlaySession(session: session)
+                            } catch {
+                                print("Failed to play session: \(error)")
                             }
+                            sheetPresenter.present(.sessionDetials(session))
+                        } label: {
+                            HStack(spacing: 16) {
+                                // Thumbnail
+                                Image(session.thumbnailUrl)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 60, height: 60)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                
+                                // Session Info
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(session.title)
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .lineLimit(1)
+                                    
+                                    Text(session.instructor)
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                        .lineLimit(1)
+                                    
+                                    Text("\(Int(session.duration)) mins")
+                                        .font(.caption)
+                                        .foregroundColor(.blue)
+                                }
+                                
+                                Spacer()
+                                
+                                // Play Button
+                                Image(systemName: "play.circle.fill")
+                                    .font(.system(size: 32))
+                                    .foregroundColor(.white)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color.white.opacity(0.05))
+                            .cornerRadius(12)
                         }
                     }
-                    .padding(.horizontal)
                 }
             }
         }
@@ -116,13 +109,11 @@ struct AllFavoritesView: View {
             ], spacing: 16) {
                 ForEach(favoritesManager.favoriteSessions) { session in
                     Button {
-                        // Try to play immediately
                         do {
                             try audioManager.onPlaySession(session: session)
                         } catch {
                             print("Failed to play session: \(error)")
                         }
-                        // Also show the details sheet
                         sheetPresenter.present(.sessionDetials(session))
                     } label: {
                         SessionCard(session: session)
