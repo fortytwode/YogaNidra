@@ -3,27 +3,63 @@ import SwiftUI
 struct ProgressTabView: View {
     @StateObject var router = Router<ProgressTabDestination>()
     @EnvironmentObject var progressManager: ProgressManager
+    @Environment(\.openURL) private var openURL
     
     var body: some View {
         NavigationStack(path: $router.path) {
-            ScrollView {
-                VStack(spacing: 24) {
-                    StatsGridView()
-                        .padding(.horizontal)
-                    
-                    StreakCard(streakDays: progressManager.streakDays)
-                        .padding(.horizontal)
-                    
-                    VStack(alignment: .leading) {
-                        Text("Recent Activity")
-                            .font(.title2)
-                            .bold()
+            VStack {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        StatsGridView()
                             .padding(.horizontal)
                         
-                        RecentSessionsList()
+                        StreakCard(streakDays: progressManager.streakDays)
+                            .padding(.horizontal)
+                        
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Recent Activity")
+                                .font(.title2)
+                                .bold()
+                                .padding(.horizontal)
+                            
+                            if progressManager.sessionsCompleted == 0 {
+                                Text("Complete your first session to see your progress")
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 32)
+                            } else {
+                                RecentSessionsList()
+                            }
+                        }
+                        
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.vertical)
+                }
+                
+                Divider()
+                
+                // Terms and Privacy Links
+                HStack(spacing: 24) {
+                    Button {
+                        openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-terms")!)
+                    } label: {
+                        Text("Terms")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Button {
+                        openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-privacy")!)
+                    } label: {
+                        Text("Privacy Policy")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
                     }
                 }
-                .padding(.vertical)
+                .padding(.vertical, 12)
             }
             .navigationTitle("Your Progress")
             .environmentObject(router)
@@ -35,4 +71,9 @@ struct ProgressTabView: View {
             }
         }
     }
+}
+
+#Preview {
+    ProgressTabView()
+        .environmentObject(ProgressManager.shared)
 }

@@ -70,9 +70,115 @@ final class StoreManager: ObservableObject {
         }
     }
     
+    // MARK: - Product Loading
+    func loadProducts() async throws {
+        guard !isLoadingProducts else { return }
+        
+        isLoadingProducts = true
+        defer { isLoadingProducts = false }
+        
+        print("🔍 StoreManager: Loading products...")
+        
+        do {
+            let products = try await Product.products(for: [productID])
+            guard let product = products.first else {
+                print("❌ StoreManager: No products found")
+                throw StoreError.productNotFound
+            }
+            
+            print("✅ StoreManager: Products loaded successfully")
+            self.subscriptionProduct = product
+            self.subscriptionPrice = product.displayPrice
+            hasLoadedProducts = true
+            
+        } catch {
+            print("❌ StoreManager: Failed to load products: \(error.localizedDescription)")
+            throw StoreError.failedToLoadProducts
+        }
+    }
+    
+    // MARK: - Purchase Flow
+    func purchase(duringOnboarinng: Bool = false) async throws {
+        print("🛍 StoreManager: Starting purchase flow...")
+        isLoading = true
+        defer { isLoading = false }
+        
+        if !hasLoadedProducts {
+            print("📦 StoreManager: Loading products first...")
+            try await loadProducts()
+        }
+        
+        guard currentPurchaseTask == nil else {
+            print("⚠️ StoreManager: Purchase already in progress")
+            return
+        }
+        
+        let task = Task {
+            defer { currentPurchaseTask = nil }
+            guard !isPurchaseInProgress else {
+                print("⚠️ StoreManager: Purchase already in progress")
+                return
+            }
+            
+            guard let product = subscriptionProduct else {
+                print("❌ StoreManager: No product available for purchase")
+                throw StoreError.productNotFound
+            }
+            
+            isPurchaseInProgress = true
+            defer { isPurchaseInProgress = false }
+            
+            print("💰 StoreManager: Starting purchase for \(product.id)")
+            
+            do {
+                let result = try await product.purchase()
+                
+                switch result {
+                case .success(let verification):
+                    print("✅ StoreManager: Purchase successful, verifying...")
+                    await handle(transactionResult: verification, reason: .purchased(whileOnboarding: duringOnboarinng))
+                    
+                case .userCancelled:
+                    print("🚫 StoreManager: Purchase cancelled by user")
+                    throw StoreError.userCancelled
+                    
+                case .pending:
+                    print("⏳ StoreManager: Purchase pending (Ask to Buy)")
+                    
+                @unknown default:
+                    print("❓ StoreManager: Unknown purchase result")
+                    throw StoreError.unknown
+                }
+            } catch {
+                print("❌ StoreManager: Purchase failed: \(error.localizedDescription)")
+                throw error
+            }
+        }
+        
+        currentPurchaseTask = task
+        try await task.value
+    }
+    
+    // Restore Purchases
+    func restorePurchases(duringOnboarinng: Bool = false) async throws {
+        print("🔄 StoreManager: Starting purchase restoration")
+        isLoading = true
+        defer { isLoading = false }
+        
+        try await AppStore.sync()
+        print("✅ StoreManager: Purchase restoration completed")
+        
+        // Check current entitlements after restore
+        for await result in Transaction.currentEntitlements {
+            await handle(transactionResult: result, reason: .restored(whileOnboarding: duringOnboarinng))
+        }
+    }
+    
+    // MARK: - Transaction Handling
     private func handle(transactionResult: VerificationResult<StoreKit.Transaction>, reason: TransactionReason) async {
         switch transactionResult {
         case .verified(let transaction):
+            print("✅ StoreManager: Transaction verified: \(transaction.id)")
             
             // Update subscription state
             await MainActor.run {
@@ -100,110 +206,12 @@ final class StoreManager: ObservableObject {
         }
     }
     
-    // MARK: - Product Loading
-    func loadProducts() async throws {
-        guard !isLoadingProducts && !hasLoadedProducts else {
-            print("⏭️ StoreManager: Products already loaded or loading in progress")
-            return
-        }
-        
-        isLoadingProducts = true
-        defer { isLoadingProducts = false }
-        
-        print("🔍 StoreManager: Loading products...")
-        isLoading = true
-        defer { isLoading = false }
-        
-        let products = try await Product.products(for: [productID])
-        guard let product = products.first else {
-            print("❌ StoreManager: No products found")
-            throw StoreError.productNotFound
-        }
-        
-        print("""
-        ✅ StoreManager: Product loaded successfully:
-           - ID: \(product.id)
-           - Price: \(product.price)
-           - Type: \(product.type)
-        """)
-        
-        self.subscriptionProduct = product
-        // Format the price
-        self.subscriptionPrice = product.displayPrice
-        
-        hasLoadedProducts = true
-    }
-    
-    // MARK: - Purchase Flow
-    func purchase(duringOnboarinng: Bool = false) async throws {
-        if hasLoadedProducts {
-            try await loadProducts()
-        }
-        guard currentPurchaseTask == nil else {
-            print("⚠️ StoreManager: Purchase already in progress")
-            return
-        }
-        
-        let task = Task {
-            defer { currentPurchaseTask = nil }
-            guard !isPurchaseInProgress else {
-                print("⚠️ StoreManager: Purchase already in progress")
-                return
-            }
-            
-            guard let product = subscriptionProduct else {
-                print("❌ StoreManager: No product available for purchase")
-                throw StoreError.productNotFound
-            }
-            
-            isPurchaseInProgress = true
-            defer { isPurchaseInProgress = false }
-            
-            print("💰 StoreManager: Starting purchase for \(product.id)")
-            let result = try await product.purchase()
-            
-            switch result {
-            case .success(let verification):
-                print("✅ StoreManager: Purchase successful, verifying...")
-                await handle(transactionResult: verification, reason: .purchased(whileOnboarding: duringOnboarinng))
-                
-            case .userCancelled:
-                print("🚫 StoreManager: Purchase cancelled by user")
-                
-            case .pending:
-                print("⏳ StoreManager: Purchase pending (Ask to Buy)")
-                
-            @unknown default:
-                print("❓ StoreManager: Unknown purchase result")
-                throw StoreError.unknown
-            }
-        }
-        currentPurchaseTask = task
-        try await task.value
-    }
-    
-    // Restore Purchases
-    func restorePurchases(duringOnboarinng: Bool = false) async throws {
-        print("🔄 StoreManager: Starting purchase restoration")
-        isLoading = true
-        defer { isLoading = false }
-        
-        try await AppStore.sync()
-        print("✅ StoreManager: Purchase restoration completed")
-        
-        // Check current entitlements after restore
-        for await result in Transaction.currentEntitlements {
-            await handle(transactionResult: result, reason: .restored(whileOnboarding: duringOnboarinng))
-        }
-    }
-    
     // MARK: - Trial Period Detection
     private func checkTrialEligibility(_ transaction: StoreKit.Transaction) {
-        if let expirationDate = transaction.expirationDate {
-            let isInTrial = transaction.purchaseDate.distance(to: expirationDate) <= 7*24*60*60
-            isInTrialPeriod = isInTrial && expirationDate > Date()
-            trialEndDate = isInTrial ? expirationDate : nil
-            print("📅 StoreManager: Trial status - Active: \(isInTrialPeriod), Ends: \(expirationDate)")
+        // Check if the transaction indicates a trial period
+        if transaction.isUpgraded {
+            isInTrialPeriod = true
+            trialEndDate = transaction.expirationDate
         }
     }
     
@@ -217,29 +225,29 @@ final class StoreManager: ObservableObject {
     }
 }
 
-enum TransactionReason {
-    case whileTransactionUpdate
-    case restored(whileOnboarding: Bool)
-    case purchased(whileOnboarding: Bool)
-}
-
-// MARK: - Error Types
+// MARK: - Errors
 enum StoreError: LocalizedError {
     case productNotFound
-    case networkError(Error)
-    case purchaseInProgress
+    case failedToLoadProducts
+    case userCancelled
     case unknown
     
     var errorDescription: String? {
         switch self {
         case .productNotFound:
-            return "Subscription product not found"
-        case .networkError(let error):
-            return "Network error: \(error.localizedDescription)"
-        case .purchaseInProgress:
-            return "Purchase already in progress"
+            return "Product not found"
+        case .failedToLoadProducts:
+            return "Failed to load products"
+        case .userCancelled:
+            return "Purchase cancelled"
         case .unknown:
             return "An unknown error occurred"
         }
     }
+}
+
+enum TransactionReason {
+    case whileTransactionUpdate
+    case restored(whileOnboarding: Bool)
+    case purchased(whileOnboarding: Bool)
 }

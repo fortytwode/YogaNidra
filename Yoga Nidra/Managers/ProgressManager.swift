@@ -28,8 +28,8 @@ class ProgressManager: ObservableObject {
     }
     
     func updateSessionStats(session: YogaNidraSession, timeListened: TimeInterval) {
-        // Update total time
-        totalMinutesListened = Int(timeListened / 60)
+        // Update total time (accumulate instead of reset)
+        totalMinutesListened += Int(timeListened / 60)
         
         // Update session progress
         var progress = sessionProgress[session.id] ?? SessionProgress()
@@ -72,4 +72,4 @@ class ProgressManager: ObservableObject {
             streakDays = 0
         }
     }
-} 
+}

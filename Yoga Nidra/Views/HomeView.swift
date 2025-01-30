@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @StateObject var router = Router<HomeTabDestination>()
     @EnvironmentObject var sheetPresenter: Presenter
+    @StateObject private var audioManager = AudioManager.shared
     let sessions = YogaNidraSession.allSessions
     @Binding var selectedTab: Int
     
@@ -64,6 +65,13 @@ struct HomeView: View {
             ], spacing: 16) {
                 ForEach(sessions.prefix(2), id: \.id) { session in
                     Button {
+                        // Try to play immediately
+                        do {
+                            try audioManager.onPlaySession(session: session)
+                        } catch {
+                            print("Failed to play session: \(error)")
+                        }
+                        // Also show the details sheet
                         sheetPresenter.present(.sessionDetials(session))
                     } label: {
                         SessionCard(session: session)
@@ -115,6 +123,13 @@ struct HomeView: View {
             VStack(spacing: 12) {
                 ForEach(recommendedSessions) { session in
                     Button {
+                        // Try to play immediately
+                        do {
+                            try audioManager.onPlaySession(session: session)
+                        } catch {
+                            print("Failed to play session: \(error)")
+                        }
+                        // Also show the details sheet
                         sheetPresenter.present(.sessionDetials(session))
                     } label: {
                         RecommendedSessionCard(session: session)

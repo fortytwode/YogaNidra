@@ -3,6 +3,7 @@ import SwiftUI
 struct RecentSessionsList: View {
     @EnvironmentObject var progressManager: ProgressManager
     @EnvironmentObject var sheetPresenter: Presenter
+    @StateObject private var audioManager = AudioManager.shared
     
     var recentSessions: [(YogaNidraSession, SessionProgress)] {
         progressManager.sessionProgress
@@ -25,6 +26,13 @@ struct RecentSessionsList: View {
             } else {
                 ForEach(recentSessions, id: \.0.id) { session, progress in
                     Button {
+                        // Try to play immediately
+                        do {
+                            try audioManager.onPlaySession(session: session)
+                        } catch {
+                            print("Failed to play session: \(error)")
+                        }
+                        // Also show the details sheet
                         sheetPresenter.present(.sessionDetials(session))
                     } label: {
                         RecentSessionRow(session: session, progress: progress)
@@ -78,4 +86,4 @@ struct RecentSessionRow: View {
             return "\(minutes)m"
         }
     }
-} 
+}

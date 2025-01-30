@@ -1,5 +1,9 @@
 # Yoga Nidra App
 
+session card alignment
+
+
+
 todo:
 - [ ] check subs purchase flow.
 - [ ] update onboarding and refine it. 

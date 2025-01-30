@@ -5,6 +5,7 @@ struct SessionListView_v2: View {
     @State private var selectedCategory: SessionCategory? = nil
     @StateObject var router = Router<LibraryTabDestination>()
     @EnvironmentObject var sheetPresenter: Presenter
+    @StateObject private var audioManager = AudioManager.shared
     
     var filteredSessions: [YogaNidraSession] {
         guard let category = selectedCategory else {
@@ -33,23 +34,30 @@ struct SessionListView_v2: View {
                                 }
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, 16)
                     }
                     
                     // Grid layout with filtered sessions
-                    LazyVGrid(columns: [
-                        GridItem(.flexible()),
-                        GridItem(.flexible())
-                    ], spacing: 16) {
+                    let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 2)
+                    
+                    LazyVGrid(columns: columns, alignment: .center, spacing: 16) {
                         ForEach(filteredSessions) { session in
                             Button {
+                                // Try to play immediately
+                                do {
+                                    try audioManager.onPlaySession(session: session)
+                                } catch {
+                                    print("Failed to play session: \(error)")
+                                }
+                                // Also show the details sheet
                                 sheetPresenter.present(.sessionDetials(session))
                             } label: {
                                 SessionCard(session: session)
                             }
+                            .frame(maxWidth: .infinity)
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 16)
                 }
                 .padding(.vertical)
             }
@@ -90,4 +98,4 @@ struct CategoryFilterButton: View {
                 )
         }
     }
-} 
+}

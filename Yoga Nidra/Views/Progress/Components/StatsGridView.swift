@@ -38,19 +38,24 @@ struct StatCard: View {
                 .foregroundColor(.blue)
             
             Text(value)
-                .font(.title)
-                .bold()
+                .font(.system(size: 32, weight: .bold))
             
             Text(unit)
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundColor(.secondary)
             
             Text(title)
                 .font(.headline)
         }
         .frame(maxWidth: .infinity)
-        .padding()
+        .padding(.vertical, 16)
         .background(Color(uiColor: .systemGray6))
-        .cornerRadius(12)
+        .cornerRadius(16)
     }
-} 
+}
+
+#Preview {
+    StatsGridView()
+        .environmentObject(ProgressManager.shared)
+        .padding()
+}

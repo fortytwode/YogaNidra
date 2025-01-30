@@ -8,7 +8,9 @@ struct SessionDetailView: View {
     @StateObject private var storeManager = StoreManager.shared
     @EnvironmentObject private var playerState: PlayerState
     @EnvironmentObject private var sheetPresenter: Presenter
-    
+    @State private var isFavorite = false
+    @State private var showingShareSheet = false
+    @Environment(\.dismiss) private var dismiss
     
     private var durationInMinutes: Int {
         Int(ceil(Double(session.duration) / 60.0))
@@ -19,7 +21,25 @@ struct SessionDetailView: View {
             ZStack {
                 Color.black.edgesIgnoringSafeArea(.all)
                 
-                VStack(spacing: 30) {
+                VStack(spacing: 20) {
+                    // Top Bar with dismiss button
+                    HStack {
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            Image(systemName: "chevron.down")
+                                .font(.title2)
+                                .foregroundColor(.white)
+                                .frame(width: 44, height: 44)
+                                .background(Color.white.opacity(0.2))
+                                .clipShape(Circle())
+                        }
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                    .padding(.top)
+                    
                     Spacer()
                     
                     // Session Image
@@ -34,9 +54,12 @@ struct SessionDetailView: View {
                         Text(session.title)
                             .font(.title)
                             .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
+                        
                         Text(session.description)
                             .font(.title3)
                             .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
                         
                         Text("with \(session.instructor)")
                             .font(.subheadline)
@@ -45,7 +68,46 @@ struct SessionDetailView: View {
                         Text("\(durationInMinutes) minutes")
                             .font(.subheadline)
                             .foregroundColor(.gray)
+                            .padding(.bottom, 8)
+                        
+                        // Action Buttons
+                        HStack(spacing: 40) {
+                            Button(action: {
+                                isFavorite.toggle()
+                            }) {
+                                VStack(spacing: 4) {
+                                    Image(systemName: isFavorite ? "heart.fill" : "heart")
+                                        .font(.title2)
+                                        .foregroundColor(isFavorite ? .red : .white)
+                                        .frame(width: 44, height: 44)
+                                        .background(Color.white.opacity(0.2))
+                                        .clipShape(Circle())
+                                    
+                                    Text("Favorite")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                            
+                            Button(action: {
+                                shareSession()
+                            }) {
+                                VStack(spacing: 4) {
+                                    Image(systemName: "square.and.arrow.up")
+                                        .font(.title2)
+                                        .foregroundColor(.white)
+                                        .frame(width: 44, height: 44)
+                                        .background(Color.white.opacity(0.2))
+                                        .clipShape(Circle())
+                                    
+                                    Text("Share")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                        }
                     }
+                    .padding(.horizontal)
                     
                     Spacer()
                     
@@ -107,16 +169,25 @@ struct SessionDetailView: View {
                             }
                         }
                     }
-                    .padding(.bottom, 50)
+                    .padding(.bottom, 30)
                 }
-                .padding(.top, geometry.safeAreaInsets.top + 20)
             }
         }
-        .edgesIgnoringSafeArea(.all)
-        .onAppear {
-            guard audioManager.isPlaying else { return }
-            startPlaying()
+        .preferredColorScheme(.dark)
+        .sheet(isPresented: $showingShareSheet) {
+            ShareSheet(activityItems: [
+                "Check out this meditation: \(session.title)",
+                "Duration: \(durationInMinutes) minutes",
+                "Instructor: \(session.instructor)",
+                session.description
+            ])
         }
+    }
+    
+    private func formatTime(_ time: TimeInterval) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%d:%02d", minutes, seconds)
     }
     
     private func startPlaying() {
@@ -127,15 +198,29 @@ struct SessionDetailView: View {
         }
     }
     
-    private func formatTime(_ time: TimeInterval) -> String {
-        let minutes = Int(time) / 60
-        let seconds = Int(time) % 60
-        return String(format: "%d:%02d", minutes, seconds)
+    private func shareSession() {
+        showingShareSheet = true
     }
+}
+
+// ShareSheet UIViewControllerRepresentable
+struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(
+            activityItems: activityItems,
+            applicationActivities: nil
+        )
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // Preview Provider
 #Preview {
     SessionDetailView(session: .preview)
-        .preferredColorScheme(.dark) // Since app uses dark mode
+        .environmentObject(PlayerState())
+        .environmentObject(Presenter())
 }

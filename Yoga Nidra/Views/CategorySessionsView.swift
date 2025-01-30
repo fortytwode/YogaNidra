@@ -3,6 +3,8 @@ import SwiftUI
 struct CategorySessionsView: View {
     let category: SessionCategory
     let sessions: [YogaNidraSession]
+    @EnvironmentObject var sheetPresenter: Presenter
+    @StateObject private var audioManager = AudioManager.shared
     @State private var sortOption: SortOption = .duration
     @State private var showInfo: Bool = false
     
@@ -48,7 +50,18 @@ struct CategorySessionsView: View {
                 // Sessions List
                 LazyVStack(spacing: 12) {
                     ForEach(sortedSessions) { session in
-                        SessionRowView(session: session)
+                        Button {
+                            // Try to play immediately
+                            do {
+                                try audioManager.onPlaySession(session: session)
+                            } catch {
+                                print("Failed to play session: \(error)")
+                            }
+                            // Also show the details sheet
+                            sheetPresenter.present(.sessionDetials(session))
+                        } label: {
+                            SessionRowView(session: session)
+                        }
                     }
                 }
                 .padding(.horizontal)
@@ -101,40 +114,35 @@ struct CategoryHeaderView: View {
 }
 
 struct SessionRowView: View {
-    @EnvironmentObject var sheetPresenter: Presenter
     let session: YogaNidraSession
     
     var body: some View {
-        Button {
-            sheetPresenter.present(.sessionDetials(session))
-        } label: {
-            HStack(spacing: 16) {
-                // Session Info
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(session.title)
-                        .font(.headline)
-                    
-                    Text(formatDuration(session.duration))
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    
-                    Text(session.instructor)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+        HStack(spacing: 16) {
+            // Session Info
+            VStack(alignment: .leading, spacing: 8) {
+                Text(session.title)
+                    .font(.headline)
                 
-                Spacer()
+                Text(formatDuration(session.duration))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
                 
-                // Premium indicator
-                if session.isPremium {
-                    Image(systemName: "crown.fill")
-                        .foregroundColor(.yellow)
-                }
+                Text(session.instructor)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
-            .padding()
-            .background(Color(uiColor: .systemGray6))
-            .cornerRadius(12)
+            
+            Spacer()
+            
+            // Premium indicator
+            if session.isPremium {
+                Image(systemName: "crown.fill")
+                    .foregroundColor(.yellow)
+            }
         }
+        .padding()
+        .background(Color(uiColor: .systemGray6))
+        .cornerRadius(12)
     }
     
     private func formatDuration(_ duration: Int) -> String {

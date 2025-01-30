@@ -3,11 +3,28 @@ import SwiftUI
 struct PaywallView: View {
     @EnvironmentObject private var storeManager: StoreManager
     @EnvironmentObject private var onboardingManager: OnboardingManager
+    @Environment(\.openURL) private var openURL
+    @Environment(\.dismiss) private var dismiss
     @State private var showError = false
     @State private var errorMessage = ""
     
     var body: some View {
         VStack(spacing: 24) {
+            // Close button
+            HStack {
+                Spacer()
+                Button {
+                    withAnimation {
+                        onboardingManager.isOnboardingCompleted = true
+                    }
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.white.opacity(0.8))
+                }
+            }
+            .padding(.horizontal)
+            
             Spacer()
             
             VStack(spacing: 8) {
@@ -79,6 +96,26 @@ struct PaywallView: View {
                         .font(.title3)
                         .foregroundColor(.white)
                 }
+                
+                HStack(spacing: 24) {
+                    Button {
+                        openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-terms")!)
+                    } label: {
+                        Text("Terms")
+                            .font(.footnote)
+                            .foregroundColor(.white.opacity(0.8))
+                            .underline()
+                    }
+                    
+                    Button {
+                        openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-privacy")!)
+                    } label: {
+                        Text("Privacy Policy")
+                            .font(.footnote)
+                            .foregroundColor(.white.opacity(0.8))
+                            .underline()
+                    }
+                }
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
@@ -103,7 +140,7 @@ struct PaywallView: View {
             }
         )
         .alert("Error", isPresented: $showError) {
-            Button("OK", role: .cancel) { }
+            Button("OK") {}
         } message: {
             Text(errorMessage)
         }
