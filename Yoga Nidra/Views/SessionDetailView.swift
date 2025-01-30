@@ -6,9 +6,9 @@ struct SessionDetailView: View {
     
     @StateObject private var audioManager = AudioManager.shared
     @StateObject private var storeManager = StoreManager.shared
+    @StateObject private var favoritesManager = FavoritesManager.shared
     @EnvironmentObject private var playerState: PlayerState
     @EnvironmentObject private var sheetPresenter: Presenter
-    @State private var isFavorite = false
     @State private var showingShareSheet = false
     @Environment(\.dismiss) private var dismiss
     
@@ -73,12 +73,12 @@ struct SessionDetailView: View {
                         // Action Buttons
                         HStack(spacing: 40) {
                             Button(action: {
-                                isFavorite.toggle()
+                                favoritesManager.toggleFavorite(session)
                             }) {
                                 VStack(spacing: 4) {
-                                    Image(systemName: isFavorite ? "heart.fill" : "heart")
+                                    Image(systemName: favoritesManager.isFavorite(session) ? "heart.fill" : "heart")
                                         .font(.title2)
-                                        .foregroundColor(isFavorite ? .red : .white)
+                                        .foregroundColor(favoritesManager.isFavorite(session) ? .red : .white)
                                         .frame(width: 44, height: 44)
                                         .background(Color.white.opacity(0.2))
                                         .clipShape(Circle())
@@ -90,7 +90,7 @@ struct SessionDetailView: View {
                             }
                             
                             Button(action: {
-                                shareSession()
+                                showingShareSheet = true
                             }) {
                                 VStack(spacing: 4) {
                                     Image(systemName: "square.and.arrow.up")
@@ -196,10 +196,6 @@ struct SessionDetailView: View {
         } catch {
             print("Failed to play session: \(error)")
         }
-    }
-    
-    private func shareSession() {
-        showingShareSheet = true
     }
 }
 

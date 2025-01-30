@@ -1,6 +1,7 @@
 # Yoga Nidra App
 
-session card alignment
+session card alignment fixed
+
 
 
 

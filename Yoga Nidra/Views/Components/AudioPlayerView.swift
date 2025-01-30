@@ -19,20 +19,21 @@ struct AudioPlayerView: View {
     var body: some View {
         VStack(spacing: 20) {
             // Progress bar
-            ProgressView(
-                value: audioManager.currentTime,
-                total: TimeInterval(session.duration * 60)
-            )
+            Slider(value: Binding(get: {
+                audioManager.srubPostion
+            }, set: { value in
+                audioManager.onScrub(fraction: value)
+            }), in: 0...1)
             .tint(.white)
             
             // Time labels
             HStack {
                 Text(formatTime(audioManager.currentTime))
                 Spacer()
-                Text(formatTime(TimeInterval(session.duration * 60)))
+                Text(formatTime(TimeInterval(session.duration)))
             }
             .font(.subheadline)
             .foregroundColor(.gray)
         }
     }
-} 
+}

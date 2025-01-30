@@ -16,6 +16,9 @@ struct ProgressTabView: View {
                         StreakCard(streakDays: progressManager.streakDays)
                             .padding(.horizontal)
                         
+                        FavoritesView()
+                            .padding(.horizontal)
+                        
                         VStack(alignment: .leading, spacing: 16) {
                             Text("Recent Activity")
                                 .font(.title2)
@@ -41,7 +44,6 @@ struct ProgressTabView: View {
                 
                 Divider()
                 
-                // Terms and Privacy Links
                 HStack(spacing: 24) {
                     Button {
                         openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-terms")!)
