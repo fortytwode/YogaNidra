@@ -81,6 +81,7 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
             try play(audioFileWithExtension: session.audioFileName)
             currentPlayingSession = session
             updateNowPlayingInfo()
+            ProgressManager.shared.audioSessionStarted()
         }
     }
     
@@ -138,18 +139,21 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
     }
     
     private func pause() {
+        ProgressManager.shared.audioSessionEnded()
         audioPlayer?.pause()
         isPlaying = false
         timer?.invalidate()
     }
     
     private func resume() {
+        ProgressManager.shared.audioSessionStarted()
         audioPlayer?.play()
         isPlaying = true
         startTimer()
     }
     
     public func stop() {
+        ProgressManager.shared.audioSessionEnded()
         audioPlayer?.stop()
         isPlaying = false
         audioPlayer?.currentTime = 0

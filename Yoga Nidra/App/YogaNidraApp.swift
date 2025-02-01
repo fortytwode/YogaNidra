@@ -19,6 +19,9 @@ struct YogaNidraApp: App {
                     OnboardingContainerView()
                 }
             }
+            .onReceive(progressManager.showRaitnsDialogPublisher) {
+                overlayManager.showOverlay(RatingPromptView())
+            }
             .overlayContent(overlayManager)
             .sheet(item: $sheetPresenter.presenation) { destination in
                 switch destination {
