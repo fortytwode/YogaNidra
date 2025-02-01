@@ -12,7 +12,11 @@ struct RatingPromptView: View {
                 Image(systemName: "moon.stars.fill")
                     .font(.system(size: 48))
                     .foregroundColor(.purple)
-                    .symbolEffect(.bounce)
+                    .modify {
+                        if #available(iOS 18.0, *) {
+                            $0.symbolEffect(.bounce)
+                        }
+                    }
                 
                 Text("How's Your Sleep Journey?")
                     .font(.title2.bold())

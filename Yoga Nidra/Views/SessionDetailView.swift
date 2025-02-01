@@ -56,10 +56,16 @@ struct SessionDetailView: View {
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                         
-                        Text(session.description)
-                            .font(.title3)
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.center)
+                        MarqueeText(
+                            text: session.description,
+                            font: UIFont.preferredFont(forTextStyle: .title3),
+                            leftFade: 16,
+                            rightFade: 16,
+                            startDelay: 3
+                        )
+                        .font(.title3)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
                         
                         Text("with \(session.instructor)")
                             .font(.subheadline)

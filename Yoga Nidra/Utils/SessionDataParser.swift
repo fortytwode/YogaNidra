@@ -1,62 +1,71 @@
 import Foundation
 
 class SessionDataParser {
+    
     static func loadSessions() -> [YogaNidraSession] {
-        guard let path = Bundle.main.path(forResource: "sessions", ofType: "csv") else {
-            print("❌ Could not find sessions.csv in path: \(Bundle.main.bundlePath)")
+        guard let path = Bundle.main.path(forResource: "sessions", ofType: "json") else {
+            print("❌ Could not find sessions.json in path: \(Bundle.main.bundlePath)")
             return []
         }
         
         do {
-            let data = try String(contentsOfFile: path, encoding: .utf8)
-            let rows = data.components(separatedBy: "\n").dropFirst() // Skip header
-            print("📝 Found \(rows.count) rows in sessions.csv")
-            
-            let sessions = rows.compactMap { (row: String) -> YogaNidraSession? in
-                guard !row.isEmpty else { return nil }
-                let columns = row.components(separatedBy: ",")
-                print("📊 Processing row with \(columns.count) columns: \(row)")
-                
-                guard columns.count >= 8 else { 
-                    print("❌ Invalid column count: \(columns.count)")
-                    return nil 
-                }
-                
-                // CSV columns:
-                // 0: title
-                // 1: duration
-                // 2: category
-                // 3: audioFileName
-                // 4: thumbnailUrl
-                // 5: instructor
-                // 6: premium (y/n)
-                // 7: txt_file_name (internal)
-                // 8: Eleven Labs name (internal)
-                
-                let categoryString = columns[2].trimmingCharacters(in: .whitespacesAndNewlines)
-                let category = SessionCategory(rawValue: categoryString) ?? .quickSleep
-                
-                let isPremium = columns[6].trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "y"
-                
-                return YogaNidraSession(
-                    id: UUID(),
-                    title: columns[0].trimmingCharacters(in: .whitespacesAndNewlines),
-                    description: columns[9].trimmingCharacters(in: .whitespacesAndNewlines),
-                    duration: Int(columns[1]) ?? 0,
-                    thumbnailUrl: columns[4].trimmingCharacters(in: .whitespacesAndNewlines),
-                    audioFileName: columns[3].trimmingCharacters(in: .whitespacesAndNewlines),
-                    isPremium: isPremium,
-                    category: category,
-                    instructor: columns[5].trimmingCharacters(in: .whitespacesAndNewlines)
-                )
-            }
+            let data = try Data(contentsOf: URL(fileURLWithPath: path))
+            let decoder = JSONDecoder()
+            let sessions = try decoder.decode([Session].self, from: data)
             
             print("✅ Successfully loaded \(sessions.count) sessions")
-            return sessions
-            
+            return sessions.sorted {
+                $0.order < $1.order
+            }.compactMap { item in
+                YogaNidraSession(
+                    id: UUID(),
+                    title: item.title,
+                    description: item.description,
+                    duration: item.duration,
+                    thumbnailUrl: item.thumbnailUrl,
+                    audioFileName: item.audioFileName,
+                    isPremium: item.premium != "n",
+                    category: SessionCategory(rawValue: item.category) ?? .all,
+                    instructor: item.instructor
+                )
+            }
         } catch {
-            print("❌ Error reading sessions.csv:", error)
+            print("❌ Error reading sessions.json:", error)
             return []
         }
     }
-} 
+    
+    struct Session: Codable {
+        let title: String
+        let duration: Int
+        let category: String
+        let audioFileName: String
+        let thumbnailUrl: String
+        let instructor: String
+        let premium: String
+        let elevenLabsName: String
+        let description: String
+        let principles: String
+        let words: Int
+        let textFileName: String
+        let gender: String
+        let order: Int
+
+        enum CodingKeys: String, CodingKey {
+            case title
+            case duration
+            case category
+            case audioFileName
+            case thumbnailUrl
+            case instructor
+            case premium
+            case elevenLabsName = "ElevenLabs_name"
+            case description
+            case principles
+            case words
+            case textFileName = "text_file_name"
+            case gender
+            case order
+        }
+    }
+}
