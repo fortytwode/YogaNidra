@@ -8,6 +8,7 @@ struct YogaNidraApp: App {
     @StateObject private var onboardingManager = OnboardingManager.shared
     @StateObject private var audioManager = AudioManager.shared
     @StateObject private var sheetPresenter = Presenter()
+    @StateObject private var overlayManager = OverlayManager()
     
     var body: some Scene {
         WindowGroup {
@@ -18,6 +19,7 @@ struct YogaNidraApp: App {
                     OnboardingContainerView()
                 }
             }
+            .overlayContent(overlayManager)
             .sheet(item: $sheetPresenter.presenation) { destination in
                 switch destination {
                 case .sessionDetials(let session):
@@ -54,6 +56,7 @@ struct YogaNidraApp: App {
             .environmentObject(onboardingManager)
             .environmentObject(audioManager)
             .environmentObject(sheetPresenter)
+            .environmentObject(overlayManager)
         }
     }
 }

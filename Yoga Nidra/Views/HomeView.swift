@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @StateObject var router = Router<HomeTabDestination>()
     @EnvironmentObject var sheetPresenter: Presenter
+    @EnvironmentObject var overlayManager: OverlayManager
     @StateObject private var audioManager = AudioManager.shared
     let sessions = YogaNidraSession.allSessions
     @Binding var selectedTab: Int
