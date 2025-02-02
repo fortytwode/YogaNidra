@@ -13,12 +13,28 @@ struct TrialExplanationView: View {
     }
     
     var body: some View {
-        VStack(spacing: 32) {
-            Spacer()
-                .frame(height: 140)
-            
+        ZStack {
+            bodyContent
+        }
+        .background {
+            Image("mountain-lake-twilight")
+                .resizable()
+                .scaledToFill()
+                .overlay(Color.black.opacity(0.4))
+                .edgesIgnoringSafeArea(.all)
+            LinearGradient(
+                gradient: Gradient(colors: [.clear, .black.opacity(0.3)]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .edgesIgnoringSafeArea(.all)
+        }
+    }
+    
+    var bodyContent: some View {
+        VStack(spacing: 0) {
             // Headline
-            VStack(spacing: 40) {
+            VStack(spacing: 0) {
                 VStack(spacing: 0) {
                     Text("Begin your journey")
                         .font(.system(size: 38))
@@ -30,21 +46,20 @@ struct TrialExplanationView: View {
                         .font(.system(size: 38))
                         .fontWeight(.medium)
                 }
+                .padding(.top, 20)
                 
                 Text("How does your free trial work?")
                     .font(.title2)
                     .fontWeight(.medium)
                     .opacity(0.9)
+                    .padding(.top, 20)
             }
             .foregroundColor(.white)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 24)
             
-            Spacer()
-                .frame(height: 8)
-            
             // Timeline Items
-            VStack(spacing: 40) {
+            VStack(spacing: 10) {
                 TimelineItem(
                     icon: "sparkles",
                     title: "Today",
@@ -77,8 +92,7 @@ struct TrialExplanationView: View {
             }
             .padding(.vertical, 20)
             
-            Spacer(minLength: 0)
-            
+            Spacer()
             VStack(spacing: 0) {
                 Button {
                     withAnimation {
@@ -94,27 +108,9 @@ struct TrialExplanationView: View {
                         .cornerRadius(28)
                 }
                 .padding(.horizontal, 24)
-                
-                Spacer()
-                    .frame(height: 196)
+                .padding(.bottom, 16)
             }
         }
-        .background(
-            ZStack {
-                Image("mountain-lake-twilight")
-                    .resizable()
-                    .scaledToFill()
-                    .overlay(Color.black.opacity(0.4))
-                    .edgesIgnoringSafeArea(.all)
-                
-                LinearGradient(
-                    gradient: Gradient(colors: [.clear, .black.opacity(0.3)]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .edgesIgnoringSafeArea(.all)
-            }
-        )
     }
 }
 

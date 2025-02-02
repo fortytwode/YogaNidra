@@ -42,7 +42,7 @@ struct FinalProfileView: View {
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
-                    .padding(.top, 48)
+                    .padding(.top, 20)
                 
                 // Radar Chart
                 RadarChart(metrics: sleepMetrics)
@@ -87,8 +87,6 @@ struct FinalProfileView: View {
                     }
                     .padding(.horizontal, 24)
                 }
-                
-                Spacer(minLength: 24)
             }
         }
         .padding()

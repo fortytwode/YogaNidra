@@ -4,7 +4,7 @@ struct BenefitsView: View {
     let nextPage: () -> Void
     
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 24) {
             // Header
             VStack(spacing: 16) {
                 Text("✨ Fair Trial Policy")
@@ -16,61 +16,62 @@ struct BenefitsView: View {
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
-                
+            }
+            .padding(.top, 20)
+            
+            ScrollView {
                 Text("Your support helps our team create more meditations and share the gift of better sleep with those who need it the most...")
                     .font(.body)
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
                     .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(.top, 40)
-            
-            // Comparison Box
-            HStack(spacing: 20) {
-                VStack(spacing: 8) {
-                    Text("🌙")
-                    Text("Your sleep...")
-                }
-                .padding()
-                .background(Color(white: 0.2))
-                .cornerRadius(12)
                 
-                Text("VS")
-                    .foregroundColor(.white)
-                
-                VStack(spacing: 8) {
-                    Text("☕️")
-                    Text("Price of a\ndaily coffee...")
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
+                // Comparison Box
+                HStack(spacing: 20) {
+                    VStack(spacing: 8) {
+                        Text("🌙")
+                        Text("Your sleep...")
+                    }
+                    .padding()
+                    .background(Color(white: 0.2))
+                    .cornerRadius(12)
+                    
+                    Text("VS")
+                        .foregroundColor(.white)
+                    
+                    VStack(spacing: 8) {
+                        Text("☕️")
+                        Text("Price of a\ndaily coffee...")
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding()
+                    .background(Color(white: 0.2))
+                    .cornerRadius(12)
                 }
-                .padding()
-                .background(Color(white: 0.2))
-                .cornerRadius(12)
-            }
-            .font(.headline)
-            .foregroundColor(.white)
-            .padding(.horizontal, 24)
-            
-            // Benefits Box
-            VStack(alignment: .leading, spacing: 20) {
-                Text("The science behind Yoga Nidra...")
-                    .font(.headline)
-                    .foregroundColor(.white)
+                .font(.headline)
+                .foregroundColor(.white)
+                .padding(.horizontal, 24)
                 
-                VStack(alignment: .leading, spacing: 16) {
-                    benefitRow(emoji: "📊", text: "Proven to reduce stress by 44%")
-                    benefitRow(emoji: "⏰", text: "Cuts the time to fall asleep by up to 37%")
-                    benefitRow(emoji: "✨", text: "20 min Yoga Nidra = 2-3 hours of restorative benefits")
+                // Benefits Box
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("The science behind Yoga Nidra...")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    
+                    VStack(alignment: .leading, spacing: 16) {
+                        benefitRow(emoji: "📊", text: "Proven to reduce stress by 44%")
+                        benefitRow(emoji: "⏰", text: "Cuts the time to fall asleep by up to 37%")
+                        benefitRow(emoji: "✨", text: "20 min Yoga Nidra = 2-3 hours of restorative benefits")
+                    }
                 }
+                .padding(20)
+                .background(Color(white: 0.1))
+                .cornerRadius(16)
+                .padding(.horizontal, 24)
             }
-            .padding(20)
-            .background(Color(white: 0.1))
-            .cornerRadius(16)
-            .padding(.horizontal, 24)
-            
-            Spacer()
+            .scrollIndicators(.hidden)
             
             Button(action: nextPage) {
                 Text("Continue →")
@@ -82,7 +83,6 @@ struct BenefitsView: View {
                     .cornerRadius(12)
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 40)
         }
         .padding()
         .background(

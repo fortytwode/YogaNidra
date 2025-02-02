@@ -9,7 +9,7 @@ struct ExplanationView: View {
                 .font(.system(size: 36, weight: .bold))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
-                .padding(.top, 60)  
+                .padding(.top, 20)
             
             VStack(spacing: 32) {  
                 // Container 1
@@ -53,7 +53,6 @@ struct ExplanationView: View {
                     .cornerRadius(12)
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 40)
         }
         .padding()
         .background(
@@ -73,5 +72,10 @@ struct ExplanationView: View {
             }
             .ignoresSafeArea()
         )
+    }
+}
+
+#Preview {
+    ExplanationView {
     }
 }

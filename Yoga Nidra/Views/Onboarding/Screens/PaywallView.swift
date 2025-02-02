@@ -8,9 +8,9 @@ struct PaywallView: View {
     @State private var errorMessage = ""
     
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 24) {
             // Main Content
-            VStack(spacing: 32) {
+            VStack(spacing: 24) {
                 // Headline
                 Text("Transform Your Sleep. NOW.")
                     .font(.system(size: 32, weight: .bold))
@@ -18,40 +18,41 @@ struct PaywallView: View {
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal)
-                    .padding(.top, 48)
+                    .padding(.top, 20)
                 
-                // Benefits
-                VStack(alignment: .leading, spacing: 16) {
-                    BenefitRow(icon: "moon.stars", 
-                              title: "Reduce time to fall asleep with guided Yoga Nidra")
-                    
-                    BenefitRow(icon: "waveform.path", 
-                              title: "Increase deep sleep through proven relaxation techniques")
-                    
-                    BenefitRow(icon: "heart.fill", 
-                              title: "Lower stress and anxiety with regular practice")
-                }
-                .padding(.horizontal)
-                
-                // Research Stats
-                VStack(spacing: 16) {
-                    Text("Scientifically Proven Results")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        StatRow(emoji: "🌙", text: "84% reduction in insomnia symptoms")
-                        StatRow(emoji: "✨", text: "Significant increase in deep sleep phases")
-                        StatRow(emoji: "⏰", text: "30-minute average decrease in sleep onset time")
+                ScrollView {
+                    // Benefits
+                    VStack(alignment: .leading, spacing: 16) {
+                        BenefitRow(icon: "moon.stars",
+                                  title: "Reduce time to fall asleep with guided Yoga Nidra")
+                        
+                        BenefitRow(icon: "waveform.path",
+                                  title: "Increase deep sleep through proven relaxation techniques")
+                        
+                        BenefitRow(icon: "heart.fill",
+                                  title: "Lower stress and anxiety with regular practice")
                     }
+                    .padding(.horizontal)
+                    
+                    // Research Stats
+                    VStack(spacing: 16) {
+                        Text("Scientifically Proven Results")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            StatRow(emoji: "🌙", text: "84% reduction in insomnia symptoms")
+                            StatRow(emoji: "✨", text: "Significant increase in deep sleep phases")
+                            StatRow(emoji: "⏰", text: "30-minute average decrease in sleep onset time")
+                        }
+                    }
+                    .padding(20)
+                    .background(Color.white.opacity(0.1))
+                    .cornerRadius(16)
+                    .padding(.horizontal)
                 }
-                .padding(20)
-                .background(Color.white.opacity(0.1))
-                .cornerRadius(16)
-                .padding(.horizontal)
+                .scrollIndicators(.hidden)
             }
-            
-            Spacer()
             
             // Bottom Section
             VStack(spacing: 16) {
@@ -102,7 +103,6 @@ struct PaywallView: View {
                 } label: {
                     Text("Restore Purchases")
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.8))
                 }
                 .padding(.top, 12)
                 

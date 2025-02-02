@@ -4,13 +4,7 @@ struct WelcomeView: View {
     let nextPage: () -> Void
     
     var body: some View {
-        VStack(spacing: 40) {
-            // Hero Image
-            Image("Onboarding/welcome-hero")
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal)
+        VStack(alignment: .leading, spacing: 40) {
             
             // Header
             Text("Welcome to Yoga Nidra")
@@ -18,6 +12,8 @@ struct WelcomeView: View {
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .textShadowEffect()
+                .padding(.top, 20)
+                .frame(maxWidth: .infinity)
             
             // Subheader
             VStack(spacing: 8) {
@@ -77,7 +73,6 @@ struct WelcomeView: View {
                     .cornerRadius(12)
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 40)
         }
         .padding()
         .background(
@@ -94,8 +89,7 @@ struct WelcomeView: View {
                     startPoint: .top,
                     endPoint: .bottom
                 )
-            }
-            .ignoresSafeArea()
+            }.ignoresSafeArea(edges: .vertical)
         )
     }
 }

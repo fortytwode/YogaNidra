@@ -81,7 +81,7 @@ struct RadarChart: View {
                 .stroke(Color.purple, lineWidth: 2)
             }
         }
-        .frame(height: 300)
+        .frame(height: 200)
     }
 }
 
