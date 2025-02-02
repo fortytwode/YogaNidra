@@ -4,97 +4,92 @@ struct PaywallView: View {
     @EnvironmentObject private var storeManager: StoreManager
     @EnvironmentObject private var onboardingManager: OnboardingManager
     @Environment(\.openURL) private var openURL
-    @Environment(\.dismiss) private var dismiss
     @State private var showError = false
     @State private var errorMessage = ""
     
     var body: some View {
-        VStack(spacing: 24) {
-            // Close button
-            HStack {
-                Spacer()
-                Button {
-                    withAnimation {
-                        onboardingManager.isOnboardingCompleted = true
-                    }
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.white.opacity(0.8))
+        VStack(spacing: 32) {
+            // Main Content
+            VStack(spacing: 32) {
+                // Headline
+                Text("Transform Your Sleep. NOW.")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal)
+                    .padding(.top, 48)
+                
+                // Benefits
+                VStack(alignment: .leading, spacing: 16) {
+                    BenefitRow(icon: "moon.stars", 
+                              title: "Reduce time to fall asleep with guided Yoga Nidra")
+                    
+                    BenefitRow(icon: "waveform.path", 
+                              title: "Increase deep sleep through proven relaxation techniques")
+                    
+                    BenefitRow(icon: "heart.fill", 
+                              title: "Lower stress and anxiety with regular practice")
                 }
-            }
-            .padding(.horizontal)
-            
-            Spacer()
-            
-            VStack(spacing: 8) {
-                Text("Start Your Journey")
-                    .font(.title)
-                    .fontWeight(.bold)
-                Text("Transform your sleep with Yoga Nidra")
-                    .font(.title3)
-            }
-            .foregroundColor(.white)
-            
-            VStack(alignment: .leading, spacing: 20) {
-                BenefitRow(icon: "infinity", 
-                          title: "Unlimited Access to All Sessions",
-                          description: "Access our complete meditation library")
+                .padding(.horizontal)
                 
-                BenefitRow(icon: "square.grid.2x2", 
-                          title: "Sessions for Every Situation",
-                          description: "For your sleep needs around nighttimes, naps, stress, travel, anxiety, and more")
-                
-                BenefitRow(icon: "arrow.down.circle", 
-                          title: "Download & Listen Offline",
-                          description: "Take your practice anywhere, no connection needed")
-                
-                BenefitRow(icon: "person.2", 
-                          title: "Multiple Instructor Options",
-                          description: "Choose from different expert guides for your practice")
-            }
-            .padding(.vertical, 24)
-            
-            Spacer()
-            
-            VStack(spacing: 16) {
-                Button {
-                    Task {
-                        do {
-                            try await storeManager.purchase(duringOnboarinng: true)
-                        } catch {
-                            errorMessage = error.localizedDescription
-                            showError = true
-                        }
-                    }
-                } label: {
-                    VStack(spacing: 4) {
-                        Text("Start free trial")
-                            .font(.headline)
-                        Text("Then \(storeManager.subscriptionPrice)/year")
-                            .font(.subheadline)
-                            .foregroundColor(.black.opacity(0.8))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(.white)
-                    .foregroundColor(.black)
-                    .cornerRadius(16)
-                }
-                
-                Button {
-                    Task {
-                        do {
-                            try await storeManager.restorePurchases(duringOnboarinng: true)
-                        } catch {
-                            errorMessage = error.localizedDescription
-                            showError = true
-                        }
-                    }
-                } label: {
-                    Text("Restore purchases")
-                        .font(.title3)
+                // Research Stats
+                VStack(spacing: 16) {
+                    Text("Scientifically Proven Results")
+                        .font(.headline)
                         .foregroundColor(.white)
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        StatRow(emoji: "🌙", text: "84% reduction in insomnia symptoms")
+                        StatRow(emoji: "✨", text: "Significant increase in deep sleep phases")
+                        StatRow(emoji: "⏰", text: "30-minute average decrease in sleep onset time")
+                    }
+                }
+                .padding(20)
+                .background(Color.white.opacity(0.1))
+                .cornerRadius(16)
+                .padding(.horizontal)
+            }
+            
+            Spacer()
+            
+            // Bottom Section
+            VStack(spacing: 16) {
+                VStack(spacing: 8) {
+                    Text("7-Day Free Trial")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    
+                    Text("Then $59.99/year")
+                        .foregroundColor(.white.opacity(0.9))
+                }
+                
+                Button {
+                    Task {
+                        do {
+                            try await storeManager.purchase()
+                        } catch {
+                            showError = true
+                            errorMessage = error.localizedDescription
+                        }
+                    }
+                } label: {
+                    Text("Start Free Trial")
+                        .font(.headline)
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(.white)
+                        .cornerRadius(28)
+                }
+                .padding(.horizontal)
+                
+                if let date = Calendar.current.date(byAdding: .day, value: 7, to: Date()) {
+                    Text("Cancel anytime before \(date.formatted(date: .abbreviated, time: .omitted))")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
                 }
                 
                 HStack(spacing: 24) {
@@ -116,65 +111,89 @@ struct PaywallView: View {
                             .underline()
                     }
                 }
+                .padding(.top, 8)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 40)
+            .padding(.bottom, 16)
         }
-        .padding()
+        .alert("Purchase Failed", isPresented: $showError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(errorMessage)
+        }
         .background(
             ZStack {
                 Image("mountain-lake-twilight")
                     .resizable()
                     .scaledToFill()
-                    .ignoresSafeArea()
+                    .overlay(Color.black.opacity(0.4))
+                    .edgesIgnoringSafeArea(.all)
                 
                 LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color.black.opacity(0.3),
-                        Color.black.opacity(0.7)
-                    ]),
+                    gradient: Gradient(colors: [.clear, .black.opacity(0.3)]),
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .ignoresSafeArea()
+                .edgesIgnoringSafeArea(.all)
             }
         )
-        .alert("Error", isPresented: $showError) {
-            Button("OK") {}
-        } message: {
-            Text(errorMessage)
-        }
     }
 }
 
 struct BenefitRow: View {
     let icon: String
     let title: String
-    let description: String
     
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
+        HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 24))
-                .frame(width: 32, height: 32)
+                .font(.system(size: 20))
+                .frame(width: 32, alignment: .center)
                 .foregroundColor(.white)
             
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                    .foregroundColor(.white)
-                
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
-            }
+            Text(title)
+                .font(.subheadline)
+                .foregroundColor(.white)
+                .fixedSize(horizontal: false, vertical: true)
+                .lineLimit(nil)
         }
-        .padding(.horizontal, 24)
     }
 }
 
-#Preview {
-    PaywallView()
-        .environmentObject(StoreManager.shared)
-        .environmentObject(OnboardingManager.shared)
+struct StatRow: View {
+    let emoji: String
+    let text: String
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Text(emoji)
+                .font(.title2)
+                .frame(width: 32, alignment: .center)
+            
+            Text(text)
+                .font(.subheadline)
+                .foregroundColor(.white)
+                .fixedSize(horizontal: false, vertical: true)
+                .lineLimit(nil)
+            
+            Spacer()
+        }
+    }
 }
+
+#if DEBUG
+struct PaywallView_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            PaywallView()
+                .environmentObject(StoreManager.preview)
+                .environmentObject(OnboardingManager.preview)
+            
+            PaywallView()
+                .environmentObject(StoreManager.preview)
+                .environmentObject(OnboardingManager.preview)
+                .previewDevice("iPhone SE (3rd generation)")
+                .previewDisplayName("iPhone SE")
+        }
+    }
+}
+#endif

@@ -28,3 +28,12 @@ final class OnboardingManager: ObservableObject {
         self.shouldShowOnboarding = !isOnboardingCompleted
     }
 }
+
+#if DEBUG
+extension OnboardingManager {
+    static var preview: OnboardingManager {
+        let manager = OnboardingManager.shared
+        return manager
+    }
+}
+#endif
