@@ -62,7 +62,7 @@ struct RatingPromptView: View {
     var buttons: some View {
         VStack(spacing: 12) {
             Button {
-                RatingManager.shared.rateApp()
+                showRatingPrompt()
                 overlayManager.hideOverlay()
             } label: {
                 Text("Rate on App Store")
@@ -89,16 +89,21 @@ struct RatingPromptView: View {
         .padding(.horizontal)
         .padding(.bottom, 24)
     }
+    
+    private func showRatingPrompt() {
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
+            return
+        }
+        SKStoreReviewController.requestReview(in: scene)
+    }
 }
 
 #Preview("Rating Prompt - Light") {
     RatingPromptView()
-        .environmentObject(RatingManager.shared)
         .preferredColorScheme(.light)
 }
 
 #Preview("Rating Prompt - Dark") {
     RatingPromptView()
-        .environmentObject(RatingManager.shared)
         .preferredColorScheme(.dark)
 }
