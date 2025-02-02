@@ -18,18 +18,18 @@ final class ProgressManager: ObservableObject {
     }
     
     private var audioStartTime: Date?
-    private var totalSessionListenTime: TimeInterval = 0
-    
     private var appLaunchCount: Int = 0
+    private var totalSessionListenTime: TimeInterval = 0
     private var lastRatingDialogDate: Date?
     
     private let appLaunchCountKey = "appLaunchCount"
     private let lastRatingDialogDateKey = "lastRatingDialogDate"
+    private let totalSessionListenTimeKey = "totalSessionListenTimeKey"
     
     private init() {
         loadDataOnAppLaunch()
+        setAppLaunchCount()
         checkRatingDialog()
-        incrementAppLaunchCount()
     }
     
     func audioSessionStarted() {
@@ -37,30 +37,37 @@ final class ProgressManager: ObservableObject {
     }
     
     func audioSessionEnded() {
-        guard let startTime = audioStartTime else {
-            return
-        }
-        let endTime = Date()
-        totalSessionListenTime = endTime.timeIntervalSince(startTime) + totalSessionListenTime
+        guard let startTime = audioStartTime else { return }
         audioStartTime = nil
+        let endTime = Date()
+        let totalListenTime = endTime.timeIntervalSince(startTime) + totalSessionListenTime
+        setTotalSessionListenTime(totalListenTime)
         checkRatingDialog()
     }
     
     private func checkRatingDialog() {
-//        let isEngoughListenTime = totalSessionListenTime >= 10 * 60
-        let isEngoughListenTime = true
-//        let isAppLaunchCountSufficient = appLaunchCount >= 3
-        let isAppLaunchCountSufficient = true
-        if let lastRatingDate = lastRatingDialogDate, lastRatingDate < .now, isAppLaunchCountSufficient {
-            setRatingDialogShown()
-        } else if isEngoughListenTime, isAppLaunchCountSufficient {
+        let isEngoughListenTime = totalSessionListenTime >= 10 * 60
+        let isAppLaunchCountSufficient = appLaunchCount >= 3
+        let isRatingDialogCoolDownPassed = lastRatingDialogDate?.isAtLeastDaysApart(from: .now, days: 3) ?? true
+        if isEngoughListenTime, isAppLaunchCountSufficient, isRatingDialogCoolDownPassed {
             setRatingDialogShown()
         }
     }
     
-    private func incrementAppLaunchCount() {
+    private func setTotalSessionListenTime(_ time: TimeInterval) {
+        totalSessionListenTime = time
+        UserDefaults.standard.set(time, forKey: totalSessionListenTimeKey)
+    }
+    
+    private func setAppLaunchCount() {
         appLaunchCount += 1
         UserDefaults.standard.set(appLaunchCount, forKey: appLaunchCountKey)
+    }
+    
+    private func setRatingDialogShown() {
+        showRaitnsDialog.send()
+        lastRatingDialogDate = Date()
+        UserDefaults.standard.set(lastRatingDialogDate, forKey: lastRatingDialogDateKey)
     }
     
     private func loadDataOnAppLaunch() {
@@ -68,11 +75,8 @@ final class ProgressManager: ObservableObject {
         if let date = UserDefaults.standard.object(forKey: lastRatingDialogDateKey) as? Date {
             lastRatingDialogDate = date
         }
-    }
-    
-    private func setRatingDialogShown() {
-        showRaitnsDialog.send()
-        lastRatingDialogDate = Date()
-        UserDefaults.standard.set(lastRatingDialogDate, forKey: lastRatingDialogDateKey)
+        if let listeningTime = UserDefaults.standard.object(forKey: totalSessionListenTimeKey) as? TimeInterval {
+            totalSessionListenTime = listeningTime
+        }
     }
 }
