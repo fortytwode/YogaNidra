@@ -9,7 +9,7 @@ struct YogaNidraApp: App {
     @StateObject private var onboardingManager = OnboardingManager.shared
     @StateObject private var audioManager = AudioManager.shared
     @StateObject private var sheetPresenter = Presenter()
-    @StateObject private var overlayManager = OverlayManager()
+    @StateObject private var overlayManager = OverlayManager.shared
     
     var body: some Scene {
         WindowGroup {

@@ -1,8 +1,9 @@
-
 import SwiftUI
 
 @MainActor
 final class OverlayManager: ObservableObject {
+    
+    static let shared = OverlayManager()
     
     @Published var overlay: AnyView?
     

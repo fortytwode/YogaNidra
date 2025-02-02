@@ -31,10 +31,6 @@ struct RecommendedSessionCard: View {
                 Text(formattedDuration)
                     .font(.subheadline)
                     .foregroundColor(.white.opacity(0.9))
-                
-                Text(session.category.rawValue)
-                    .font(.caption)
-                    .foregroundColor(.accentColor)
             }
             .multilineTextAlignment(.leading)
             

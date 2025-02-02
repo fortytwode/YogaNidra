@@ -14,9 +14,19 @@ struct RatingPromptView: View {
                 buttons
             }
             .background(
-                RoundedRectangle(cornerRadius: 24)
-                    .fill(colorScheme == .dark ? Color(white: 0.1) : Color(white: 0.98))
-                    .edgesIgnoringSafeArea(.bottom)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(colorScheme == .dark ? Color(white: 0.1) : Color(white: 0.98))
+                    
+                    if let _ = UIImage(named: "rating-background") {
+                        Image("rating-background")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .opacity(0.1)
+                            .clipped()
+                    }
+                }
+                .edgesIgnoringSafeArea(.bottom)
             )
             .padding(.horizontal)
         }
@@ -33,26 +43,23 @@ struct RatingPromptView: View {
                     }
                 }
             
-            Text("How's Your Sleep Journey?")
+            Text("Did that feel good?")
                 .font(.title2.bold())
                 .multilineTextAlignment(.center)
             
-            MarqueeText(
-                text: "Your feedback helps others discover the healing power of Yoga Nidra",
-                font: UIFont.preferredFont(forTextStyle: .body),
-                leftFade: 16,
-                rightFade: 16,
-                startDelay: 1
-            )
+            VStack(spacing: 8) {
+                Text("Take a moment to rate us.")
+                Text("Every rating helps us give the gift of\nbetter sleep to more people.")
+            }
             .font(.body)
             .multilineTextAlignment(.center)
-            .foregroundColor(.secondary)
+            .foregroundColor(.primary.opacity(0.8))
+            .lineSpacing(4)
             
 #if targetEnvironment(simulator)
             Text("Note: App Store rating only works on physical devices")
                 .font(.caption)
                 .foregroundColor(.secondary)
-                .padding(.top, 8)
 #endif
         }
         .padding(.top, 32)
@@ -77,33 +84,54 @@ struct RatingPromptView: View {
             Button {
                 overlayManager.hideOverlay()
             } label: {
-                Text("Not Now")
-                    .font(.headline)
+                Text("Maybe Later")
+                    .font(.subheadline)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(colorScheme == .dark ? Color(white: 0.2) : Color(white: 0.95))
                     .foregroundColor(.secondary)
-                    .cornerRadius(12)
             }
         }
         .padding(.horizontal)
-        .padding(.bottom, 24)
+        .padding(.bottom, 32)
     }
     
     private func showRatingPrompt() {
-        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
-            return
-        }
+        guard let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene else { return }
         SKStoreReviewController.requestReview(in: scene)
     }
 }
 
-#Preview("Rating Prompt - Light") {
-    RatingPromptView()
-        .preferredColorScheme(.light)
-}
-
-#Preview("Rating Prompt - Dark") {
-    RatingPromptView()
-        .preferredColorScheme(.dark)
+// MARK: - Previews
+struct RatingPromptView_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            // Light mode preview
+            RatingPromptView()
+                .environmentObject(OverlayManager())
+                .preferredColorScheme(.light)
+                .previewDisplayName("Rating Prompt - Light")
+                .background(Color.white)
+            
+            // Dark mode preview
+            RatingPromptView()
+                .environmentObject(OverlayManager())
+                .preferredColorScheme(.dark)
+                .previewDisplayName("Rating Prompt - Dark")
+                .background(Color.black)
+            
+            // Preview in context
+            ZStack {
+                TabView {
+                    Color.black.opacity(0.9)
+                        .tabItem {
+                            Label("Home", systemImage: "house")
+                        }
+                }
+                
+                RatingPromptView()
+                    .environmentObject(OverlayManager())
+            }
+            .previewDisplayName("Rating Prompt - In Context")
+        }
+    }
 }

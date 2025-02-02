@@ -38,43 +38,44 @@ struct SessionDetailView: View {
                         Spacer()
                     }
                     .padding(.horizontal)
-                    .padding(.top)
                     
-                    Spacer()
-                    
-                    // Session Image
-                    Image(session.thumbnailUrl)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 200, height: 200)
-                        .cornerRadius(20)
-                    
-                    // Session Info
-                    VStack(spacing: 8) {
-                        Text(session.title)
-                            .font(.title)
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.center)
+                    // Main Content
+                    VStack(spacing: 16) {
+                        // Session Image
+                        Image(session.thumbnailUrl)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 200, height: 200)
+                            .cornerRadius(20)
                         
-                        MarqueeText(
-                            text: session.description,
-                            font: UIFont.preferredFont(forTextStyle: .title3),
-                            leftFade: 16,
-                            rightFade: 16,
-                            startDelay: 3
-                        )
-                        .font(.title3)
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                        
-                        Text("with \(session.instructor)")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                        
-                        Text("\(durationInMinutes) minutes")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                            .padding(.bottom, 8)
+                        // Session Info
+                        VStack(spacing: 8) {
+                            Text(session.title)
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                            
+                            Text(session.description)
+                                .font(.callout)
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.horizontal)
+                            
+                            HStack {
+                                Text(session.instructor)
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.9))
+                                
+                                Text("•")
+                                    .foregroundColor(.white.opacity(0.6))
+                                
+                                Text("\(durationInMinutes) minutes")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.9))
+                            }
+                            .padding(.top, 4)
+                        }
                         
                         // Action Buttons
                         HStack(spacing: 40) {
@@ -112,70 +113,71 @@ struct SessionDetailView: View {
                                 }
                             }
                         }
-                    }
-                    .padding(.horizontal)
-                    
-                    Spacer()
-                    
-                    // Player Controls
-                    VStack(spacing: 30) {
-                        // Progress Slider and Time
-                        VStack(spacing: 8) {
-                            Slider(value: Binding(get: {
-                                audioManager.srubPostion
-                            }, set: { value in
-                                audioManager.onScrub(fraction: value)
-                            }),
-                                   in: 0...1)
-                                .tint(.white)
-                            
-                            HStack {
-                                Text(formatTime(audioManager.currentTime))
-                                Spacer()
-                                Text(formatTime(TimeInterval(session.duration)))
-                            }
-                            .font(.system(size: 12))
-                            .foregroundColor(.white)
-                            .transaction { transaction in
-                                transaction.animation = nil
-                            }
-                        }
-                        .padding(.horizontal)
+                        .padding(.top, 20)
                         
-                        // Control Buttons
-                        HStack(spacing: 60) {
-                            Button {
-                                audioManager.skip(.backward, by: 15)
-                            } label: {
-                                Image(systemName: "gobackward.15")
-                                    .font(.title)
-                                    .foregroundColor(.white)
-                            }
-                            
-                            Button {
-                                if audioManager.isPlaying {
-                                    audioManager.onPauseSession()
-                                } else {
-                                    startPlaying()
+                        Spacer()
+                        
+                        // Player Controls
+                        VStack(spacing: 30) {
+                            // Progress Slider and Time
+                            VStack(spacing: 8) {
+                                Slider(value: Binding(get: {
+                                    audioManager.srubPostion
+                                }, set: { value in
+                                    audioManager.onScrub(fraction: value)
+                                }),
+                                       in: 0...1)
+                                    .tint(.white)
+                                
+                                HStack {
+                                    Text(formatTime(audioManager.currentTime))
+                                    Spacer()
+                                    Text(formatTime(TimeInterval(session.duration)))
                                 }
-                            } label: {
-                                Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
-                                    .font(.system(size: 30))
-                                    .foregroundColor(.white)
-                                    .frame(width: 60, height: 60)
-                                    .background(Circle().fill(Color.white.opacity(0.2)))
+                                .font(.system(size: 12))
+                                .foregroundColor(.white)
+                                .transaction { transaction in
+                                    transaction.animation = nil
+                                }
                             }
+                            .padding(.horizontal)
                             
-                            Button {
-                                audioManager.skip(.forward, by: 15)
-                            } label: {
-                                Image(systemName: "goforward.15")
-                                    .font(.title)
-                                    .foregroundColor(.white)
+                            // Control Buttons
+                            HStack(spacing: 60) {
+                                Button {
+                                    audioManager.skip(.backward, by: 15)
+                                } label: {
+                                    Image(systemName: "gobackward.15")
+                                        .font(.title)
+                                        .foregroundColor(.white)
+                                }
+                                
+                                Button {
+                                    if audioManager.isPlaying {
+                                        audioManager.onPauseSession()
+                                    } else {
+                                        startPlaying()
+                                    }
+                                } label: {
+                                    Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
+                                        .font(.system(size: 30))
+                                        .foregroundColor(.white)
+                                        .frame(width: 60, height: 60)
+                                        .background(Circle().fill(Color.white.opacity(0.2)))
+                                }
+                                
+                                Button {
+                                    audioManager.skip(.forward, by: 15)
+                                } label: {
+                                    Image(systemName: "goforward.15")
+                                        .font(.title)
+                                        .foregroundColor(.white)
+                                }
                             }
                         }
+                        .padding(.bottom, 140)
                     }
-                    .padding(.bottom, 30)
+                    .padding(.top, -20)
                 }
             }
         }

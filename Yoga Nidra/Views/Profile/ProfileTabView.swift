@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(iOS 15.0, *)
 struct ProfileTabView: View {
     @EnvironmentObject private var storeManager: StoreManager
     @Environment(\.openURL) private var openURL
@@ -45,19 +46,21 @@ struct ProfileTabView: View {
                     }
                 }
                 
+                Section("App Settings") {
+                    NavigationLink {
+                        NotificationSettingsView()
+                    } label: {
+                        Label("Notifications", systemImage: "bell")
+                    }
+                }
+                
                 if !storeManager.isSubscribed {
                     Section {
-                        Button {
-                            // Navigate to PaywallView
+                        NavigationLink {
+                            SubscriptionView()
                         } label: {
-                            HStack {
-                                Spacer()
-                                Text("Upgrade to Premium")
-                                    .fontWeight(.semibold)
-                                Spacer()
-                            }
+                            Label("Upgrade to Premium", systemImage: "crown")
                         }
-                        .tint(.blue)
                     }
                 }
             }
@@ -66,7 +69,12 @@ struct ProfileTabView: View {
     }
 }
 
-#Preview {
-    ProfileTabView()
-        .environmentObject(StoreManager.shared)
+// MARK: - Preview Provider
+#if DEBUG
+struct ProfileTabView_Previews: PreviewProvider {
+    static var previews: some View {
+        ProfileTabView()
+            .environmentObject(StoreManager.preview)
+    }
 }
+#endif

@@ -55,23 +55,22 @@ struct SessionCard: View {
             .frame(height: 160) // Fixed height for image container
             
             // Session info
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 0) {
                 Text(session.title)
                     .font(.headline)
                     .foregroundColor(.white)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(height: 50) // Fixed height for title
+                    .frame(height: 44, alignment: .leading) // Fixed height for 2 lines
                 
                 Text(session.instructor)
                     .font(.subheadline)
                     .foregroundColor(.gray)
                     .lineLimit(1)
             }
-            .padding(.horizontal, 4)
-            .padding(.bottom, 8)
-            .frame(height: 80) // Fixed height for info container
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 12)
+            .padding(.bottom, 12)
         }
         .frame(maxWidth: .infinity)
     }

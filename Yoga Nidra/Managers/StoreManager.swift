@@ -7,6 +7,17 @@ final class StoreManager: ObservableObject {
     // MARK: - Singleton
     static let shared = StoreManager()
     
+    #if DEBUG
+    // Preview helper
+    static var preview: StoreManager {
+        let manager = StoreManager()
+        manager.isSubscribed = false
+        manager.subscriptionPrice = "$59.99"
+        manager.formattedPrice = "$59.99/year"
+        return manager
+    }
+    #endif
+    
     // MARK: - Published Properties
     @Published private(set) var isSubscribed = false
     @Published private(set) var isInTrialPeriod = false

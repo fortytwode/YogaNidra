@@ -1,10 +1,14 @@
 # Yoga Nidra App
 
+1.1 Feb 2025
+
 session card alignment fixed
 added favorites
+added recent meditations
+new audios uploaded
+ratings prompts
 
-
-
+At launch
 todo:
 - [ ] check subs purchase flow.
 - [ ] update onboarding and refine it. 

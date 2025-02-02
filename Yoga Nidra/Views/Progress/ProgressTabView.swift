@@ -45,37 +45,51 @@ struct ProgressTabView: View {
                 Divider()
                 
                 HStack(spacing: 24) {
+                    #if DEBUG
+                    NavigationLink(value: ProgressTabDestination.ratingDebug) {
+                        Label("Debug", systemImage: "ladybug")
+                            .foregroundColor(.secondary)
+                    }
+                    #endif
+                    
                     Button {
                         openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-terms")!)
                     } label: {
                         Text("Terms")
-                            .font(.footnote)
                             .foregroundColor(.secondary)
                     }
                     
                     Button {
                         openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-privacy")!)
                     } label: {
-                        Text("Privacy Policy")
-                            .font(.footnote)
+                        Text("Privacy")
                             .foregroundColor(.secondary)
                     }
                 }
-                .padding(.vertical, 12)
+                .padding()
             }
-            .navigationTitle("Your Progress")
-            .environmentObject(router)
+            .navigationTitle("Progress")
             .navigationDestination(for: ProgressTabDestination.self) { destination in
                 switch destination {
+                #if DEBUG
+                case .ratingDebug:
+                    RatingPromptDebugView()
+                #endif
                 case .none:
-                    Text("No view for ProgressTabDestination")
+                    EmptyView()
                 }
             }
         }
     }
 }
 
-#Preview {
-    ProgressTabView()
-        .environmentObject(ProgressManager.shared)
+// MARK: - Preview Provider
+#if DEBUG
+struct ProgressTabView_Previews: PreviewProvider {
+    static var previews: some View {
+        ProgressTabView()
+            .environmentObject(ProgressManager.preview)
+            .environmentObject(OverlayManager())
+    }
 }
+#endif

@@ -96,9 +96,13 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
             if loop {
                 audioPlayer?.numberOfLoops = -1
             }
-            audioPlayer?.play()
-            isPlaying = true
-            startTimer()
+            // Add a small delay before playing
+            Task {
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                audioPlayer?.play()
+                isPlaying = true
+                startTimer()
+            }
             return
         }
         
@@ -108,9 +112,13 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
             let url = URL(fileURLWithPath: path)
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.delegate = self
-            audioPlayer?.play()
-            isPlaying = true
-            startTimer()
+            // Add a small delay before playing
+            Task {
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                audioPlayer?.play()
+                isPlaying = true
+                startTimer()
+            }
             return
         }
         

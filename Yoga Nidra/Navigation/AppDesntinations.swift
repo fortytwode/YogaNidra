@@ -25,5 +25,8 @@ enum LibraryTabDestination: Hashable {
 }
 
 enum ProgressTabDestination: Hashable {
+    #if DEBUG
+    case ratingDebug
+    #endif
     case none
 }
