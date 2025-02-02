@@ -21,166 +21,170 @@ struct SessionDetailView: View {
             ZStack {
                 Color.black.edgesIgnoringSafeArea(.all)
                 
-                VStack(spacing: 20) {
-                    // Top Bar with dismiss button
-                    HStack {
-                        Button(action: {
-                            dismiss()
-                        }) {
-                            Image(systemName: "chevron.down")
-                                .font(.title2)
-                                .foregroundColor(.white)
-                                .frame(width: 44, height: 44)
-                                .background(Color.white.opacity(0.2))
-                                .clipShape(Circle())
-                        }
-                        
-                        Spacer()
-                    }
-                    .padding(.horizontal)
-                    
-                    // Main Content
-                    VStack(spacing: 16) {
-                        // Session Image
-                        Image(session.thumbnailUrl)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 200, height: 200)
-                            .cornerRadius(20)
-                        
-                        // Session Info
-                        VStack(spacing: 8) {
-                            Text(session.title)
-                                .font(.title)
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                            
-                            Text(session.description)
-                                .font(.callout)
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .padding(.horizontal)
-                            
-                            HStack {
-                                Text(session.instructor)
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.9))
-                                
-                                Text("•")
-                                    .foregroundColor(.white.opacity(0.6))
-                                
-                                Text("\(durationInMinutes) minutes")
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.9))
-                            }
-                            .padding(.top, 4)
-                        }
-                        
-                        // Action Buttons
-                        HStack(spacing: 40) {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        // Top Bar with dismiss button
+                        HStack {
                             Button(action: {
-                                favoritesManager.toggleFavorite(session)
+                                dismiss()
                             }) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: favoritesManager.isFavorite(session) ? "heart.fill" : "heart")
-                                        .font(.title2)
-                                        .foregroundColor(favoritesManager.isFavorite(session) ? .red : .white)
-                                        .frame(width: 44, height: 44)
-                                        .background(Color.white.opacity(0.2))
-                                        .clipShape(Circle())
-                                    
-                                    Text("Favorite")
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-                                }
+                                Image(systemName: "chevron.down")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                                    .frame(width: 44, height: 44)
+                                    .background(Color.white.opacity(0.2))
+                                    .clipShape(Circle())
                             }
                             
-                            Button(action: {
-                                showingShareSheet = true
-                            }) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "square.and.arrow.up")
-                                        .font(.title2)
-                                        .foregroundColor(.white)
-                                        .frame(width: 44, height: 44)
-                                        .background(Color.white.opacity(0.2))
-                                        .clipShape(Circle())
-                                    
-                                    Text("Share")
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-                                }
-                            }
+                            Spacer()
                         }
-                        .padding(.top, 20)
+                        .padding(.horizontal)
                         
-                        Spacer()
-                        
-                        // Player Controls
-                        VStack(spacing: 30) {
-                            // Progress Slider and Time
+                        // Main Content
+                        VStack(spacing: 16) {
+                            // Session Image
+                            Image(session.thumbnailUrl)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 200, height: 200)
+                                .cornerRadius(20)
+                            
+                            // Session Info
                             VStack(spacing: 8) {
-                                Slider(value: Binding(get: {
-                                    audioManager.srubPostion
-                                }, set: { value in
-                                    audioManager.onScrub(fraction: value)
-                                }),
-                                       in: 0...1)
-                                    .tint(.white)
+                                Text(session.title)
+                                    .font(.title)
+                                    .foregroundColor(.white)
+                                    .multilineTextAlignment(.center)
+                                
+                                Text(session.description)
+                                    .font(.callout)
+                                    .foregroundColor(.white)
+                                    .multilineTextAlignment(.center)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .padding(.horizontal)
                                 
                                 HStack {
-                                    Text(formatTime(audioManager.currentTime))
-                                    Spacer()
-                                    Text(formatTime(TimeInterval(session.duration)))
+                                    Text(session.instructor)
+                                        .font(.subheadline)
+                                        .foregroundColor(.white.opacity(0.9))
+                                    
+                                    Text("•")
+                                        .foregroundColor(.white.opacity(0.6))
+                                    
+                                    Text("\(durationInMinutes) minutes")
+                                        .font(.subheadline)
+                                        .foregroundColor(.white.opacity(0.9))
                                 }
-                                .font(.system(size: 12))
-                                .foregroundColor(.white)
-                                .transaction { transaction in
-                                    transaction.animation = nil
-                                }
+                                .padding(.top, 4)
                             }
-                            .padding(.horizontal)
                             
-                            // Control Buttons
-                            HStack(spacing: 60) {
-                                Button {
-                                    audioManager.skip(.backward, by: 15)
-                                } label: {
-                                    Image(systemName: "gobackward.15")
-                                        .font(.title)
-                                        .foregroundColor(.white)
-                                }
-                                
-                                Button {
-                                    if audioManager.isPlaying {
-                                        audioManager.onPauseSession()
-                                    } else {
-                                        startPlaying()
+                            // Action Buttons
+                            HStack(spacing: 40) {
+                                Button(action: {
+                                    favoritesManager.toggleFavorite(session)
+                                }) {
+                                    VStack(spacing: 4) {
+                                        Image(systemName: favoritesManager.isFavorite(session) ? "heart.fill" : "heart")
+                                            .font(.title2)
+                                            .foregroundColor(favoritesManager.isFavorite(session) ? .red : .white)
+                                            .frame(width: 44, height: 44)
+                                            .background(Color.white.opacity(0.2))
+                                            .clipShape(Circle())
+                                        
+                                        Text("Favorite")
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
                                     }
-                                } label: {
-                                    Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
-                                        .font(.system(size: 30))
-                                        .foregroundColor(.white)
-                                        .frame(width: 60, height: 60)
-                                        .background(Circle().fill(Color.white.opacity(0.2)))
                                 }
                                 
-                                Button {
-                                    audioManager.skip(.forward, by: 15)
-                                } label: {
-                                    Image(systemName: "goforward.15")
-                                        .font(.title)
-                                        .foregroundColor(.white)
+                                Button(action: {
+                                    showingShareSheet = true
+                                }) {
+                                    VStack(spacing: 4) {
+                                        Image(systemName: "square.and.arrow.up")
+                                            .font(.title2)
+                                            .foregroundColor(.white)
+                                            .frame(width: 44, height: 44)
+                                            .background(Color.white.opacity(0.2))
+                                            .clipShape(Circle())
+                                        
+                                        Text("Share")
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
                                 }
                             }
+                            .padding(.top, 20)
+                            
+                            Spacer(minLength: geometry.size.height * 0.1)
+                            
+                            // Player Controls
+                            VStack(spacing: 30) {
+                                // Progress Slider and Time
+                                VStack(spacing: 8) {
+                                    Slider(value: Binding(get: {
+                                        audioManager.srubPostion
+                                    }, set: { value in
+                                        audioManager.onScrub(fraction: value)
+                                    }),
+                                           in: 0...1)
+                                        .tint(.white)
+                                    
+                                    HStack {
+                                        Text(formatTime(audioManager.currentTime))
+                                        Spacer()
+                                        Text(formatTime(TimeInterval(session.duration)))
+                                    }
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.white)
+                                    .transaction { transaction in
+                                        transaction.animation = nil
+                                    }
+                                }
+                                .padding(.horizontal)
+                                
+                                // Control Buttons
+                                HStack(spacing: 60) {
+                                    Button {
+                                        audioManager.skip(.backward, by: 15)
+                                    } label: {
+                                        Image(systemName: "gobackward.15")
+                                            .font(.title)
+                                            .foregroundColor(.white)
+                                    }
+                                    
+                                    Button {
+                                        if audioManager.isPlaying {
+                                            audioManager.onPauseSession()
+                                        } else {
+                                            startPlaying()
+                                        }
+                                    } label: {
+                                        Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
+                                            .font(.system(size: 30))
+                                            .foregroundColor(.white)
+                                            .frame(width: 60, height: 60)
+                                            .background(Circle().fill(Color.white.opacity(0.2)))
+                                    }
+                                    
+                                    Button {
+                                        audioManager.skip(.forward, by: 15)
+                                    } label: {
+                                        Image(systemName: "goforward.15")
+                                            .font(.title)
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                            }
+                            .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
                         }
-                        .padding(.bottom, 140)
+                        .padding(.top, -20)
                     }
-                    .padding(.top, -20)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .edgesIgnoringSafeArea(.all)
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showingShareSheet) {
             ShareSheet(activityItems: [

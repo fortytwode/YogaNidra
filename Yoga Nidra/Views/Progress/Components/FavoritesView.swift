@@ -72,7 +72,7 @@ struct FavoritesView: View {
                                         .foregroundColor(.gray)
                                         .lineLimit(1)
                                     
-                                    Text("\(Int(session.duration)) mins")
+                                    Text("\(Int(session.duration / 60)) mins")
                                         .font(.caption)
                                         .foregroundColor(.blue)
                                 }

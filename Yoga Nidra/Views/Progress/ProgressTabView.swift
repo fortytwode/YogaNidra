@@ -45,13 +45,6 @@ struct ProgressTabView: View {
                 Divider()
                 
                 HStack(spacing: 24) {
-                    #if DEBUG
-                    NavigationLink(value: ProgressTabDestination.ratingDebug) {
-                        Label("Debug", systemImage: "ladybug")
-                            .foregroundColor(.secondary)
-                    }
-                    #endif
-                    
                     Button {
                         openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-terms")!)
                     } label: {
@@ -69,15 +62,8 @@ struct ProgressTabView: View {
                 .padding()
             }
             .navigationTitle("Progress")
-            .navigationDestination(for: ProgressTabDestination.self) { destination in
-                switch destination {
-                #if DEBUG
-                case .ratingDebug:
-                    RatingPromptDebugView()
-                #endif
-                case .none:
-                    EmptyView()
-                }
+            .navigationDestination(for: ProgressTabDestination.self) { _ in
+                EmptyView()
             }
         }
     }
