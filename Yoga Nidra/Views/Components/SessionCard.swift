@@ -61,17 +61,17 @@ struct SessionCard: View {
                     .foregroundColor(.white)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
-                    .frame(height: 44, alignment: .leading) // Fixed height for 2 lines
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 
                 Text(session.instructor)
                     .font(.subheadline)
                     .foregroundColor(.gray)
                     .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 12)
             .padding(.bottom, 12)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

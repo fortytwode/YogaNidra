@@ -13,21 +13,18 @@ struct RatingPromptView: View {
                 header
                 buttons
             }
-            .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(colorScheme == .dark ? Color(white: 0.1) : Color(white: 0.98))
-                    
-                    if let _ = UIImage(named: "rating-background") {
-                        Image("rating-background")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .opacity(0.1)
-                            .clipped()
-                    }
-                }
-                .edgesIgnoringSafeArea(.bottom)
-            )
+            .background {
+                Image("rating-background")
+                    .resizable()
+                    .opacity(colorScheme == .dark ? 0.2: 0.2)
+                    .clipped()
+            }
+            .background(colorScheme == .dark ? Color(white: 0.1) : .gray.opacity(0.8))
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .background {
+                RoundedRectangle(cornerRadius: 24)
+                    .shadow(color: colorScheme == .dark ? .white.opacity(0.3) : .black, radius: 8, x: 4, y: 4)
+            }
             .padding(.horizontal)
         }
     }
@@ -59,7 +56,7 @@ struct RatingPromptView: View {
 #if targetEnvironment(simulator)
             Text("Note: App Store rating only works on physical devices")
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(.primary)
 #endif
         }
         .padding(.top, 32)
@@ -88,7 +85,7 @@ struct RatingPromptView: View {
                     .font(.subheadline)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.primary)
             }
         }
         .padding(.horizontal)
@@ -101,37 +98,12 @@ struct RatingPromptView: View {
     }
 }
 
-// MARK: - Previews
-struct RatingPromptView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            // Light mode preview
-            RatingPromptView()
-                .environmentObject(OverlayManager())
-                .preferredColorScheme(.light)
-                .previewDisplayName("Rating Prompt - Light")
-                .background(Color.white)
-            
-            // Dark mode preview
-            RatingPromptView()
-                .environmentObject(OverlayManager())
-                .preferredColorScheme(.dark)
-                .previewDisplayName("Rating Prompt - Dark")
-                .background(Color.black)
-            
-            // Preview in context
-            ZStack {
-                TabView {
-                    Color.black.opacity(0.9)
-                        .tabItem {
-                            Label("Home", systemImage: "house")
-                        }
-                }
-                
-                RatingPromptView()
-                    .environmentObject(OverlayManager())
-            }
-            .previewDisplayName("Rating Prompt - In Context")
-        }
-    }
+#Preview("Rating Prompt - Light") {
+    RatingPromptView()
+        .preferredColorScheme(.light)
+}
+
+#Preview("Rating Prompt - Dark") {
+    RatingPromptView()
+        .preferredColorScheme(.dark)
 }
