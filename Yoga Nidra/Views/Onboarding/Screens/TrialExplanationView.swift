@@ -3,11 +3,12 @@ import SwiftUI
 struct TrialExplanationView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var storeManager: StoreManager
-    @State private var currentPage = 0
+    @Binding var currentPage: Int
     
     let trialEndDate: Date
     
-    init() {
+    init(currentPage: Binding<Int>) {
+        self._currentPage = currentPage
         self.trialEndDate = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
     }
     
@@ -80,7 +81,9 @@ struct TrialExplanationView: View {
             
             VStack(spacing: 0) {
                 Button {
-                    // Navigate to PaywallView
+                    withAnimation {
+                        currentPage = 14 // Navigate to PaywallView
+                    }
                 } label: {
                     Text("Continue")
                         .font(.headline)
@@ -158,10 +161,10 @@ struct TimelineItem: View {
 struct TrialExplanationView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            TrialExplanationView()
+            TrialExplanationView(currentPage: .constant(0))
                 .environmentObject(StoreManager.preview)
             
-            TrialExplanationView()
+            TrialExplanationView(currentPage: .constant(0))
                 .environmentObject(StoreManager.preview)
                 .previewDevice("iPhone SE (3rd generation)")
         }

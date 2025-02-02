@@ -63,9 +63,13 @@ struct OnboardingContainerView: View {
             FinalProfileView(nextPage: nextPage)
                 .tag(12)
             
+            // Trial Explanation (no progress bar)
+            TrialExplanationView(currentPage: $currentPage)
+                .tag(13)
+            
             // Paywall (no progress bar)
             PaywallView()
-                .tag(13)
+                .tag(14)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .ignoresSafeArea()

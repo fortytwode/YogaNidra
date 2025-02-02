@@ -67,7 +67,10 @@ struct PaywallView: View {
                 Button {
                     Task {
                         do {
-                            try await storeManager.purchase()
+                            try await storeManager.purchase(duringOnboarinng: true)
+                            withAnimation {
+                                onboardingManager.isOnboardingCompleted = true
+                            }
                         } catch {
                             showError = true
                             errorMessage = error.localizedDescription
@@ -83,6 +86,25 @@ struct PaywallView: View {
                         .cornerRadius(28)
                 }
                 .padding(.horizontal)
+                
+                Button {
+                    Task {
+                        do {
+                            try await storeManager.restorePurchases()
+                            withAnimation {
+                                onboardingManager.isOnboardingCompleted = true
+                            }
+                        } catch {
+                            showError = true
+                            errorMessage = error.localizedDescription
+                        }
+                    }
+                } label: {
+                    Text("Restore Purchases")
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.8))
+                }
+                .padding(.top, 12)
                 
                 if let date = Calendar.current.date(byAdding: .day, value: 7, to: Date()) {
                     Text("Cancel anytime before \(date.formatted(date: .abbreviated, time: .omitted))")
