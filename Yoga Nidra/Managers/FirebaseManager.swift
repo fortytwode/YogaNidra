@@ -3,28 +3,18 @@ import FirebaseStorage
 import FirebaseFirestore
 import FirebaseAnalytics
 import FirebaseCore
-import FirebaseAuth
 
 /// Custom errors for Firebase operations
 enum FirebaseError: LocalizedError {
-    case invalidFileURL
-    case uploadFailed(Error)
     case downloadFailed(Error)
-    case metadataError
-    case progressTrackingFailed
+    case fileNotFound
     
     var errorDescription: String? {
         switch self {
-        case .invalidFileURL:
-            return "The file URL is invalid or inaccessible"
-        case .uploadFailed(let error):
-            return "Upload failed: \(error.localizedDescription)"
         case .downloadFailed(let error):
             return "Download failed: \(error.localizedDescription)"
-        case .metadataError:
-            return "Failed to create or update file metadata"
-        case .progressTrackingFailed:
-            return "Failed to track upload/download progress"
+        case .fileNotFound:
+            return "File not found in Firebase Storage"
         }
     }
 }
@@ -82,7 +72,7 @@ final class FirebaseManager {
     /// - Returns: A downloadable URL for the meditation file
     func getMeditationURL(fileName: String) async throws -> URL {
         guard !fileName.isEmpty else {
-            throw FirebaseError.invalidFileURL
+            throw FirebaseError.fileNotFound
         }
         
         let fileRef = meditationsRef.child(fileName)
@@ -99,55 +89,6 @@ final class FirebaseManager {
             }
         }
         throw FirebaseError.downloadFailed(lastError ?? NSError(domain: "Unknown", code: -1))
-    }
-    
-    /// Uploads a meditation file to Firebase Storage with retry logic and robust progress tracking
-    /// - Parameters:
-    ///   - fileURL: Local URL of the meditation file
-    ///   - fileName: Name to give the file in Firebase Storage
-    ///   - progressHandler: Optional closure to handle upload progress updates
-    /// - Returns: The download URL for the uploaded file
-    func uploadMeditation(
-        fileURL: URL,
-        fileName: String,
-        progressHandler: ((TransferProgress) -> Void)? = nil
-    ) async throws -> URL {
-        // First ensure we're authenticated
-        if Auth.auth().currentUser == nil {
-            print("📱 Signing in anonymously...")
-            try await Auth.auth().signInAnonymously()
-            print("✅ Anonymous auth successful")
-        }
-        
-        // Validate input
-        guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            throw FirebaseError.invalidFileURL
-        }
-        
-        let fileRef = meditationsRef.child(fileName)
-        
-        // Create metadata
-        let metadata = StorageMetadata()
-        metadata.contentType = "audio/mpeg"
-        metadata.cacheControl = "public,max-age=31536000" // Cache for 1 year
-        
-        // Implement retry logic for upload
-        var lastError: Error?
-        for attempt in 1...maxRetries {
-            do {
-                let _ = try await fileRef.putFileAsync(from: fileURL, metadata: metadata) { progress in
-                    if let transferProgress = TransferProgress(from: progress) {
-                        progressHandler?(transferProgress)
-                    }
-                }
-                return try await fileRef.downloadURL()
-            } catch {
-                lastError = error
-                if attempt == maxRetries { break }
-                try await Task.sleep(nanoseconds: UInt64(pow(2.0, Double(attempt)) * 1_000_000_000))
-            }
-        }
-        throw FirebaseError.uploadFailed(lastError ?? NSError(domain: "Unknown", code: -1))
     }
     
     // MARK: - Analytics Methods
@@ -175,6 +116,95 @@ final class FirebaseManager {
             "total_duration": duration,
             "completed_duration": completedDuration,
             "completion_rate": completedDuration / duration,
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    // MARK: - Meditation Analytics
+    
+    func logMeditationStarted(sessionId: String, duration: TimeInterval, category: String) {
+        Analytics.logEvent("meditation_started", parameters: [
+            "session_id": sessionId,
+            "duration": duration,
+            "category": category,
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    func logMeditationCompleted(sessionId: String, duration: TimeInterval, category: String) {
+        Analytics.logEvent("meditation_completed", parameters: [
+            "session_id": sessionId,
+            "duration": duration,
+            "category": category,
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    func logMeditationProgress(sessionId: String, progressPercent: Double) {
+        Analytics.logEvent("meditation_progress", parameters: [
+            "session_id": sessionId,
+            "progress_percent": progressPercent,
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    // MARK: - Progress Sync
+    
+    func syncProgress(for userId: String, progress: [String: Any]) async throws {
+        let db = Firestore.firestore()
+        try await db.collection("users").document(userId).setData([
+            "progress": progress,
+            "lastUpdated": FieldValue.serverTimestamp()
+        ], merge: true)
+    }
+    
+    func fetchProgress(for userId: String) async throws -> [String: Any] {
+        let db = Firestore.firestore()
+        let snapshot = try await db.collection("users").document(userId).getDocument()
+        return snapshot.data()?["progress"] as? [String: Any] ?? [:]
+    }
+    
+    // MARK: - Subscription Analytics
+    
+    func logSubscriptionStarted(productId: String, isTrial: Bool = false) {
+        Analytics.logEvent("subscription_started", parameters: [
+            "product_id": productId,
+            "is_trial": isTrial,
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    func logSubscriptionRenewed(productId: String) {
+        Analytics.logEvent("subscription_renewed", parameters: [
+            "product_id": productId,
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    func logSubscriptionCancelled(productId: String) {
+        Analytics.logEvent("subscription_cancelled", parameters: [
+            "product_id": productId,
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    func logPaywallImpression(source: String) {
+        Analytics.logEvent("paywall_viewed", parameters: [
+            "source": source,
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    func logTrialStarted(productId: String) {
+        Analytics.logEvent("trial_started", parameters: [
+            "product_id": productId,
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    func logTrialConverted(productId: String) {
+        Analytics.logEvent("trial_converted", parameters: [
+            "product_id": productId,
             "timestamp": Date().timeIntervalSince1970
         ])
     }

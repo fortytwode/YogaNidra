@@ -61,15 +61,17 @@ struct PremiumContentSheet: View {
             .allowsHitTesting(!storeManager.isLoading)
             
             // Restore Purchases Button
-            Button("Restore Purchases") {
+            Button {
                 Task {
                     do {
-                        try await storeManager.restorePurchases()
+                        try await storeManager.restore()
                     } catch {
-                        errorMessage = error.localizedDescription
-                        showError = true
+                        print("❌ Failed to restore purchases: \(error)")
                     }
                 }
+            } label: {
+                Text("Restore Purchases")
+                    .foregroundColor(.blue)
             }
             .font(.caption)
         }

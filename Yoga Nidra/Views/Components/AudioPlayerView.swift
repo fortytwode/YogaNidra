@@ -34,6 +34,22 @@ struct AudioPlayerView: View {
             }
             .font(.subheadline)
             .foregroundColor(.gray)
+            
+            // Play/Pause Button
+            Button(action: {
+                if audioManager.isPlaying {
+                    audioManager.onPauseSession()
+                } else {
+                    audioManager.onResumeSession()
+                }
+            }) {
+                Image(systemName: audioManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 44, height: 44)
+                    .foregroundColor(.white)
+            }
+            .padding(.top, 20)
         }
     }
 }

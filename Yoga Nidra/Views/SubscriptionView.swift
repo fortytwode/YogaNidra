@@ -46,15 +46,17 @@ struct SubscriptionView: View {
             .allowsHitTesting(!storeManager.isLoading)
             
             // Restore Purchases Button
-            Button("Restore Purchases") {
+            Button {
                 Task {
                     do {
-                        try await storeManager.restorePurchases()
+                        try await storeManager.restore()
                     } catch {
-                        storeManager.errorMessage = error.localizedDescription
-                        storeManager.showError = true
+                        print("❌ Failed to restore purchases: \(error)")
                     }
                 }
+            } label: {
+                Text("Restore Purchases")
+                    .foregroundColor(.blue)
             }
             .font(.caption)
             

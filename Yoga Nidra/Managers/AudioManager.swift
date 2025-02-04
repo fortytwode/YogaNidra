@@ -12,6 +12,7 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
     @Published var currentTime: TimeInterval = 0
     @Published var srubPostion = 0.0
     @Published var currentPlayingSession: YogaNidraSession?
+    @Published private(set) var isLoading: Bool = false
     private var audioPlayer: AVAudioPlayer?
     private var timer: Timer?
     
@@ -28,10 +29,11 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
     private func setupAudioSession() {
         let audioSession = AVAudioSession.sharedInstance()
         do {
-            try audioSession.setCategory(.playback, mode: .default, options: [])
+            try audioSession.setCategory(.playback, mode: .default)
             try audioSession.setActive(true)
+            print("✅ Audio session setup successful")
         } catch {
-            print("Failed to set up audio session: \(error)")
+            print("❌ Failed to set up audio session: \(error)")
         }
     }
     
@@ -70,83 +72,58 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
         updateNowPlayingInfo()
     }
     
-    func onStopSession() {
+    public func onStopSession() {
         stop()
         updateNowPlayingInfo()
     }
     
     func onPlaySession(session: YogaNidraSession) async throws {
+        guard !isLoading else { return }
+        isLoading = true
+        
+        defer { isLoading = false }
+        
+        // First deactivate current session if any
+        if audioPlayer != nil {
+            stop()
+        }
+        
         if currentPlayingSession == session {
             onResumeSession()
         } else {
+            print("🎵 Starting playback of: \(session.title)")
             let fileName = session.audioFileName
             if isFileCached(fileName) {
+                print("📂 Using cached file")
                 try await play(audioFileWithExtension: fileName)
             } else {
+                print("⬇️ Downloading from Firebase")
                 let localURL = try await downloadFromFirebase(fileName: fileName)
                 try await play(audioFileWithExtension: localURL.lastPathComponent)
             }
             currentPlayingSession = session
             updateNowPlayingInfo()
             ProgressManager.shared.audioSessionStarted()
+            print("✅ Playback setup complete")
         }
     }
     
     // MARK: - Playback Controls
     func play(audioFileWithExtension fileName: String, loop: Bool = false) async throws {
-        // Check if file is in documents directory (downloaded from Firebase)
         let localURL = getLocalFileURL(for: fileName)
         if FileManager.default.fileExists(atPath: localURL.path) {
+            print("🎵 Creating audio player with local file")
             audioPlayer = try AVAudioPlayer(contentsOf: localURL)
             audioPlayer?.delegate = self
             audioPlayer?.numberOfLoops = loop ? -1 : 0
-            // Add a small delay before playing
-            Task {
-                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-                audioPlayer?.play()
-                isPlaying = true
-                startTimer()
-            }
-            return
+            audioPlayer?.prepareToPlay()
+            resume()
+            startTimer()
+            print("✅ Audio player created and started")
+        } else {
+            print("❌ Audio file not found at: \(localURL.path)")
+            throw AudioError.fileNotFound
         }
-        
-        // If not in documents, try bundle resources
-        // First try mp3
-        if let path = Bundle.main.path(forResource: fileName.replacingOccurrences(of: ".mp3", with: ""), 
-                                     ofType: "mp3") {
-            let url = URL(fileURLWithPath: path)
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.delegate = self
-            audioPlayer?.numberOfLoops = loop ? -1 : 0
-            // Add a small delay before playing
-            Task {
-                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-                audioPlayer?.play()
-                isPlaying = true
-                startTimer()
-            }
-            return
-        }
-        
-        // Then try m4a
-        if let path = Bundle.main.path(forResource: fileName.replacingOccurrences(of: ".m4a", with: ""), 
-                                     ofType: "m4a") {
-            let url = URL(fileURLWithPath: path)
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.delegate = self
-            audioPlayer?.numberOfLoops = loop ? -1 : 0
-            // Add a small delay before playing
-            Task {
-                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-                audioPlayer?.play()
-                isPlaying = true
-                startTimer()
-            }
-            return
-        }
-        
-        print("❌ Could not find audio file:", fileName)
-        throw AudioError.fileNotFound
     }
     
     func skip(_ direction: SkipDirection, by seconds: TimeInterval) {
@@ -169,27 +146,27 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
         updateCurrentPlayerTime(time: newTime)
     }
     
-    private func pause() {
-        ProgressManager.shared.audioSessionEnded()
-        audioPlayer?.pause()
-        isPlaying = false
-        timer?.invalidate()
-    }
-    
     private func resume() {
-        ProgressManager.shared.audioSessionStarted()
         audioPlayer?.play()
         isPlaying = true
         startTimer()
+        updateNowPlayingInfo()
+    }
+    
+    private func pause() {
+        audioPlayer?.pause()
+        isPlaying = false
+        timer?.invalidate()
+        updateNowPlayingInfo()
     }
     
     public func stop() {
         ProgressManager.shared.audioSessionEnded()
         audioPlayer?.stop()
         isPlaying = false
-        audioPlayer?.currentTime = 0
-        updateCurrentPlayerTime(time: 0)
+        timer?.invalidate()
         currentPlayingSession = nil
+        currentTime = 0
         updateNowPlayingInfo()
     }
     
@@ -349,4 +326,16 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
 enum AudioError: Error {
     case fileNotFound
     case firebaseDownloadFailed(Error)
+    case playbackFailed
+    
+    var localizedDescription: String {
+        switch self {
+        case .fileNotFound:
+            return "Audio file not found"
+        case .firebaseDownloadFailed(let error):
+            return "Failed to download from Firebase: \(error.localizedDescription)"
+        case .playbackFailed:
+            return "Failed to start audio playback"
+        }
+    }
 }

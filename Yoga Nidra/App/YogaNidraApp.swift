@@ -3,57 +3,6 @@ import StoreKit
 import FirebaseCore
 import FirebaseAnalytics
 
-/// Handles Firebase file uploads during app initialization
-private actor FirebaseInitializer {
-    static let shared = FirebaseInitializer()
-    
-    private init() {}
-    
-    func uploadTestFiles() async {
-        // Test a subset of files first
-        let testFiles = [
-            "Brief_Reset_Brittney",
-            "Deep_Sleep_Journey_Drew",
-            "Energy_Renewal_James",
-            "Anxiety_Release_Drew",
-            "Peaceful_Night_Aria"
-        ]
-        
-        do {
-            for fileName in testFiles {
-                // Try different bundle paths
-                let possiblePaths = [
-                    Bundle.main.path(forResource: fileName, ofType: "mp3"),
-                    Bundle.main.path(forResource: fileName, ofType: "mp3", inDirectory: "Resources/Audio"),
-                    Bundle.main.path(forResource: fileName, ofType: "mp3", inDirectory: "Audio")
-                ].compactMap { $0 }
-                
-                if let audioPath = possiblePaths.first {
-                    let fileURL = URL(fileURLWithPath: audioPath)
-                    print("📤 Starting upload of \(fileName).mp3...")
-                    print("📂 File path: \(audioPath)")
-                    
-                    let downloadURL = try await FirebaseManager.shared.uploadMeditation(
-                        fileURL: fileURL,
-                        fileName: "\(fileName).mp3"
-                    ) { progress in
-                        print("Upload progress for \(fileName): \(Int(progress.progress * 100))%")
-                    }
-                    
-                    print("✅ \(fileName).mp3 uploaded successfully!")
-                    print("📎 Download URL: \(downloadURL)")
-                } else {
-                    print("⚠️ Could not find \(fileName).mp3 in the bundle")
-                }
-            }
-            print("🎉 All test files uploaded successfully!")
-        } catch {
-            print("❌ Upload failed: \(error.localizedDescription)")
-            print("Error details: \(error)")
-        }
-    }
-}
-
 @main
 struct YogaNidraApp: App {
     @StateObject private var progressManager = ProgressManager.shared
@@ -66,13 +15,21 @@ struct YogaNidraApp: App {
     
     init() {
         FirebaseApp.configure()
-        
-        #if DEBUG
-        // Upload test files in debug builds
-        Task {
-            await FirebaseInitializer.shared.uploadTestFiles()
+    }
+    
+    func testPlayback() async {
+        // Test playing a meditation file
+        do {
+            if let testSession = YogaNidraSession.allSessions.first(where: { $0.audioFileName == "Sleep_Restoration_Aria.mp3" }) {
+                print("🎵 Testing playback of: \(testSession.title)")
+                try await audioManager.onPlaySession(session: testSession)
+                print("✅ Playback started successfully!")
+            } else {
+                print("❌ Test session not found")
+            }
+        } catch {
+            print("❌ Playback failed: \(error)")
         }
-        #endif
     }
     
     var body: some Scene {
@@ -83,6 +40,9 @@ struct YogaNidraApp: App {
                 } else {
                     OnboardingContainerView()
                 }
+            }
+            .task {
+                await testPlayback()
             }
             .onReceive(progressManager.showRaitnsDialogPublisher) {
                 overlayManager.showOverlay(RatingPromptView())

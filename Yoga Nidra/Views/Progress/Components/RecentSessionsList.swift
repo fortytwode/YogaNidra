@@ -5,24 +5,20 @@ struct RecentSessionsList: View {
     @EnvironmentObject var sheetPresenter: Presenter
     @StateObject private var audioManager = AudioManager.shared
     
-    var recentSessions: [(YogaNidraSession, SessionProgress)] {
-        progressManager.sessionProgress
-            .sorted { $0.value.lastCompleted ?? .distantPast > $1.value.lastCompleted ?? .distantPast }
-            .prefix(5)
-            .compactMap { progress in
-                guard let session = YogaNidraSession.previewData.first(where: { $0.id == progress.key }) else {
-                    return nil
-                }
-                return (session, progress.value)
-            }
-    }
+    @State private var recentSessions: [(YogaNidraSession, SessionProgress)] = []
     
     var body: some View {
         VStack(spacing: 12) {
+            HStack {
+                Text("Recent Sessions")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                Spacer()
+            }
+            
             if recentSessions.isEmpty {
-                Text("Complete your first session to see your progress")
-                    .foregroundColor(.secondary)
-                    .padding()
+                Text("No recent sessions")
+                    .foregroundColor(.gray)
             } else {
                 ForEach(recentSessions, id: \.0.id) { session, progress in
                     Button {
@@ -43,6 +39,17 @@ struct RecentSessionsList: View {
             }
         }
         .padding(.horizontal)
+        .onAppear {
+            recentSessions = progressManager.sessionProgress
+                .sorted { $0.value.lastCompleted ?? .distantPast > $1.value.lastCompleted ?? .distantPast }
+                .prefix(5)
+                .compactMap { progress in
+                    guard let session = YogaNidraSession.previewData.first(where: { $0.id == progress.key }) else {
+                        return nil
+                    }
+                    return (session, progress.value)
+                }
+        }
     }
 }
 

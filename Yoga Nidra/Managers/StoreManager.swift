@@ -37,6 +37,7 @@ final class StoreManager: ObservableObject {
     private var isLoadingProducts = false
     private var hasLoadedProducts = false
     private var currentPurchaseTask: Task<Void, Error>?
+    private var purchasedIdentifiers: Set<String> = []
     
     // MARK: Events
     private var onPuchaseCompleted = PassthroughSubject<TransactionReason, Never>()
@@ -67,16 +68,24 @@ final class StoreManager: ObservableObject {
         // Current entitlements listener
         transactionListener = Task.detached(priority: .background) {
             print("🎯 StoreManager: Starting current entitlements check...")
-            for await result in Transaction.currentEntitlements {
-                await self.handle(transactionResult: result, reason: .whileTransactionUpdate)
+            do {
+                for await result in StoreKit.Transaction.currentEntitlements {
+                    try await self.handle(transactionResult: result, reason: .whileTransactionUpdate)
+                }
+            } catch {
+                print("❌ StoreManager: Failed to handle transaction: \(error)")
             }
         }
         
         // Updates listener
         updateListenerTask = Task.detached(priority: .background) {
             print("🔄 StoreManager: Starting transaction updates listener...")
-            for await update in Transaction.updates {
-                await self.handle(transactionResult: update, reason: .whileTransactionUpdate)
+            do {
+                for await update in StoreKit.Transaction.updates {
+                    try await self.handle(transactionResult: update, reason: .whileTransactionUpdate)
+                }
+            } catch {
+                print("❌ StoreManager: Failed to handle update: \(error)")
             }
         }
     }
@@ -94,7 +103,7 @@ final class StoreManager: ObservableObject {
             let products = try await Product.products(for: [productID])
             guard let product = products.first else {
                 print("❌ StoreManager: No products found")
-                throw StoreError.productNotFound
+                throw StoreError.notFound
             }
             
             print("✅ StoreManager: Products loaded successfully")
@@ -104,116 +113,106 @@ final class StoreManager: ObservableObject {
             
         } catch {
             print("❌ StoreManager: Failed to load products: \(error.localizedDescription)")
-            throw StoreError.failedToLoadProducts
+            throw StoreError.failed(error)
         }
     }
     
     // MARK: - Purchase Flow
-    func purchase(duringOnboarinng: Bool = false) async throws {
-        print("🛍 StoreManager: Starting purchase flow...")
-        isLoading = true
-        defer { isLoading = false }
-        
-        if !hasLoadedProducts {
-            print("📦 StoreManager: Loading products first...")
-            try await loadProducts()
+    func purchase() async throws {
+        guard let product = subscriptionProduct else {
+            throw StoreError.notFound
         }
         
-        guard currentPurchaseTask == nil else {
-            print("⚠️ StoreManager: Purchase already in progress")
-            return
+        do {
+            let result = try await product.purchase()
+            
+            switch result {
+            case .success(let verification):
+                try await handleVerification(verification)
+            case .userCancelled:
+                throw StoreError.failed(nil)
+            case .pending:
+                throw StoreError.pending
+            @unknown default:
+                throw StoreError.unknown
+            }
+        } catch {
+            throw StoreError.failed(error)
         }
-        
-        let task = Task {
-            defer { currentPurchaseTask = nil }
-            guard !isPurchaseInProgress else {
-                print("⚠️ StoreManager: Purchase already in progress")
-                return
-            }
+    }
+    
+    @MainActor
+    private func logPurchaseAnalytics(_ product: Product) {
+        if product.type == .autoRenewable {
+            FirebaseManager.shared.logSubscriptionStarted(productId: product.id)
+        }
+    }
+    
+    private func handleVerification(_ verification: StoreKit.VerificationResult<StoreKit.Transaction>) async throws {
+        switch verification {
+        case .verified(let transaction):
+            await transaction.finish()
+            try await refreshPurchasedIdentifiers()
             
-            guard let product = subscriptionProduct else {
-                print("❌ StoreManager: No product available for purchase")
-                throw StoreError.productNotFound
-            }
-            
-            isPurchaseInProgress = true
-            defer { isPurchaseInProgress = false }
-            
-            print("💰 StoreManager: Starting purchase for \(product.id)")
-            
-            do {
-                let result = try await product.purchase()
-                
-                switch result {
-                case .success(let verification):
-                    print("✅ StoreManager: Purchase successful, verifying...")
-                    await handle(transactionResult: verification, reason: .purchased(whileOnboarding: duringOnboarinng))
-                    
-                case .userCancelled:
-                    print("🚫 StoreManager: Purchase cancelled by user")
-                    throw StoreError.userCancelled
-                    
-                case .pending:
-                    print("⏳ StoreManager: Purchase pending (Ask to Buy)")
-                    
-                @unknown default:
-                    print("❓ StoreManager: Unknown purchase result")
-                    throw StoreError.unknown
+            if transaction.productType == .autoRenewable {
+                if let product = try? await Product.products(for: [transaction.productID]).first {
+                    await logPurchaseAnalytics(product)
                 }
-            } catch {
-                print("❌ StoreManager: Purchase failed: \(error.localizedDescription)")
-                throw error
             }
+            
+        case .unverified:
+            throw StoreError.failed(nil)
         }
-        
-        currentPurchaseTask = task
-        try await task.value
+    }
+    
+    private func refreshPurchasedIdentifiers() async throws {
+        do {
+            for await result in StoreKit.Transaction.currentEntitlements {
+                if case .verified(let transaction) = result {
+                    if transaction.revocationDate == nil {
+                        purchasedIdentifiers.insert(transaction.productID)
+                    } else {
+                        purchasedIdentifiers.remove(transaction.productID)
+                    }
+                }
+            }
+            await updateSubscriptionStatus()
+        } catch {
+            throw StoreError.failed(error)
+        }
+    }
+    
+    @MainActor
+    private func updateSubscriptionStatus() {
+        isSubscribed = !purchasedIdentifiers.isEmpty
     }
     
     // Restore Purchases
-    func restorePurchases(duringOnboarinng: Bool = false) async throws {
-        print("🔄 StoreManager: Starting purchase restoration")
-        isLoading = true
-        defer { isLoading = false }
-        
-        try await AppStore.sync()
-        print("✅ StoreManager: Purchase restoration completed")
-        
-        // Check current entitlements after restore
-        for await result in Transaction.currentEntitlements {
-            await handle(transactionResult: result, reason: .restored(whileOnboarding: duringOnboarinng))
+    func restore() async throws {
+        do {
+            try await AppStore.sync()
+            try await refreshPurchasedIdentifiers()
+        } catch {
+            throw StoreError.failed(error)
         }
     }
     
-    // MARK: - Transaction Handling
-    private func handle(transactionResult: VerificationResult<StoreKit.Transaction>, reason: TransactionReason) async {
-        switch transactionResult {
+    // Handle transaction verification
+    private func handle(transactionResult verification: StoreKit.VerificationResult<StoreKit.Transaction>, reason: TransactionReason) async throws {
+        switch verification {
         case .verified(let transaction):
-            print("✅ StoreManager: Transaction verified: \(transaction.id)")
-            
-            // Update subscription state
-            await MainActor.run {
-                isSubscribed = transaction.productID == productID
-                isInTrialPeriod = transaction.isUpgraded
-                if let expirationDate = transaction.expirationDate {
-                    trialEndDate = expirationDate
-                }
-                onPuchaseCompleted.send(reason)
-            }
-            
-            // Finish the transaction
             await transaction.finish()
-            print("🏁 StoreManager: Transaction finished: \(transaction.id)")
+            try await refreshPurchasedIdentifiers()
             
-            // Add trial check
-            checkTrialEligibility(transaction)
-            
-        case .unverified(_, let error):
-            print("❌ StoreManager: Transaction verification failed: \(error.localizedDescription)")
-            await MainActor.run {
-                errorMessage = "Transaction verification failed: \(error.localizedDescription)"
-                showError = true
+            if let product = try? await Product.products(for: [transaction.productID]).first,
+               product.type == .autoRenewable {
+                await logPurchaseAnalytics(product)
             }
+            
+            onPuchaseCompleted.send(reason)
+            
+        case .unverified:
+            throw StoreError.failed(nil)
         }
     }
     
@@ -237,20 +236,20 @@ final class StoreManager: ObservableObject {
 }
 
 // MARK: - Errors
-enum StoreError: LocalizedError {
-    case productNotFound
-    case failedToLoadProducts
-    case userCancelled
+enum StoreError: Error {
+    case pending
+    case failed(Error?)
+    case notFound
     case unknown
     
     var errorDescription: String? {
         switch self {
-        case .productNotFound:
+        case .pending:
+            return "Purchase is pending"
+        case .failed(let error):
+            return error?.localizedDescription
+        case .notFound:
             return "Product not found"
-        case .failedToLoadProducts:
-            return "Failed to load products"
-        case .userCancelled:
-            return "Purchase cancelled"
         case .unknown:
             return "An unknown error occurred"
         }

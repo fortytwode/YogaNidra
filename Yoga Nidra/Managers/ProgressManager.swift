@@ -25,6 +25,10 @@ final class ProgressManager: ObservableObject {
     @Published var progress: Double = 0
     @Published var sessionProgress: [UUID: SessionProgress] = [:]
     
+    @Published private(set) var currentStreak: Int = 0
+    @Published private(set) var totalTimeListened: TimeInterval = 0
+    @Published private(set) var recentSessions: [(YogaNidraSession, SessionProgress)] = []
+    
     // Rating Dialog
     @Published var showRaitnsDialog = PassthroughSubject<Void, Never>()
     var showRaitnsDialogPublisher: AnyPublisher<Void, Never> {
@@ -47,19 +51,190 @@ final class ProgressManager: ObservableObject {
     private init() {
         loadDataOnAppLaunch()
         checkRatingDialog()
+        loadProgressFromFirebase()
     }
     
+    @MainActor
     func audioSessionStarted() {
-        audioStartTime = Date()
+        guard let currentSession = AudioManager.shared.currentPlayingSession else { return }
+        
+        // Log analytics
+        FirebaseManager.shared.logMeditationStarted(
+            sessionId: currentSession.id.uuidString,
+            duration: TimeInterval(currentSession.duration),
+            category: String(describing: currentSession.category)
+        )
+        
+        // Update local progress
+        sessionProgress[currentSession.id] = SessionProgress(
+            startTime: Date(),
+            duration: 0,
+            completed: false
+        )
+        syncProgress()
     }
     
+    @MainActor
     func audioSessionEnded() {
-        guard let startTime = audioStartTime else { return }
-        audioStartTime = nil
-        let endTime = Date()
-        let totalListenTime = endTime.timeIntervalSince(startTime) + totalSessionListenTime
-        setTotalSessionListenTime(totalListenTime)
-        checkRatingDialog()
+        guard let currentSession = AudioManager.shared.currentPlayingSession,
+              var progress = sessionProgress[currentSession.id] else { return }
+        
+        let duration = Date().timeIntervalSince(progress.startTime)
+        let progressPercent = duration / TimeInterval(currentSession.duration)
+        
+        // Log analytics
+        if progressPercent >= 0.9 { // Consider it completed if 90% done
+            FirebaseManager.shared.logMeditationCompleted(
+                sessionId: currentSession.id.uuidString,
+                duration: duration,
+                category: String(describing: currentSession.category)
+            )
+            
+            progress.completed = true
+            progress.lastCompleted = Date()
+            progress.completionCount += 1
+        }
+        
+        FirebaseManager.shared.logMeditationProgress(
+            sessionId: currentSession.id.uuidString,
+            progressPercent: progressPercent
+        )
+        
+        // Update local progress
+        progress.duration = duration
+        sessionProgress[currentSession.id] = progress
+        
+        // Update metrics
+        updateTotalTimeListened()
+        updateStreak()
+        syncProgress()
+    }
+    
+    @MainActor
+    func audioSessionCompleted() {
+        guard let currentSession = AudioManager.shared.currentPlayingSession,
+              let progress = sessionProgress[currentSession.id] else { return }
+        
+        let duration = progress.duration
+        totalTimeListened += duration
+        
+        if duration >= Double(currentSession.duration) * 0.9 {
+            sessionsCompleted += 1
+            UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastCompletedDate")
+            updateStreak()
+        }
+        
+        updateRecentSessions()
+        
+        // Sync with Firebase
+        Task { @MainActor in
+            if let userId = await AuthManager.shared.currentUserId {
+                do {
+                    try await FirebaseManager.shared.syncProgress(for: userId, progress: progressDictionary())
+                } catch {
+                    print("❌ Failed to sync progress: \(error)")
+                }
+            }
+        }
+    }
+    
+    private func progressDictionary() -> [String: Any] {
+        [
+            "sessions": sessionProgress.mapValues { progress in
+                [
+                    "startTime": progress.startTime.timeIntervalSince1970,
+                    "duration": progress.duration,
+                    "completed": progress.completed
+                ]
+            },
+            "metrics": [
+                "totalTimeListened": totalTimeListened,
+                "sessionsCompleted": sessionsCompleted,
+                "currentStreak": currentStreak,
+                "lastCompletedDate": UserDefaults.standard.double(forKey: "lastCompletedDate")
+            ]
+        ]
+    }
+    
+    private func loadProgressFromFirebase() {
+        Task { @MainActor in
+            if let userId = await AuthManager.shared.currentUserId {
+                do {
+                    let progress = try await FirebaseManager.shared.fetchProgress(for: userId)
+                    await MainActor.run {
+                        // Load session progress
+                        if let sessions = progress["sessions"] as? [String: [String: Any]] {
+                            sessionProgress.removeAll()
+                            for (sessionId, data) in sessions {
+                                if let startTimeInterval = data["startTime"] as? TimeInterval,
+                                   let duration = data["duration"] as? TimeInterval,
+                                   let completed = data["completed"] as? Bool {
+                                    let startTime = Date(timeIntervalSince1970: startTimeInterval)
+                                    sessionProgress[UUID(uuidString: sessionId)!] = SessionProgress(startTime: startTime, duration: duration, completed: completed)
+                                }
+                            }
+                        }
+                        
+                        // Load metrics
+                        if let metrics = progress["metrics"] as? [String: Any] {
+                            totalTimeListened = metrics["totalTimeListened"] as? TimeInterval ?? 0
+                            sessionsCompleted = metrics["sessionsCompleted"] as? Int ?? 0
+                            currentStreak = metrics["currentStreak"] as? Int ?? 0
+                            if let lastCompletedDate = metrics["lastCompletedDate"] as? TimeInterval {
+                                UserDefaults.standard.set(lastCompletedDate, forKey: "lastCompletedDate")
+                            }
+                        }
+                        
+                        updateRecentSessions()
+                        updateStreak()
+                        updateTotalTimeListened()
+                    }
+                } catch {
+                    print("❌ Failed to load progress: \(error)")
+                }
+            }
+        }
+    }
+    
+    private func updateStreak() {
+        let calendar = Calendar.current
+        let lastCompletedDate = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: "lastCompletedDate"))
+        let today = Date()
+        
+        guard let daysBetween = calendar.dateComponents([.day], from: lastCompletedDate, to: today).day else {
+            currentStreak = 0
+            return
+        }
+        
+        if daysBetween > 1 {
+            currentStreak = 0
+        }
+    }
+    
+    private func updateRecentSessions() {
+        // First, filter and map sessions
+        let sessionsWithProgress = sessionProgress.compactMap { id, progress -> (YogaNidraSession, SessionProgress)? in
+            guard let session = YogaNidraSession.previewData.first(where: { $0.id == id }) else {
+                return nil
+            }
+            return (session, progress)
+        }
+        
+        // Then sort by completion date
+        let sortedSessions = sessionsWithProgress.sorted { 
+            $0.1.lastCompleted ?? .distantPast > $1.1.lastCompleted ?? .distantPast 
+        }
+        
+        // Finally, take the first 5 sessions
+        recentSessions = sortedSessions.prefix(5).map { ($0.0, $0.1) }
+    }
+    
+    private func updateTotalTimeListened() {
+        totalTimeListened = sessionProgress.values
+            .filter { $0.completed }
+            .reduce(0) { $0 + $1.duration }
+        
+        totalMinutesListened = Int(totalTimeListened / 60.0)
     }
     
     private func getCooldownDays() -> Int {
@@ -130,6 +305,19 @@ final class ProgressManager: ObservableObject {
         ratingPromptsInYear = UserDefaults.standard.integer(forKey: ratingPromptsInYearKey)
         ratingYearStartDate = UserDefaults.standard.object(forKey: ratingYearStartDateKey) as? Date
         checkRatingDialog()
+    }
+    
+    @MainActor
+    private func syncProgress() {
+        Task { @MainActor in
+            if let userId = await AuthManager.shared.currentUserId {
+                do {
+                    try await FirebaseManager.shared.syncProgress(for: userId, progress: progressDictionary())
+                } catch {
+                    print("❌ Failed to sync progress: \(error)")
+                }
+            }
+        }
     }
     
     // MARK: - Debug Methods

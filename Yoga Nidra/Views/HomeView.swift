@@ -26,8 +26,40 @@ struct HomeView: View {
         NavigationStack(path: $router.path) {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Header with image background
-                    headerAndBackground
+                    // Header Banner
+                    ZStack(alignment: .bottomLeading) {
+                        Image("banner_background")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: 280)  // Increased from default height
+                            .clipped()
+                        
+                        LinearGradient(
+                            gradient: Gradient(colors: [.black.opacity(0.7), .clear]),
+                            startPoint: .bottom,
+                            endPoint: .top
+                        )
+                        .frame(height: 280)  // Match the image height
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Yoga Nidra")
+                                .font(.system(size: 24, weight: .medium))
+                                .foregroundColor(.white)
+                                .textShadowEffect()
+                            
+                            Text("Time to Unwind")
+                                .font(.system(size: 36, weight: .bold))
+                                .foregroundColor(.white)
+                                .textShadowEffect()
+                            
+                            Text("Let your mind drift into peaceful dreams")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.8))
+                                .textShadowEffect()
+                        }
+                        .padding(.horizontal)
+                        .padding(.bottom, 24)
+                    }
                     // Popular section
                     popularSection
                     // Recommended section
@@ -80,30 +112,6 @@ struct HomeView: View {
                 }
             }
             .padding(.horizontal, 24)
-        }
-    }
-    
-    var headerAndBackground: some View {
-        ZStack {
-            Image("header")
-                .resizable()
-                .scaledToFill()
-                .frame(height: 192)
-                .clipped()
-            
-            VStack {
-                Spacer()
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Time to Unwind")
-                        .font(.system(size: 32, weight: .bold))
-                    Text("Let your mind drift into peaceful dreams")
-                        .font(.system(size: 16))
-                        .foregroundColor(Color(red: 0.6, green: 0.6, blue: 1.0))
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
         }
     }
     

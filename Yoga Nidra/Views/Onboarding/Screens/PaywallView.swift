@@ -8,134 +8,138 @@ struct PaywallView: View {
     @State private var errorMessage = ""
     
     var body: some View {
-        VStack(spacing: 24) {
-            // Main Content
+        ScrollView {
             VStack(spacing: 24) {
-                // Headline
-                Text("Transform Your Sleep. NOW.")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal)
-                    .padding(.top, 20)
-                
-                ScrollView {
-                    // Benefits
-                    VStack(alignment: .leading, spacing: 16) {
-                        BenefitRow(icon: "moon.stars",
-                                  title: "Reduce time to fall asleep with guided Yoga Nidra")
-                        
-                        BenefitRow(icon: "waveform.path",
-                                  title: "Increase deep sleep through proven relaxation techniques")
-                        
-                        BenefitRow(icon: "heart.fill",
-                                  title: "Lower stress and anxiety with regular practice")
-                    }
-                    .padding(.horizontal)
+                // Main Content
+                VStack(spacing: 24) {
+                    // Headline
+                    Text("Transform Your Sleep. NOW.")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal)
+                        .padding(.top, 20)
                     
-                    // Research Stats
-                    VStack(spacing: 16) {
-                        Text("Scientifically Proven Results")
+                    ScrollView {
+                        // Benefits
+                        VStack(alignment: .leading, spacing: 16) {
+                            BenefitRow(icon: "moon.stars",
+                                      title: "Reduce time to fall asleep with guided Yoga Nidra")
+                            
+                            BenefitRow(icon: "waveform.path",
+                                      title: "Increase deep sleep through proven relaxation techniques")
+                            
+                            BenefitRow(icon: "heart.fill",
+                                      title: "Lower stress and anxiety with regular practice")
+                        }
+                        .padding(.horizontal)
+                        
+                        // Research Stats
+                        VStack(spacing: 16) {
+                            Text("Scientifically Proven Results")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                            
+                            VStack(alignment: .leading, spacing: 12) {
+                                StatRow(emoji: "🌙", text: "84% reduction in insomnia symptoms")
+                                StatRow(emoji: "✨", text: "Significant increase in deep sleep phases")
+                                StatRow(emoji: "⏰", text: "30-minute average decrease in sleep onset time")
+                            }
+                        }
+                        .padding(20)
+                        .background(Color.white.opacity(0.1))
+                        .cornerRadius(16)
+                        .padding(.horizontal)
+                    }
+                    .scrollIndicators(.hidden)
+                }
+                
+                // Bottom Section
+                VStack(spacing: 16) {
+                    VStack(spacing: 8) {
+                        Text("7-Day Free Trial")
                             .font(.headline)
                             .foregroundColor(.white)
                         
-                        VStack(alignment: .leading, spacing: 12) {
-                            StatRow(emoji: "🌙", text: "84% reduction in insomnia symptoms")
-                            StatRow(emoji: "✨", text: "Significant increase in deep sleep phases")
-                            StatRow(emoji: "⏰", text: "30-minute average decrease in sleep onset time")
+                        Text("Then $59.99/year")
+                            .foregroundColor(.white.opacity(0.9))
+                    }
+                    
+                    Button {
+                        Task {
+                            do {
+                                try await storeManager.purchase()
+                            } catch {
+                                showError = true
+                            }
+                        }
+                    } label: {
+                        if storeManager.isLoading {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(.white)
+                        } else {
+                            Text("Start Free Trial")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
                         }
                     }
-                    .padding(20)
-                    .background(Color.white.opacity(0.1))
-                    .cornerRadius(16)
+                    .frame(height: 56)
+                    .background(.white)
+                    .cornerRadius(28)
                     .padding(.horizontal)
-                }
-                .scrollIndicators(.hidden)
-            }
-            
-            // Bottom Section
-            VStack(spacing: 16) {
-                VStack(spacing: 8) {
-                    Text("7-Day Free Trial")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                    
-                    Text("Then $59.99/year")
-                        .foregroundColor(.white.opacity(0.9))
-                }
-                
-                Button {
-                    Task {
-                        do {
-                            try await storeManager.purchase(duringOnboarinng: true)
-                            withAnimation {
-                                onboardingManager.isOnboardingCompleted = true
-                            }
-                        } catch {
-                            showError = true
-                            errorMessage = error.localizedDescription
-                        }
-                    }
-                } label: {
-                    Text("Start Free Trial")
-                        .font(.headline)
-                        .foregroundColor(.black)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(.white)
-                        .cornerRadius(28)
-                }
-                .padding(.horizontal)
-                
-                Button {
-                    Task {
-                        do {
-                            try await storeManager.restorePurchases()
-                            withAnimation {
-                                onboardingManager.isOnboardingCompleted = true
-                            }
-                        } catch {
-                            showError = true
-                            errorMessage = error.localizedDescription
-                        }
-                    }
-                } label: {
-                    Text("Restore Purchases")
-                        .font(.subheadline)
-                }
-                .padding(.top, 12)
-                
-                if let date = Calendar.current.date(byAdding: .day, value: 7, to: Date()) {
-                    Text("Cancel anytime before \(date.formatted(date: .abbreviated, time: .omitted))")
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.7))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                
-                HStack(spacing: 24) {
-                    Button {
-                        openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-terms")!)
-                    } label: {
-                        Text("Terms")
-                            .font(.footnote)
-                            .foregroundColor(.white.opacity(0.8))
-                            .underline()
-                    }
                     
                     Button {
-                        openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-privacy")!)
+                        Task {
+                            do {
+                                try await storeManager.restore()
+                            } catch {
+                                showError = true
+                            }
+                        }
                     } label: {
-                        Text("Privacy Policy")
-                            .font(.footnote)
-                            .foregroundColor(.white.opacity(0.8))
-                            .underline()
+                        Text("Restore Purchases")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
+                    .padding(.top, 12)
+                    
+                    if let date = Calendar.current.date(byAdding: .day, value: 7, to: Date()) {
+                        Text("Cancel anytime before \(date.formatted(date: .abbreviated, time: .omitted))")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.7))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                    
+                    HStack(spacing: 24) {
+                        Button {
+                            openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-terms")!)
+                        } label: {
+                            Text("Terms")
+                                .font(.footnote)
+                                .foregroundColor(.white.opacity(0.8))
+                                .underline()
+                        }
+                        
+                        Button {
+                            openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-privacy")!)
+                        } label: {
+                            Text("Privacy Policy")
+                                .font(.footnote)
+                                .foregroundColor(.white.opacity(0.8))
+                                .underline()
+                        }
+                    }
+                    .padding(.top, 8)
                 }
-                .padding(.top, 8)
+                .padding(.bottom, 16)
             }
-            .padding(.bottom, 16)
+        }
+        .onAppear {
+            FirebaseManager.shared.logPaywallImpression(source: "onboarding")
         }
         .alert("Purchase Failed", isPresented: $showError) {
             Button("OK", role: .cancel) { }

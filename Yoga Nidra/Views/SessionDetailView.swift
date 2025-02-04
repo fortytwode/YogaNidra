@@ -94,6 +94,34 @@ struct SessionDetailView: View {
                                 }
                             }
                             
+                            // Play/Pause Button
+                            Button(action: {
+                                if audioManager.isPlaying {
+                                    audioManager.onPauseSession()
+                                } else {
+                                    Task {
+                                        try? await audioManager.onPlaySession(session: session)
+                                    }
+                                }
+                            }) {
+                                VStack(spacing: 4) {
+                                    if audioManager.isLoading {
+                                        ProgressView()
+                                            .frame(width: 44, height: 44)
+                                            .foregroundColor(.white)
+                                    } else {
+                                        Image(systemName: audioManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                                            .font(.system(size: 44))
+                                            .foregroundColor(.white)
+                                    }
+                                    
+                                    Text(audioManager.isLoading ? "Loading..." : (audioManager.isPlaying ? "Pause" : "Play"))
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                            .disabled(audioManager.isLoading)
+                            
                             Button(action: {
                                 showingShareSheet = true
                             }) {
