@@ -11,7 +11,7 @@ struct SessionListView_v2: View {
         guard let category = selectedCategory else {
             return sessions // Return all sessions when no category is selected
         }
-        return sessions.filter { $0.category == category }
+        return sessions.filter { $0.category.id == category.id }
     }
     
     var body: some View {
@@ -25,10 +25,10 @@ struct SessionListView_v2: View {
                                 selectedCategory = nil
                             }
                             
-                            ForEach(SessionCategory.allCases.filter { $0 != .all }, id: \.self) { category in
+                            ForEach(CategoryManager.shared.categories) { category in
                                 CategoryFilterButton(
-                                    title: category.rawValue,
-                                    isSelected: selectedCategory == category
+                                    title: category.id,
+                                    isSelected: selectedCategory?.id == category.id
                                 ) {
                                     selectedCategory = category
                                 }

@@ -25,7 +25,7 @@ class SessionDataParser {
                     thumbnailUrl: item.thumbnailUrl,
                     audioFileName: item.audioFileName,
                     isPremium: item.premium != "n",
-                    category: SessionCategory(rawValue: item.category) ?? .all,
+                    category: SessionCategory(id: item.category),
                     instructor: item.instructor
                 )
             }

@@ -46,7 +46,7 @@ struct YogaNidraSession: Identifiable, Codable, Equatable, Hashable {
         thumbnailUrl: "preview-thumbnail",
         audioFileName: "preview-audio.m4a",
         isPremium: false,
-        category: .deepSleep,
+        category: SessionCategory(id: "Deep Sleep"),
         instructor: "Preview Instructor"
     )
     

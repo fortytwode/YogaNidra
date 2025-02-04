@@ -187,7 +187,7 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
         var nowPlayingInfo = [String: Any]()
         nowPlayingInfo[MPMediaItemPropertyTitle] = session.title
         nowPlayingInfo[MPMediaItemPropertyArtist] = session.instructor
-        nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = session.category.rawValue
+        nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = session.category.id
         
         if let artworkImage = UIImage(named: session.thumbnailUrl) { // Replace with your album art
             nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: artworkImage.size) { _ in
