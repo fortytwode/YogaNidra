@@ -151,10 +151,12 @@ struct SessionDetailView: View {
                                 }
                                 
                                 Button {
-                                    if audioManager.isPlaying {
-                                        audioManager.onPauseSession()
-                                    } else {
-                                        startPlaying()
+                                    Task {
+                                        if audioManager.isPlaying {
+                                            try await audioManager.onPauseSession()
+                                        } else {
+                                            try await startPlaying()
+                                        }
                                     }
                                 } label: {
                                     Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
@@ -199,12 +201,8 @@ struct SessionDetailView: View {
         return String(format: "%d:%02d", minutes, seconds)
     }
     
-    private func startPlaying() {
-        do {
-            try audioManager.onPlaySession(session: session)
-        } catch {
-            print("Failed to play session: \(error)")
-        }
+    private func startPlaying() async throws {
+        try await audioManager.onPlaySession(session: session)
     }
 }
 

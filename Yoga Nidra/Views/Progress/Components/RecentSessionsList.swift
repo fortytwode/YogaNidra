@@ -26,11 +26,13 @@ struct RecentSessionsList: View {
             } else {
                 ForEach(recentSessions, id: \.0.id) { session, progress in
                     Button {
-                        // Try to play immediately
-                        do {
-                            try audioManager.onPlaySession(session: session)
-                        } catch {
-                            print("Failed to play session: \(error)")
+                        Task {
+                            // Try to play immediately
+                            do {
+                                try await audioManager.onPlaySession(session: session)
+                            } catch {
+                                print("Failed to play session: \(error)")
+                            }
                         }
                         // Also show the details sheet
                         sheetPresenter.present(.sessionDetials(session))

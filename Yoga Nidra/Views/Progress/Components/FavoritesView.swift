@@ -45,10 +45,12 @@ struct FavoritesView: View {
                 VStack(spacing: 12) {
                     ForEach(favoritesManager.favoriteSessions) { session in
                         Button {
-                            do {
-                                try audioManager.onPlaySession(session: session)
-                            } catch {
-                                print("Failed to play session: \(error)")
+                            Task {
+                                do {
+                                    try await audioManager.onPlaySession(session: session)
+                                } catch {
+                                    print("Failed to play session: \(error)")
+                                }
                             }
                             sheetPresenter.present(.sessionDetials(session))
                         } label: {
@@ -109,10 +111,12 @@ struct AllFavoritesView: View {
             ], spacing: 16) {
                 ForEach(favoritesManager.favoriteSessions) { session in
                     Button {
-                        do {
-                            try audioManager.onPlaySession(session: session)
-                        } catch {
-                            print("Failed to play session: \(error)")
+                        Task {
+                            do {
+                                try await audioManager.onPlaySession(session: session)
+                            } catch {
+                                print("Failed to play session: \(error)")
+                            }
                         }
                         sheetPresenter.present(.sessionDetials(session))
                     } label: {

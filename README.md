@@ -1,6 +1,29 @@
 # Yoga Nidra App
+1.2 Feb 9th
+
+- added missing image - energy renewal
+- updated screenshots
+- made categories dynamic
 
 
+We actually used CocoaPods instead of Swift Package Manager (SPM) to install Firebase. Both methods work, but we've already:
+
+✅ Created a Podfile with Firebase dependencies
+✅ Run pod install
+✅ Added GoogleService-Info.plist
+✅ Initialized Firebase in YogaNidraApp.swift
+
+pod 'Firebase/Analytics'
+pod 'Firebase/Storage'
+pod 'Firebase/Firestore'
+
+So we're good to go! We don't need to use Swift Package Manager since we've already set up Firebase via CocoaPods.
+
+We already initialized Firebase in our SwiftUI app lifecycle in YogaNidraApp.swift with FirebaseApp.configure(), so we don't need the UIKit AppDelegate approach shown in the image.
+```
+
+
+1.1 -> Feb 2. 
 - [ ] upload session audios.
 - [ ] Add proper App Store metadata.
 - added ratings prompts.

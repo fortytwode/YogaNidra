@@ -1,6 +1,7 @@
 import AVFoundation
 import MediaPlayer
 import SwiftUI
+import FirebaseStorage
 
 @MainActor
 final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
@@ -74,11 +75,17 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
         updateNowPlayingInfo()
     }
     
-    func onPlaySession(session: YogaNidraSession) throws {
+    func onPlaySession(session: YogaNidraSession) async throws {
         if currentPlayingSession == session {
             onResumeSession()
         } else {
-            try play(audioFileWithExtension: session.audioFileName)
+            let fileName = session.audioFileName
+            if isFileCached(fileName) {
+                try await play(audioFileWithExtension: fileName)
+            } else {
+                let localURL = try await downloadFromFirebase(fileName: fileName)
+                try await play(audioFileWithExtension: localURL.lastPathComponent)
+            }
             currentPlayingSession = session
             updateNowPlayingInfo()
             ProgressManager.shared.audioSessionStarted()
@@ -86,16 +93,31 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
     }
     
     // MARK: - Playback Controls
-    func play(audioFileWithExtension fileName: String, loop: Bool = false) throws {
+    func play(audioFileWithExtension fileName: String, loop: Bool = false) async throws {
+        // Check if file is in documents directory (downloaded from Firebase)
+        let localURL = getLocalFileURL(for: fileName)
+        if FileManager.default.fileExists(atPath: localURL.path) {
+            audioPlayer = try AVAudioPlayer(contentsOf: localURL)
+            audioPlayer?.delegate = self
+            audioPlayer?.numberOfLoops = loop ? -1 : 0
+            // Add a small delay before playing
+            Task {
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                audioPlayer?.play()
+                isPlaying = true
+                startTimer()
+            }
+            return
+        }
+        
+        // If not in documents, try bundle resources
         // First try mp3
         if let path = Bundle.main.path(forResource: fileName.replacingOccurrences(of: ".mp3", with: ""), 
                                      ofType: "mp3") {
             let url = URL(fileURLWithPath: path)
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.delegate = self
-            if loop {
-                audioPlayer?.numberOfLoops = -1
-            }
+            audioPlayer?.numberOfLoops = loop ? -1 : 0
             // Add a small delay before playing
             Task {
                 try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
@@ -112,6 +134,7 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
             let url = URL(fileURLWithPath: path)
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.delegate = self
+            audioPlayer?.numberOfLoops = loop ? -1 : 0
             // Add a small delay before playing
             Task {
                 try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
@@ -277,6 +300,41 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
         }
     }
     
+    // MARK: - Firebase Storage
+    
+    private func getLocalFileURL(for fileName: String) -> URL {
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return documentsPath.appendingPathComponent(fileName)
+    }
+    
+    private func isFileCached(_ fileName: String) -> Bool {
+        let localURL = getLocalFileURL(for: fileName)
+        return FileManager.default.fileExists(atPath: localURL.path)
+    }
+    
+    private func downloadFromFirebase(fileName: String) async throws -> URL {
+        do {
+            // Get download URL from Firebase
+            let downloadURL = try await FirebaseManager.shared.getMeditationURL(fileName: fileName)
+            
+            // Create a local file URL in the documents directory
+            let localURL = getLocalFileURL(for: fileName)
+            
+            // Download the file
+            let (tempURL, _) = try await URLSession.shared.download(from: downloadURL)
+            
+            // Move the downloaded file to our documents directory
+            if FileManager.default.fileExists(atPath: localURL.path) {
+                try FileManager.default.removeItem(at: localURL)
+            }
+            try FileManager.default.moveItem(at: tempURL, to: localURL)
+            
+            return localURL
+        } catch {
+            throw AudioError.firebaseDownloadFailed(error)
+        }
+    }
+    
     // Clean up
     deinit {
         timer?.invalidate()
@@ -290,4 +348,5 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
 
 enum AudioError: Error {
     case fileNotFound
+    case firebaseDownloadFailed(Error)
 }

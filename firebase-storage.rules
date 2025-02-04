@@ -1,0 +1,14 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /meditations/{allPaths=**} {
+      // Allow read access to all authenticated users
+      allow read: if true;  // For testing, we'll allow public read access
+      // For production, you might want to restrict to authenticated users:
+      // allow read: if request.auth != null;
+      
+      // Only allow writes from admin users (you can adjust this as needed)
+      allow write: if false;  // For now, disable writes from the app
+    }
+  }
+}

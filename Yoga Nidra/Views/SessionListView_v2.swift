@@ -43,11 +43,12 @@ struct SessionListView_v2: View {
                     LazyVGrid(columns: columns, alignment: .center, spacing: 16) {
                         ForEach(filteredSessions) { session in
                             Button {
-                                // Try to play immediately
-                                do {
-                                    try audioManager.onPlaySession(session: session)
-                                } catch {
-                                    print("Failed to play session: \(error)")
+                                Task {
+                                    do {
+                                        try await audioManager.onPlaySession(session: session)
+                                    } catch {
+                                        print("Failed to play session: \(error)")
+                                    }
                                 }
                                 // Also show the details sheet
                                 sheetPresenter.present(.sessionDetials(session))
