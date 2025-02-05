@@ -26,13 +26,6 @@ struct YogaNidraApp: App {
                     OnboardingContainerView()
                 }
             }
-            .environmentObject(progressManager)
-            .environmentObject(playerState)
-            .environmentObject(storeManager)
-            .environmentObject(onboardingManager)
-            .environmentObject(audioManager)
-            .environmentObject(sheetPresenter)
-            .environmentObject(overlayManager)
             .onReceive(progressManager.showRaitnsDialogPublisher) {
                 overlayManager.showOverlay(RatingPromptView())
             }
@@ -67,6 +60,13 @@ struct YogaNidraApp: App {
                     break
                 }
             }
+            .environmentObject(progressManager)
+            .environmentObject(playerState)
+            .environmentObject(storeManager)
+            .environmentObject(onboardingManager)
+            .environmentObject(audioManager)
+            .environmentObject(sheetPresenter)
+            .environmentObject(overlayManager)
         }
     }
 }
