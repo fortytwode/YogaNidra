@@ -16,23 +16,41 @@ struct QuestionOption: Identifiable {
 struct QuestionScreenView: View {
     let question: String
     let subtitle: String
+    let helperText: String?
     let options: [QuestionOption]
     @Binding var selectedOption: QuestionOption?
     let nextPage: () -> Void
     
+    init(question: String, subtitle: String, helperText: String? = nil, options: [QuestionOption], selectedOption: Binding<QuestionOption?>, nextPage: @escaping () -> Void) {
+        self.question = question
+        self.subtitle = subtitle
+        self.helperText = helperText
+        self.options = options
+        self._selectedOption = selectedOption
+        self.nextPage = nextPage
+    }
+    
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 24) {
             Spacer()
             
-            Text(question)
-                .font(.system(size: 32, weight: .bold))
-                .foregroundColor(.white)
-                .multilineTextAlignment(.center)
+            // Question Section
+            VStack(spacing: 16) {
+                Text(question)
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundColor(.white)
+            }
+            .padding(.horizontal)
             
-            Text(subtitle)
-                .font(.subheadline)
-                .foregroundColor(.white)
+            Spacer()
+                .frame(height: 20)
             
+            // Options Section
             VStack(spacing: 16) {
                 ForEach(options) { option in
                     Button {
@@ -59,23 +77,30 @@ struct QuestionScreenView: View {
                             }
                         }
                         .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(white: 0.2))
-                        )
+                        .background(Color(white: 0.2))
+                        .cornerRadius(12)
                     }
                     .foregroundColor(.white)
                 }
+                
+                if let helperText = helperText {
+                    Text(helperText)
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 8)
+                }
             }
+            .padding(.horizontal, 24)
             
             Spacer()
         }
-        .padding()
         .background(
             ZStack {
-                Image("mountain-lake-twilight")
+                Image("northern-lights")
                     .resizable()
                     .scaledToFill()
+                    .ignoresSafeArea()
                 
                 LinearGradient(
                     gradient: Gradient(colors: [
@@ -85,8 +110,22 @@ struct QuestionScreenView: View {
                     startPoint: .top,
                     endPoint: .bottom
                 )
+                .ignoresSafeArea()
             }
-            .ignoresSafeArea()
         )
     }
+}
+
+#Preview {
+    QuestionScreenView(
+        question: "Sample Question",
+        subtitle: "Sample subtitle",
+        helperText: "Helper text",
+        options: [
+            QuestionOption(emoji: "😊", text: "Option 1"),
+            QuestionOption(emoji: "😌", text: "Option 2")
+        ],
+        selectedOption: .constant(nil),
+        nextPage: {}
+    )
 }

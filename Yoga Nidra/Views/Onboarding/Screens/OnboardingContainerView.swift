@@ -1,88 +1,42 @@
 import SwiftUI
 
 struct OnboardingContainerView: View {
-    @State private var currentPage = 0
-    @EnvironmentObject var audioManager: AudioManager
+    @State private var currentPageIndex = 0
     
     var body: some View {
-        TabView(selection: $currentPage) {
-            // Information screens (no progress bar)
-            WelcomeView(nextPage: nextPage)
-                .tag(0)
-            
-            GoalsView(nextPage: nextPage)
-                .tag(1)
-            
-            ExplanationView(nextPage: nextPage)
-                .tag(2)
-            
-            BenefitsView(nextPage: nextPage)
-                .tag(3)
-            
-            // Question screens (with progress bar)
-            OnboardingQuestionWrapper(currentStep: 1) {
-                SleepQualityView(nextPage: nextPage)
+        let nextPage = { currentPageIndex += 1 }
+        
+        NavigationStack {
+            ZStack {
+                Color.black.edgesIgnoringSafeArea(.all)
+                
+                Group {
+                    if currentPageIndex == 0 {
+                        IWelcomeView(nextPage: nextPage)
+                    } else if currentPageIndex == 1 {
+                        GoalsView(nextPage: nextPage)
+                    } else if currentPageIndex == 2 {
+                        ExplanationView(nextPage: nextPage)
+                    } else if currentPageIndex == 3 {
+                        BenefitsView(nextPage: nextPage)
+                    } else if currentPageIndex == 4 {
+                        SleepSatisfactionView(nextPage: nextPage)
+                    } else if currentPageIndex == 5 {
+                        SleepQuantityView(nextPage: nextPage)
+                    } else if currentPageIndex == 6 {
+                        FallAsleepView(nextPage: nextPage)
+                    } else if currentPageIndex == 19 {
+                        TrialExplanationView(currentPage: $currentPageIndex)
+                    } else if currentPageIndex == 20 {
+                        PaywallView()
+                    }
+                }
             }
-            .tag(4)
-            
-            OnboardingQuestionWrapper(currentStep: 2) {
-                SleepPatternView(nextPage: nextPage)
-            }
-            .tag(5)
-            
-            OnboardingQuestionWrapper(currentStep: 3) {
-                FallAsleepView(nextPage: nextPage)
-            }
-            .tag(6)
-            
-            OnboardingQuestionWrapper(currentStep: 4) {
-                SleepScienceView(nextPage: nextPage)
-            }
-            .tag(7)
-            
-            OnboardingQuestionWrapper(currentStep: 5) {
-                WakeUpView(nextPage: nextPage)
-            }
-            .tag(8)
-            
-            OnboardingQuestionWrapper(currentStep: 6) {
-                RelaxationObstaclesView(nextPage: nextPage)
-            }
-            .tag(9)
-            
-            OnboardingQuestionWrapper(currentStep: 7) {
-                SleepImpactView(nextPage: nextPage)
-            }
-            .tag(10)
-            
-            // Loading/Analysis screen
-            ProcessingDataView(nextPage: nextPage)
-                .tag(11)
-            
-            // Final Profile (no progress bar)
-            FinalProfileView(nextPage: nextPage)
-                .tag(12)
-            
-            // Trial Explanation (no progress bar)
-            TrialExplanationView(currentPage: $currentPage)
-                .tag(13)
-            
-            // Paywall (no progress bar)
-            PaywallView()
-                .tag(14)
-        }
-        .tabViewStyle(.page(indexDisplayMode: .never))
-        .ignoresSafeArea()
-        .preferredColorScheme(.dark)
-        .background(Color.black.edgesIgnoringSafeArea(.all))
-        .onLoad {
-            try await audioManager.play(audioFileWithExtension: "calm-ambient.mp3", loop: true)
+            .preferredColorScheme(.dark)
         }
     }
-    
-    private func nextPage() {
-        withAnimation {
-            currentPage += 1
-        }
-    }
+}
+
+#Preview {
+    OnboardingContainerView()
 }

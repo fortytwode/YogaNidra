@@ -5,17 +5,18 @@ struct FallAsleepView: View {
     @StateObject private var preferencesManager = PreferencesManager.shared
     @State private var selectedOption: QuestionOption?
     
-    let options = [
-        QuestionOption(emoji: "⚡️", text: "Less than 15 minutes"),
-        QuestionOption(emoji: "🌙", text: "15-30 minutes"),
-        QuestionOption(emoji: "🕐", text: "30-60 minutes"),
-        QuestionOption(emoji: "😩", text: "Over an hour")
+    private let options = [
+        QuestionOption(emoji: "⚡️", text: "Quick as a wink (< 15 mins)"),
+        QuestionOption(emoji: "🌙", text: "Gentle drift (15-30 mins)"),
+        QuestionOption(emoji: "⏰", text: "Taking my time (30-60 mins)"),
+        QuestionOption(emoji: "😴", text: "Need some extra help (60+ mins)")
     ]
     
     var body: some View {
         QuestionScreenView(
             question: "How long does it take you to fall asleep?",
-            subtitle: "We'll help you fall asleep faster",
+            subtitle: "We'll help you find your sleepy sweet spot",
+            helperText: "Yoga Nidra is perfect for shortening that drift-off time 💫",
             options: options,
             selectedOption: $selectedOption,
             nextPage: {
@@ -47,4 +48,4 @@ struct FallAsleepView: View {
 
 #Preview {
     FallAsleepView(nextPage: {})
-} 
+}

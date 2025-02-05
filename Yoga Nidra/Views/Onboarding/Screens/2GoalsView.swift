@@ -5,11 +5,11 @@ struct GoalsView: View {
     @State private var selectedGoals: Set<String> = []
     
     private let goals = [
-        "😴 Better Sleep Quality",
-        "😌 Stress Reduction",
-        "🧘‍♀️ Deep Relaxation",
-        "🎯 Focus Enhancement",
-        "⚡️ Energy Improvement"
+        "😴 Sweet dreams & better sleep",
+        "😌 A calmer mind at rest",
+        "🧘‍♀️ Deep peaceful relaxation",
+        "✨ Mental clarity & focus",
+        "🌙 Wake up feeling refreshed"
     ]
     
     var body: some View {
@@ -18,11 +18,11 @@ struct GoalsView: View {
             
             // Introduction text
             VStack(spacing: 16) {
-                Text("Let's find out your sleep profile with this quick quiz.")
+                Text("First, let's get to know you better!")
                     .font(.body)
                     .foregroundColor(.white)
                 
-                Text("What brings you here?")
+                Text("What would you love to improve about your sleep?")
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.white)
             }
@@ -54,15 +54,7 @@ struct GoalsView: View {
                     }
                 }
                 
-                Text("This allows us to make a custom-tailored experience for you")
-                    .font(.subheadline)
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 24)
-                    .padding(.horizontal)
-                    .fixedSize(horizontal: false, vertical: true)
-                
-                Text("(takes < 2 mins)")
+                Text("Quick quiz (faster than counting sheep) 💫")
                     .font(.subheadline)
                     .foregroundColor(.white)
                     .padding(.top, 8)
@@ -89,5 +81,12 @@ struct GoalsView: View {
                 .ignoresSafeArea()
             }
         )
+    }
+}
+
+struct GoalsView_Previews: PreviewProvider {
+    static var previews: some View {
+        GoalsView(nextPage: {})
+            .preferredColorScheme(.dark)
     }
 }

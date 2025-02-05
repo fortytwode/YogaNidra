@@ -17,21 +17,6 @@ struct YogaNidraApp: App {
         FirebaseApp.configure()
     }
     
-    func testPlayback() async {
-        // Test playing a meditation file
-        do {
-            if let testSession = YogaNidraSession.allSessions.first(where: { $0.audioFileName == "Sleep_Restoration_Aria.mp3" }) {
-                print("🎵 Testing playback of: \(testSession.title)")
-                try await audioManager.onPlaySession(session: testSession)
-                print("✅ Playback started successfully!")
-            } else {
-                print("❌ Test session not found")
-            }
-        } catch {
-            print("❌ Playback failed: \(error)")
-        }
-    }
-    
     var body: some Scene {
         WindowGroup {
             Group {
@@ -41,9 +26,13 @@ struct YogaNidraApp: App {
                     OnboardingContainerView()
                 }
             }
-            .task {
-                await testPlayback()
-            }
+            .environmentObject(progressManager)
+            .environmentObject(playerState)
+            .environmentObject(storeManager)
+            .environmentObject(onboardingManager)
+            .environmentObject(audioManager)
+            .environmentObject(sheetPresenter)
+            .environmentObject(overlayManager)
             .onReceive(progressManager.showRaitnsDialogPublisher) {
                 overlayManager.showOverlay(RatingPromptView())
             }
@@ -78,13 +67,6 @@ struct YogaNidraApp: App {
                     break
                 }
             }
-            .environmentObject(progressManager)
-            .environmentObject(playerState)
-            .environmentObject(storeManager)
-            .environmentObject(onboardingManager)
-            .environmentObject(audioManager)
-            .environmentObject(sheetPresenter)
-            .environmentObject(overlayManager)
         }
     }
 }

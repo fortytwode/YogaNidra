@@ -1,33 +1,34 @@
 import SwiftUI
 
-struct SleepPatternView: View {
+struct SleepSatisfactionView: View {
     let nextPage: () -> Void
     @StateObject private var preferencesManager = PreferencesManager.shared
     @State private var selectedOption: QuestionOption?
     
-    let options = [
-        QuestionOption(emoji: "⏰", text: "Less than 6 hours"),
-        QuestionOption(emoji: "🌙", text: "6-8 hours"),
-        QuestionOption(emoji: "✨", text: "8-10 hours"),
-        QuestionOption(emoji: "💤", text: "More than 10 hours")
+    private let options = [
+        QuestionOption(emoji: "😊", text: "Sleeping like a baby"),
+        QuestionOption(emoji: "😌", text: "Could be cozier"),
+        QuestionOption(emoji: "😕", text: "Tossing & turning"),
+        QuestionOption(emoji: "😫", text: "Need a sleep hug ASAP")
     ]
     
     var body: some View {
         QuestionScreenView(
-            question: "How much sleep do you\nusually get?",
-            subtitle: "We'll help you optimize your rest",
+            question: "Let's talk about your sleep ✨",
+            subtitle: "Your answers help us weave the perfect sleep routine 💫",
+            helperText: "Better sleep is just around the corner 🌙",
             options: options,
             selectedOption: $selectedOption,
             nextPage: {
                 if let selected = selectedOption {
-                    PreferencesManager.shared.updateSleepDuration(selected.text)
+                    preferencesManager.updateSleepQuality(selected.text)
                 }
                 nextPage()
             }
         )
         .background(
             ZStack {
-                Image("mountain-lake-twilight")
+                Image("northern-lights")
                     .resizable()
                     .scaledToFill()
                 
@@ -42,5 +43,11 @@ struct SleepPatternView: View {
             }
             .ignoresSafeArea()
         )
+    }
+}
+
+struct SleepSatisfactionView_Previews: PreviewProvider {
+    static var previews: some View {
+        SleepSatisfactionView(nextPage: {})
     }
 }

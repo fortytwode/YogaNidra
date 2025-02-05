@@ -9,7 +9,7 @@ The onboarding process is designed to understand user's sleep patterns, challeng
    - CTA: "Start your journey →"
    - Background: Calming nature scene
 
-2. **BenefitsView**
+2. **3BenefitsView**
    - Detailed explanation of Yoga Nidra practice
    - CTA: "Continue →"
    - Focus on educational content
