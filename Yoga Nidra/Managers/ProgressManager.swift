@@ -242,9 +242,9 @@ final class ProgressManager: ObservableObject {
     
     private func getCooldownDays() -> Int {
         switch ratingPromptsInYear {
-            case 0: return 14  // First prompt: 2 weeks
-            case 1: return 30  // Second prompt: 30 days
-            default: return 365 // Third prompt: 1 year
+            case 0: return 0     // First prompt: immediately after first session
+            case 1: return 30    // Second prompt: 30 days
+            default: return 365  // Third prompt: 1 year
         }
     }
     
@@ -267,9 +267,11 @@ final class ProgressManager: ObservableObject {
         
         let hasCompletedSession = sessionsCompleted > 0
         let cooldownDays = getCooldownDays()
-        let isRatingDialogCoolDownPassed = lastRatingDialogDate?.isAtLeastDaysApart(from: .now, days: cooldownDays) ?? true
+        let isRatingDialogCoolDownPassed = cooldownDays == 0 ? true : 
+            lastRatingDialogDate?.isAtLeastDaysApart(from: .now, days: cooldownDays) ?? true
         
         if hasCompletedSession, isRatingDialogCoolDownPassed {
+            showRaitnsDialog.send()  // Trigger the rating dialog
             setRatingDialogShown()
         }
     }
