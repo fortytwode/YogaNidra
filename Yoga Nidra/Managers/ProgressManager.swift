@@ -144,14 +144,17 @@ final class ProgressManager: ObservableObject {
                 (key.uuidString, [
                     "startTime": value.startTime.timeIntervalSince1970,
                     "duration": value.duration,
-                    "completed": value.completed
+                    "completed": value.completed,
+                    "lastCompleted": value.lastCompleted?.timeIntervalSince1970 ?? 0,
+                    "completionCount": value.completionCount
                 ])
             }),
             "metrics": [
                 "totalTimeListened": totalTimeListened,
                 "sessionsCompleted": sessionsCompleted,
                 "currentStreak": currentStreak,
-                "lastCompletedDate": UserDefaults.standard.double(forKey: "lastCompletedDate")
+                "streakDays": streakDays,
+                "totalMinutesListened": totalMinutesListened
             ]
         ]
     }

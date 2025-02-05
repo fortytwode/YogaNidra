@@ -43,23 +43,20 @@ struct HomeView: View {
                         .frame(height: 280)  // Match the image height
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Yoga Nidra")
-                                .font(.system(size: 24, weight: .medium))
-                                .foregroundColor(.white)
-                                .textShadowEffect()
-                            
                             Text("Time to Unwind")
                                 .font(.system(size: 36, weight: .bold))
                                 .foregroundColor(.white)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .textShadowEffect()
                             
                             Text("Let your mind drift into peaceful dreams")
                                 .font(.subheadline)
                                 .foregroundColor(.white.opacity(0.8))
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .textShadowEffect()
                         }
                         .padding(.horizontal)
-                        .padding(.bottom, 24)
+                        .padding(.bottom, 16)
                     }
                     // Popular section
                     popularSection
