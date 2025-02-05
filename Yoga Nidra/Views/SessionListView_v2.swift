@@ -18,55 +18,13 @@ struct SessionListView_v2: View {
         NavigationStack(path: $router.path) {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Category filters
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            CategoryFilterButton(title: "All", isSelected: selectedCategory == nil) {
-                                selectedCategory = nil
-                            }
-                            
-                            ForEach(CategoryManager.shared.categories) { category in
-                                CategoryFilterButton(
-                                    title: category.id,
-                                    isSelected: selectedCategory?.id == category.id
-                                ) {
-                                    selectedCategory = category
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                    }
-                    
-                    // Grid layout with filtered sessions
-                    let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 2)
-                    
-                    LazyVGrid(columns: columns, alignment: .center, spacing: 16) {
-                        ForEach(filteredSessions) { session in
-                            Button {
-                                Task {
-                                    do {
-                                        try await audioManager.onPlaySession(session: session)
-                                    } catch {
-                                        print("Failed to play session: \(error)")
-                                    }
-                                }
-                                // Also show the details sheet
-                                sheetPresenter.present(.sessionDetials(session))
-                            } label: {
-                                SessionCard(session: session)
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .padding(.horizontal, 16)
+                    categoryFiltersSection
+                    sessionGridSection
                 }
                 .padding(.vertical)
             }
             .navigationTitle("Library")
             .background(Color.black)
-            .onAppear {
-                print("ScrollView appeared")
-            }
             .environmentObject(router)
             .navigationDestination(for: LibraryTabDestination.self) { destination in
                 switch destination {
@@ -76,6 +34,69 @@ struct SessionListView_v2: View {
             }
         }
         .preferredColorScheme(.dark)
+        .alert("Playback Error", isPresented: .init(
+            get: { audioManager.errorMessage != nil },
+            set: { if !$0 { audioManager.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            if let error = audioManager.errorMessage {
+                Text(error)
+            }
+        }
+    }
+    
+    // MARK: - View Components
+    
+    private var categoryFiltersSection: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                CategoryFilterButton(title: "All", isSelected: selectedCategory == nil) {
+                    selectedCategory = nil
+                }
+                
+                ForEach(CategoryManager.shared.categories) { category in
+                    CategoryFilterButton(
+                        title: category.id,
+                        isSelected: selectedCategory?.id == category.id
+                    ) {
+                        selectedCategory = category
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+        }
+    }
+    
+    private var sessionGridSection: some View {
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 2)
+        
+        return LazyVGrid(columns: columns, alignment: .center, spacing: 16) {
+            ForEach(filteredSessions) { session in
+                SessionCardButton(session: session)
+            }
+        }
+        .padding(.horizontal, 16)
+    }
+}
+
+// MARK: - Supporting Views
+
+struct SessionCardButton: View {
+    let session: YogaNidraSession
+    @EnvironmentObject var sheetPresenter: Presenter
+    @StateObject private var audioManager = AudioManager.shared
+    
+    var body: some View {
+        Button {
+            Task {
+                await audioManager.play(session)
+                sheetPresenter.present(.sessionDetials(session))
+            }
+        } label: {
+            SessionCard(session: session)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 

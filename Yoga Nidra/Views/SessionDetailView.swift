@@ -7,6 +7,7 @@ struct SessionDetailView: View {
     @StateObject private var audioManager = AudioManager.shared
     @StateObject private var storeManager = StoreManager.shared
     @StateObject private var favoritesManager = FavoritesManager.shared
+    @StateObject private var progressManager = ProgressManager.shared
     @EnvironmentObject private var playerState: PlayerState
     @EnvironmentObject private var sheetPresenter: Presenter
     @State private var showingShareSheet = false
@@ -20,191 +21,8 @@ struct SessionDetailView: View {
         GeometryReader { geometry in
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
-                    // Top Bar with dismiss button
-                    HStack {
-                        Button(action: {
-                            dismiss()
-                        }) {
-                            Image(systemName: "chevron.down")
-                                .font(.title2)
-                                .foregroundColor(.white)
-                                .frame(width: 44, height: 44)
-                                .background(Color.white.opacity(0.2))
-                                .clipShape(Circle())
-                        }
-                        
-                        Spacer()
-                    }
-                    .padding(.horizontal)
-                    
-                    // Main Content
-                    VStack(spacing: 16) {
-                        // Session Image
-                        Image(session.thumbnailUrl)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 200, height: 200)
-                            .cornerRadius(20)
-                        
-                        // Session Info
-                        VStack(spacing: 8) {
-                            Text(session.title)
-                                .font(.title)
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                            
-                            Text(session.description)
-                                .font(.callout)
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .padding(.horizontal)
-                            
-                            HStack {
-                                Text(session.instructor)
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.9))
-                                
-                                Text("•")
-                                    .foregroundColor(.white.opacity(0.6))
-                                
-                                Text("\(durationInMinutes) minutes")
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.9))
-                            }
-                            .padding(.top, 4)
-                        }
-                        
-                        // Action Buttons
-                        HStack(spacing: 40) {
-                            Button(action: {
-                                favoritesManager.toggleFavorite(session)
-                            }) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: favoritesManager.isFavorite(session) ? "heart.fill" : "heart")
-                                        .font(.title2)
-                                        .foregroundColor(favoritesManager.isFavorite(session) ? .red : .white)
-                                        .frame(width: 44, height: 44)
-                                        .background(Color.white.opacity(0.2))
-                                        .clipShape(Circle())
-                                    
-                                    Text("Favorite")
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-                                }
-                            }
-                            
-                            // Play/Pause Button
-                            Button(action: {
-                                if audioManager.isPlaying {
-                                    audioManager.onPauseSession()
-                                } else {
-                                    Task {
-                                        try? await audioManager.onPlaySession(session: session)
-                                    }
-                                }
-                            }) {
-                                VStack(spacing: 4) {
-                                    if audioManager.isLoading {
-                                        ProgressView()
-                                            .frame(width: 44, height: 44)
-                                            .foregroundColor(.white)
-                                    } else {
-                                        Image(systemName: audioManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                                            .font(.system(size: 44))
-                                            .foregroundColor(.white)
-                                    }
-                                    
-                                    Text(audioManager.isLoading ? "Loading..." : (audioManager.isPlaying ? "Pause" : "Play"))
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-                                }
-                            }
-                            .disabled(audioManager.isLoading)
-                            
-                            Button(action: {
-                                showingShareSheet = true
-                            }) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "square.and.arrow.up")
-                                        .font(.title2)
-                                        .foregroundColor(.white)
-                                        .frame(width: 44, height: 44)
-                                        .background(Color.white.opacity(0.2))
-                                        .clipShape(Circle())
-                                    
-                                    Text("Share")
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-                                }
-                            }
-                        }
-                        .padding(.top, 20)
-                        
-                        Spacer(minLength: geometry.size.height * 0.1)
-                        
-                        // Player Controls
-                        VStack(spacing: 30) {
-                            // Progress Slider and Time
-                            VStack(spacing: 8) {
-                                Slider(value: Binding(get: {
-                                    audioManager.srubPostion
-                                }, set: { value in
-                                    audioManager.onScrub(fraction: value)
-                                }),
-                                       in: 0...1)
-                                    .tint(.white)
-                                
-                                HStack {
-                                    Text(formatTime(audioManager.currentTime))
-                                    Spacer()
-                                    Text(formatTime(TimeInterval(session.duration)))
-                                }
-                                .font(.system(size: 12))
-                                .foregroundColor(.white)
-                                .transaction { transaction in
-                                    transaction.animation = nil
-                                }
-                            }
-                            .padding(.horizontal)
-                            
-                            // Control Buttons
-                            HStack(spacing: 60) {
-                                Button {
-                                    audioManager.skip(.backward, by: 15)
-                                } label: {
-                                    Image(systemName: "gobackward.15")
-                                        .font(.title)
-                                        .foregroundColor(.white)
-                                }
-                                
-                                Button {
-                                    Task {
-                                        if audioManager.isPlaying {
-                                            try await audioManager.onPauseSession()
-                                        } else {
-                                            try await startPlaying()
-                                        }
-                                    }
-                                } label: {
-                                    Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
-                                        .font(.system(size: 30))
-                                        .foregroundColor(.white)
-                                        .frame(width: 60, height: 60)
-                                        .background(Circle().fill(Color.white.opacity(0.2)))
-                                }
-                                
-                                Button {
-                                    audioManager.skip(.forward, by: 15)
-                                } label: {
-                                    Image(systemName: "goforward.15")
-                                        .font(.title)
-                                        .foregroundColor(.white)
-                                }
-                            }
-                        }
-                        .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
-                    }
+                    topBar
+                    mainContent
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -214,44 +32,248 @@ struct SessionDetailView: View {
         .background(Color.black)
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showingShareSheet) {
-            ShareSheet(activityItems: [
-                "Check out this meditation: \(session.title)",
-                "Duration: \(durationInMinutes) minutes",
-                "Instructor: \(session.instructor)",
-                session.description
-            ])
+            ShareSheet(activityItems: [session.title])
+        }
+        .alert("Playback Error", isPresented: .init(
+            get: { audioManager.errorMessage != nil },
+            set: { if !$0 { audioManager.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            if let error = audioManager.errorMessage {
+                Text(error)
+            }
         }
     }
+    
+    // MARK: - View Components
+    
+    private var topBar: some View {
+        HStack {
+            Button(action: {
+                dismiss()
+            }) {
+                Image(systemName: "chevron.down")
+                    .font(.title2)
+                    .foregroundColor(.white)
+                    .frame(width: 44, height: 44)
+                    .background(Color.white.opacity(0.2))
+                    .clipShape(Circle())
+            }
+            
+            Spacer()
+        }
+        .padding(.horizontal)
+    }
+    
+    private var mainContent: some View {
+        VStack(spacing: 16) {
+            sessionImage
+            sessionInfo
+            actionButtons
+            playerControls
+        }
+    }
+    
+    private var sessionImage: some View {
+        Image(session.thumbnailUrl)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 200, height: 200)
+            .cornerRadius(20)
+    }
+    
+    private var sessionInfo: some View {
+        VStack(spacing: 8) {
+            Text(session.title)
+                .font(.title)
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+            
+            Text(session.description)
+                .font(.callout)
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal)
+            
+            sessionMetadata
+        }
+    }
+    
+    private var sessionMetadata: some View {
+        HStack {
+            Text(session.instructor)
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.9))
+            
+            Text("•")
+                .foregroundColor(.white.opacity(0.6))
+            
+            Text("\(durationInMinutes) minutes")
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.9))
+        }
+        .padding(.top, 4)
+    }
+    
+    private var actionButtons: some View {
+        HStack(spacing: 40) {
+            favoriteButton
+            playPauseButton
+            shareButton
+        }
+        .padding(.vertical)
+    }
+    
+    private var favoriteButton: some View {
+        Button(action: {
+            favoritesManager.toggleFavorite(session)
+        }) {
+            VStack(spacing: 4) {
+                Image(systemName: favoritesManager.isFavorite(session) ? "heart.fill" : "heart")
+                    .font(.title2)
+                    .foregroundColor(favoritesManager.isFavorite(session) ? .red : .white)
+                    .frame(width: 44, height: 44)
+                    .background(Color.white.opacity(0.2))
+                    .clipShape(Circle())
+                
+                Text("Favorite")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+        }
+    }
+    
+    private var playPauseButton: some View {
+        Button(action: {
+            Task {
+                if audioManager.isPlaying {
+                    await audioManager.pause()
+                } else {
+                    await audioManager.play(session)
+                }
+            }
+        }) {
+            VStack(spacing: 4) {
+                ZStack {
+                    Circle()
+                        .fill(Color.white.opacity(0.2))
+                        .frame(width: 44, height: 44)
+                    
+                    if audioManager.isLoading {
+                        ProgressView()
+                            .tint(.white)
+                            .frame(width: 44, height: 44)
+                    } else {
+                        Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.title)
+                            .foregroundColor(.white)
+                    }
+                }
+                
+                Text(audioManager.isPlaying ? "Pause" : "Play")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+        }
+        .disabled(audioManager.isLoading)
+    }
+    
+    private var shareButton: some View {
+        Button(action: {
+            showingShareSheet = true
+        }) {
+            VStack(spacing: 4) {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.title2)
+                    .foregroundColor(.white)
+                    .frame(width: 44, height: 44)
+                    .background(Color.white.opacity(0.2))
+                    .clipShape(Circle())
+                
+                Text("Share")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+        }
+    }
+    
+    private var playerControls: some View {
+        VStack(spacing: 30) {
+            progressSlider
+            timeControls
+        }
+        .padding(.horizontal)
+    }
+    
+    private var progressSlider: some View {
+        VStack(spacing: 8) {
+            Slider(
+                value: .init(
+                    get: { audioManager.progress },
+                    set: { progress in
+                        let time = audioManager.duration * progress
+                        audioManager.currentTime = time
+                    }
+                ),
+                in: 0...1
+            )
+            .accentColor(.white)
+            
+            HStack {
+                Text(formatTime(audioManager.currentTime))
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                
+                Spacer()
+                
+                Text(formatTime(audioManager.duration))
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+        }
+    }
+    
+    private var timeControls: some View {
+        HStack(spacing: 30) {
+            Button(action: {
+                let newTime = max(audioManager.currentTime - 15, 0)
+                audioManager.currentTime = newTime
+            }) {
+                Image(systemName: "gobackward.15")
+                    .font(.title)
+                    .foregroundColor(.white)
+            }
+            
+            Button(action: {
+                let newTime = min(audioManager.currentTime + 30, audioManager.duration)
+                audioManager.currentTime = newTime
+            }) {
+                Image(systemName: "goforward.30")
+                    .font(.title)
+                    .foregroundColor(.white)
+            }
+        }
+    }
+    
+    // MARK: - Helper Methods
     
     private func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%d:%02d", minutes, seconds)
     }
-    
-    private func startPlaying() async throws {
-        try await audioManager.onPlaySession(session: session)
-    }
 }
 
-// ShareSheet UIViewControllerRepresentable
+// MARK: - Supporting Views
+
 struct ShareSheet: UIViewControllerRepresentable {
     let activityItems: [Any]
     
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        let controller = UIActivityViewController(
-            activityItems: activityItems,
-            applicationActivities: nil
-        )
-        return controller
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
     }
     
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-
-// Preview Provider
-#Preview {
-    SessionDetailView(session: .preview)
-        .environmentObject(PlayerState())
-        .environmentObject(Presenter())
 }

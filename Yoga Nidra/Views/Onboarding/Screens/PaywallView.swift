@@ -70,8 +70,10 @@ struct PaywallView: View {
                         Task {
                             do {
                                 try await storeManager.purchase()
+                                onboardingManager.isOnboardingCompleted = true
                             } catch {
                                 showError = true
+                                errorMessage = error.localizedDescription
                             }
                         }
                     } label: {
@@ -95,8 +97,10 @@ struct PaywallView: View {
                         Task {
                             do {
                                 try await storeManager.restore()
+                                onboardingManager.isOnboardingCompleted = true
                             } catch {
                                 showError = true
+                                errorMessage = error.localizedDescription
                             }
                         }
                     } label: {

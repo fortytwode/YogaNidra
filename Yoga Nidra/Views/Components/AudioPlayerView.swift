@@ -19,37 +19,61 @@ struct AudioPlayerView: View {
     var body: some View {
         VStack(spacing: 20) {
             // Progress bar
-            Slider(value: Binding(get: {
-                audioManager.srubPostion
-            }, set: { value in
-                audioManager.onScrub(fraction: value)
-            }), in: 0...1)
-            .tint(.white)
+            Slider(value: $audioManager.progress, in: 0...1)
+                .tint(.white)
+                .onChange(of: audioManager.progress) { newValue in
+                    Task {
+                        await audioManager.seek(to: newValue * audioManager.duration)
+                    }
+                }
             
             // Time labels
             HStack {
                 Text(formatTime(audioManager.currentTime))
+                    .foregroundColor(.white)
                 Spacer()
-                Text(formatTime(TimeInterval(session.duration)))
-            }
-            .font(.subheadline)
-            .foregroundColor(.gray)
-            
-            // Play/Pause Button
-            Button(action: {
-                if audioManager.isPlaying {
-                    audioManager.onPauseSession()
-                } else {
-                    audioManager.onResumeSession()
-                }
-            }) {
-                Image(systemName: audioManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 44, height: 44)
+                Text(formatTime(audioManager.duration))
                     .foregroundColor(.white)
             }
-            .padding(.top, 20)
+            .font(.caption)
+            
+            // Playback controls
+            HStack(spacing: 40) {
+                Button {
+                    Task {
+                        await audioManager.seek(to: max(0, audioManager.currentTime - 15))
+                    }
+                } label: {
+                    Image(systemName: "gobackward.15")
+                        .font(.title)
+                        .foregroundColor(.white)
+                }
+                
+                Button {
+                    Task {
+                        if audioManager.isPlaying {
+                            await audioManager.pause()
+                        } else {
+                            await audioManager.resume()
+                        }
+                    }
+                } label: {
+                    Image(systemName: audioManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                        .font(.system(size: 44))
+                        .foregroundColor(.white)
+                }
+                
+                Button {
+                    Task {
+                        await audioManager.seek(to: min(audioManager.duration, audioManager.currentTime + 15))
+                    }
+                } label: {
+                    Image(systemName: "goforward.15")
+                        .font(.title)
+                        .foregroundColor(.white)
+                }
+            }
         }
+        .padding()
     }
 }

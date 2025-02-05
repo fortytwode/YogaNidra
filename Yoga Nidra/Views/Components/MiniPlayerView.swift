@@ -4,6 +4,12 @@ struct MiniPlayerView: View {
     let session: YogaNidraSession
     @StateObject private var audioManager = AudioManager.shared
     
+    private func formatTime(_ time: TimeInterval) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             Divider()
@@ -32,22 +38,23 @@ struct MiniPlayerView: View {
                 
                 // Play/Pause Button
                 Button {
-                    audioManager.onStopSession()
+                    Task {
+                        if audioManager.isPlaying {
+                            await audioManager.pause()
+                        } else {
+                            await audioManager.resume()
+                        }
+                    }
                 } label: {
                     Image(systemName: audioManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
                         .font(.title)
                         .foregroundColor(.primary)
                 }
             }
-            .padding()
-            .background(Color(uiColor: .systemBackground))
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(Color(.systemBackground))
         }
-    }
-    
-    private func formatTime(_ time: TimeInterval) -> String {
-        let minutes = Int(time) / 60
-        let seconds = Int(time) % 60
-        return String(format: "%d:%02d", minutes, seconds)
     }
 }
 

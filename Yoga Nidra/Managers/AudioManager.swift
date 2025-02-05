@@ -4,277 +4,200 @@ import SwiftUI
 import FirebaseStorage
 
 @MainActor
-final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
-    
+final class AudioManager: ObservableObject {
     static let shared = AudioManager()
     
+    // MARK: - Published Properties
     @Published var isPlaying: Bool = false
+    @Published var isLoading: Bool = false
     @Published var currentTime: TimeInterval = 0
-    @Published var srubPostion = 0.0
+    @Published var duration: TimeInterval = 0
+    @Published var progress: Double = 0
     @Published var currentPlayingSession: YogaNidraSession?
-    @Published private(set) var isLoading: Bool = false
-    private var audioPlayer: AVAudioPlayer?
-    private var timer: Timer?
+    @Published var errorMessage: String?
     
-    @MainActor
-    private override init() {
-        super.init()
-        UIApplication.shared.beginReceivingRemoteControlEvents()
-        setupAudioSession()
+    // MARK: - Private Properties
+    private let audioEngine = AudioEngine.shared
+    private var timeObserverToken: Any?
+    
+    // MARK: - Initialization
+    private init() {
         setupRemoteCommandCenter()
-        setupNotifications()
     }
     
-    // MARK: - Audio Session Setup
-    private func setupAudioSession() {
-        let audioSession = AVAudioSession.sharedInstance()
+    // MARK: - Public API
+    
+    /// Plays a meditation session
+    func play(_ session: YogaNidraSession) async {
         do {
-            try audioSession.setCategory(.playback, mode: .default)
-            try audioSession.setActive(true)
-            print("✅ Audio session setup successful")
+            // Stop any existing playback
+            await stop()
+            
+            isLoading = true
+            errorMessage = nil
+            currentPlayingSession = session
+            
+            // Get the audio file URL
+            let audioFileURL: URL
+            if isFileCached(session.audioFileName) {
+                print("📂 Using cached file")
+                audioFileURL = getLocalFileURL(for: session.audioFileName)
+            } else {
+                print("⬇️ Downloading from Firebase: \(session.audioFileName)")
+                audioFileURL = try await downloadFromFirebase(fileName: session.audioFileName)
+            }
+            
+            // Prepare audio engine for playback
+            await withCheckedContinuation { continuation in
+                audioEngine.prepareForPlayback(url: audioFileURL) { [weak self] result in
+                    guard let self = self else {
+                        continuation.resume()
+                        return
+                    }
+                    
+                    switch result {
+                    case .success:
+                        self.setupTimeObserver()
+                        Task { @MainActor in
+                            await self.resume()
+                        }
+                        self.isLoading = false
+                        print("✅ Playback started successfully")
+                        
+                    case .failure(let error):
+                        print("❌ Failed to prepare playback: \(error)")
+                        self.isLoading = false
+                        self.errorMessage = error.localizedDescription
+                    }
+                    continuation.resume()
+                }
+            }
+            
         } catch {
-            print("❌ Failed to set up audio session: \(error)")
+            print("❌ Failed to setup playback: \(error)")
+            isLoading = false
+            errorMessage = error.localizedDescription
+            currentPlayingSession = nil
         }
     }
     
-    // MARK: - Remote Command Center
+    /// Pauses the current playback
+    func pause() async {
+        await MainActor.run {
+            audioEngine.pause()
+            isPlaying = false
+            updateNowPlayingInfo()
+        }
+    }
+    
+    /// Resumes the current playback
+    func resume() async {
+        await MainActor.run {
+            audioEngine.play()
+            isPlaying = true
+            updateNowPlayingInfo()
+        }
+    }
+    
+    /// Stops playback and resets state
+    func stop() async {
+        await MainActor.run {
+            // Stop playback
+            audioEngine.pause()
+            
+            // Clean up time observer
+            if let token = timeObserverToken {
+                audioEngine.removeTimeObserver(token)
+                timeObserverToken = nil
+            }
+            
+            // Reset state
+            currentPlayingSession = nil
+            isPlaying = false
+            currentTime = 0
+            duration = 0
+            progress = 0
+            isLoading = false
+            errorMessage = nil
+            
+            // Update now playing info
+            updateNowPlayingInfo()
+        }
+    }
+    
+    /// Seeks to a specific time
+    func seek(to time: TimeInterval) async {
+        await MainActor.run {
+            let cmTime = CMTime(seconds: time, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+            audioEngine.seek(to: cmTime)
+            updateNowPlayingInfo()
+        }
+    }
+    
+    // MARK: - Private Methods
+    
+    private func setupTimeObserver() {
+        if let token = timeObserverToken {
+            audioEngine.removeTimeObserver(token)
+            timeObserverToken = nil
+        }
+        
+        let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        timeObserverToken = audioEngine.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
+            guard let self = self else { return }
+            self.currentTime = time.seconds
+            self.duration = self.audioEngine.duration
+            if self.duration > 0 {
+                self.progress = self.currentTime / self.duration
+            }
+            self.updateNowPlayingInfo()
+        }
+    }
+    
     private func setupRemoteCommandCenter() {
         let commandCenter = MPRemoteCommandCenter.shared()
         
-        commandCenter.playCommand.addTarget { [weak self] event in
-            self?.resume()
-            return .success
-        }
+        commandCenter.playCommand.removeTarget(nil)
+        commandCenter.pauseCommand.removeTarget(nil)
+        commandCenter.togglePlayPauseCommand.removeTarget(nil)
         
-        commandCenter.pauseCommand.addTarget { [weak self] event in
-            self?.pause()
-            return .success
-        }
-        
-        commandCenter.nextTrackCommand.addTarget { [weak self] event in
-            self?.nextTrack()
-            return .success
-        }
-        
-        commandCenter.previousTrackCommand.addTarget { [weak self] event in
-            self?.previousTrack()
-            return .success
-        }
-    }
-    
-    func onPauseSession() {
-        pause()
-        updateNowPlayingInfo()
-    }
-    
-    func onResumeSession() {
-        resume()
-        updateNowPlayingInfo()
-    }
-    
-    public func onStopSession() {
-        stop()
-        updateNowPlayingInfo()
-    }
-    
-    func onPlaySession(session: YogaNidraSession) async throws {
-        guard !isLoading else { return }
-        isLoading = true
-        
-        defer { isLoading = false }
-        
-        // First deactivate current session if any
-        if audioPlayer != nil {
-            stop()
-        }
-        
-        if currentPlayingSession == session {
-            onResumeSession()
-        } else {
-            print("🎵 Starting playback of: \(session.title)")
-            let fileName = session.audioFileName
-            if isFileCached(fileName) {
-                print("📂 Using cached file")
-                try await play(audioFileWithExtension: fileName)
-            } else {
-                print("⬇️ Downloading from Firebase")
-                let localURL = try await downloadFromFirebase(fileName: fileName)
-                try await play(audioFileWithExtension: localURL.lastPathComponent)
+        commandCenter.playCommand.addTarget { [weak self] _ in
+            Task { @MainActor [weak self] in
+                await self?.resume()
             }
-            currentPlayingSession = session
-            updateNowPlayingInfo()
-            ProgressManager.shared.audioSessionStarted()
-            print("✅ Playback setup complete")
+            return .success
+        }
+        
+        commandCenter.pauseCommand.addTarget { [weak self] _ in
+            Task { @MainActor [weak self] in
+                await self?.pause()
+            }
+            return .success
+        }
+        
+        commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
+            Task { @MainActor [weak self] in
+                if self?.isPlaying == true {
+                    await self?.pause()
+                } else {
+                    await self?.resume()
+                }
+            }
+            return .success
         }
     }
     
-    // MARK: - Playback Controls
-    func play(audioFileWithExtension fileName: String, loop: Bool = false) async throws {
-        let localURL = getLocalFileURL(for: fileName)
-        if FileManager.default.fileExists(atPath: localURL.path) {
-            print("🎵 Creating audio player with local file")
-            audioPlayer = try AVAudioPlayer(contentsOf: localURL)
-            audioPlayer?.delegate = self
-            audioPlayer?.numberOfLoops = loop ? -1 : 0
-            audioPlayer?.prepareToPlay()
-            resume()
-            startTimer()
-            print("✅ Audio player created and started")
-        } else {
-            print("❌ Audio file not found at: \(localURL.path)")
-            throw AudioError.fileNotFound
-        }
-    }
-    
-    func skip(_ direction: SkipDirection, by seconds: TimeInterval) {
-        guard let audioPlayer else { return }
-        let newTime: TimeInterval
-        switch direction {
-        case .forward:
-            newTime = min(audioPlayer.currentTime + seconds, audioPlayer.duration)
-        case .backward:
-            newTime = max(audioPlayer.currentTime - seconds, 0)
-        }
-        audioPlayer.currentTime = newTime
-        updateCurrentPlayerTime(time: newTime)
-    }
-    
-    func onScrub(fraction: Double) {
-        guard let audioPlayer else { return }
-        let newTime: TimeInterval = fraction * audioPlayer.duration
-        audioPlayer.currentTime = newTime
-        updateCurrentPlayerTime(time: newTime)
-    }
-    
-    private func resume() {
-        audioPlayer?.play()
-        isPlaying = true
-        startTimer()
-        updateNowPlayingInfo()
-    }
-    
-    private func pause() {
-        audioPlayer?.pause()
-        isPlaying = false
-        timer?.invalidate()
-        updateNowPlayingInfo()
-    }
-    
-    public func stop() {
-        ProgressManager.shared.audioSessionEnded()
-        audioPlayer?.stop()
-        isPlaying = false
-        timer?.invalidate()
-        currentPlayingSession = nil
-        currentTime = 0
-        updateNowPlayingInfo()
-    }
-    
-    private func nextTrack() {
-        // Implement logic for next track playback
-        print("Next track")
-    }
-    
-    private func previousTrack() {
-        // Implement logic for previous track playback
-        print("Previous track")
-    }
-    
-    // MARK: - Now Playing Info
     private func updateNowPlayingInfo() {
-        guard let audioPlayer = audioPlayer, let session = currentPlayingSession else { return }
+        guard let session = currentPlayingSession else { return }
         
         var nowPlayingInfo = [String: Any]()
         nowPlayingInfo[MPMediaItemPropertyTitle] = session.title
-        nowPlayingInfo[MPMediaItemPropertyArtist] = session.instructor
-        nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = session.category.id
-        
-        if let artworkImage = UIImage(named: session.thumbnailUrl) { // Replace with your album art
-            nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: artworkImage.size) { _ in
-                return artworkImage
-            }
-        }
-        
-        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = audioPlayer.currentTime
-        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = audioPlayer.duration
+        nowPlayingInfo[MPMediaItemPropertyArtist] = "Yoga Nidra"
+        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = currentTime
+        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = duration
         nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
         
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-    }
-    
-    private func setupNotifications() {
-        print("🔔 Setting up audio notifications...")
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleInterruption),
-            name: AVAudioSession.interruptionNotification,
-            object: nil
-        )
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleRouteChange),
-            name: AVAudioSession.routeChangeNotification,
-            object: nil
-        )
-        print("✅ Audio notifications configured")
-    }
-    
-    @objc private func handleInterruption(notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
-              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
-            return
-        }
-        
-        switch type {
-        case .began:
-            pause()
-        case .ended:
-            guard let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else { return }
-            let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
-            if options.contains(.shouldResume) {
-                resume()
-            }
-        @unknown default:
-            break
-        }
-    }
-    
-    @objc private func handleRouteChange(notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
-              let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else {
-            return
-        }
-        
-        switch reason {
-        case .oldDeviceUnavailable:
-            pause()
-        default:
-            break
-        }
-    }
-    
-    private func startTimer() {
-        timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
-            Task { @MainActor [weak self] in
-                self?.updateCurrentPlayerTime(time: self?.audioPlayer?.currentTime)
-                self?.updateNowPlayingInfo()
-            }
-        }
-    }
-    
-    private func updateCurrentPlayerTime(time: TimeInterval?) {
-        guard let time, let audioPlayer else { return }
-        let totalDuration = audioPlayer.duration
-        let scrubTime = Double(time) / Double(totalDuration)
-        withAnimation {
-            currentTime = time
-            srubPostion = scrubTime
-        }
     }
     
     // MARK: - Firebase Storage
@@ -290,52 +213,36 @@ final class AudioManager: NSObject, AVAudioPlayerDelegate, ObservableObject {
     }
     
     private func downloadFromFirebase(fileName: String) async throws -> URL {
-        do {
-            // Get download URL from Firebase
-            let downloadURL = try await FirebaseManager.shared.getMeditationURL(fileName: fileName)
-            
-            // Create a local file URL in the documents directory
-            let localURL = getLocalFileURL(for: fileName)
-            
-            // Download the file
-            let (tempURL, _) = try await URLSession.shared.download(from: downloadURL)
-            
-            // Move the downloaded file to our documents directory
-            if FileManager.default.fileExists(atPath: localURL.path) {
-                try FileManager.default.removeItem(at: localURL)
-            }
-            try FileManager.default.moveItem(at: tempURL, to: localURL)
-            
+        let localURL = getLocalFileURL(for: fileName)
+        
+        // If file exists locally, return its URL
+        if FileManager.default.fileExists(atPath: localURL.path) {
             return localURL
-        } catch {
-            throw AudioError.firebaseDownloadFailed(error)
         }
-    }
-    
-    // Clean up
-    deinit {
-        timer?.invalidate()
-    }
-    
-    enum SkipDirection {
-        case forward
-        case backward
-    }
-}
-
-enum AudioError: Error {
-    case fileNotFound
-    case firebaseDownloadFailed(Error)
-    case playbackFailed
-    
-    var localizedDescription: String {
-        switch self {
-        case .fileNotFound:
-            return "Audio file not found"
-        case .firebaseDownloadFailed(let error):
-            return "Failed to download from Firebase: \(error.localizedDescription)"
-        case .playbackFailed:
-            return "Failed to start audio playback"
+        
+        // Download from Firebase Storage
+        let storage = Storage.storage()
+        let audioRef = storage.reference().child("meditations/\(fileName)")
+        
+        // Use a task to ensure we only have one download at a time
+        return try await withCheckedThrowingContinuation { continuation in
+            let task = audioRef.write(toFile: localURL) { url, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else if let url = url {
+                    print("✅ File downloaded successfully")
+                    continuation.resume(returning: url)
+                } else {
+                    continuation.resume(throwing: NSError(domain: "AudioManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unknown error during download"]))
+                }
+            }
+            
+            // If there's already a task running, cancel it
+            task.observe(.progress) { _ in
+                if task.description.contains("was already running") {
+                    task.cancel()
+                }
+            }
         }
     }
 }

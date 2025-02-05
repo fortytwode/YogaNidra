@@ -6,6 +6,7 @@ struct ContentView: View {
     @EnvironmentObject private var sheetPresenter: Presenter
     @StateObject private var audioManager = AudioManager.shared
     @StateObject private var storeManager = StoreManager.shared
+    @StateObject private var progressManager = ProgressManager.shared
     @State private var selectedTab = 0
     
     var body: some View {
@@ -13,6 +14,7 @@ struct ContentView: View {
             // Base layer: Tab View
             TabView(selection: $selectedTab) {
                 HomeView(selectedTab: $selectedTab)
+                    .environmentObject(progressManager)
                     .tabItem {
                         Image(systemName: "house.fill")
                         Text("Home")

@@ -2,6 +2,8 @@ import SwiftUI
 
 struct OnboardingContainerView: View {
     @State private var currentPageIndex = 0
+    @StateObject private var storeManager = StoreManager.shared
+    @StateObject private var onboardingManager = OnboardingManager.shared
     
     var body: some View {
         let nextPage = { currentPageIndex += 1 }
@@ -25,14 +27,16 @@ struct OnboardingContainerView: View {
                         SleepQuantityView(nextPage: nextPage)
                     } else if currentPageIndex == 6 {
                         FallAsleepView(nextPage: nextPage)
-                    } else if currentPageIndex == 19 {
+                    } else if currentPageIndex == 7 {
                         TrialExplanationView(currentPage: $currentPageIndex)
-                    } else if currentPageIndex == 20 {
+                    } else if currentPageIndex == 8 {
                         PaywallView()
                     }
                 }
             }
             .preferredColorScheme(.dark)
+            .environmentObject(storeManager)
+            .environmentObject(onboardingManager)
         }
     }
 }

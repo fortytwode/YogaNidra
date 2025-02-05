@@ -167,8 +167,9 @@ final class FirebaseManager {
     // MARK: - Subscription Analytics
     
     func logSubscriptionStarted(productId: String, isTrial: Bool = false) {
-        Analytics.logEvent("subscription_started", parameters: [
-            "product_id": productId,
+        Analytics.logEvent(AnalyticsEventSubscribe, parameters: [
+            AnalyticsParameterItemID: productId,
+            AnalyticsParameterItemName: "Premium Subscription",
             "is_trial": isTrial,
             "timestamp": Date().timeIntervalSince1970
         ])
@@ -176,14 +177,40 @@ final class FirebaseManager {
     
     func logSubscriptionRenewed(productId: String) {
         Analytics.logEvent("subscription_renewed", parameters: [
-            "product_id": productId,
+            AnalyticsParameterItemID: productId,
+            AnalyticsParameterItemName: "Premium Subscription",
             "timestamp": Date().timeIntervalSince1970
         ])
     }
     
     func logSubscriptionCancelled(productId: String) {
         Analytics.logEvent("subscription_cancelled", parameters: [
-            "product_id": productId,
+            AnalyticsParameterItemID: productId,
+            AnalyticsParameterItemName: "Premium Subscription",
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    func logTrialStarted(productId: String) {
+        Analytics.logEvent("trial_started", parameters: [
+            AnalyticsParameterItemID: productId,
+            AnalyticsParameterItemName: "Premium Trial",
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    func logTrialConverted(productId: String) {
+        Analytics.logEvent("trial_converted", parameters: [
+            AnalyticsParameterItemID: productId,
+            AnalyticsParameterItemName: "Premium Subscription",
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    func logTrialCancelled(productId: String) {
+        Analytics.logEvent("trial_cancelled", parameters: [
+            AnalyticsParameterItemID: productId,
+            AnalyticsParameterItemName: "Premium Trial",
             "timestamp": Date().timeIntervalSince1970
         ])
     }
@@ -191,20 +218,6 @@ final class FirebaseManager {
     func logPaywallImpression(source: String) {
         Analytics.logEvent("paywall_viewed", parameters: [
             "source": source,
-            "timestamp": Date().timeIntervalSince1970
-        ])
-    }
-    
-    func logTrialStarted(productId: String) {
-        Analytics.logEvent("trial_started", parameters: [
-            "product_id": productId,
-            "timestamp": Date().timeIntervalSince1970
-        ])
-    }
-    
-    func logTrialConverted(productId: String) {
-        Analytics.logEvent("trial_converted", parameters: [
-            "product_id": productId,
             "timestamp": Date().timeIntervalSince1970
         ])
     }

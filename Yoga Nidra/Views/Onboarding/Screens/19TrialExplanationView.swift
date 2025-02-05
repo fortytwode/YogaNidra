@@ -96,7 +96,7 @@ struct TrialExplanationView: View {
             VStack(spacing: 0) {
                 Button {
                     withAnimation {
-                        currentPage = 14 // Navigate to PaywallView
+                        currentPage = 8 // Navigate to PaywallView
                     }
                 } label: {
                     Text("Continue")

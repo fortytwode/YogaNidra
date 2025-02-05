@@ -142,10 +142,38 @@ final class StoreManager: ObservableObject {
     }
     
     @MainActor
-    private func logPurchaseAnalytics(_ product: Product) {
-        if product.type == .autoRenewable {
-            FirebaseManager.shared.logSubscriptionStarted(productId: product.id)
+    private func logPurchaseAnalytics(_ product: Product, transaction: Transaction? = nil) {
+        guard product.type == .autoRenewable else { return }
+        
+        let firebaseManager = FirebaseManager.shared
+        
+        if let transaction = transaction {
+            if transaction.isUpgraded {
+                // Trial conversion
+                firebaseManager.logTrialConverted(productId: product.id)
+            } else if transaction.isAutoRenewable {
+                if isInTrialPeriod {
+                    firebaseManager.logTrialStarted(productId: product.id)
+                } else {
+                    firebaseManager.logSubscriptionStarted(productId: product.id, isTrial: false)
+                }
+            }
+        } else {
+            // Default subscription start
+            firebaseManager.logSubscriptionStarted(productId: product.id, isTrial: false)
         }
+    }
+    
+    private func handleSubscriptionCancellation(_ transaction: Transaction) {
+        if isInTrialPeriod {
+            FirebaseManager.shared.logTrialCancelled(productId: transaction.productID)
+        } else {
+            FirebaseManager.shared.logSubscriptionCancelled(productId: transaction.productID)
+        }
+    }
+    
+    private func handleSubscriptionRenewal(_ transaction: Transaction) {
+        FirebaseManager.shared.logSubscriptionRenewed(productId: transaction.productID)
     }
     
     private func handleVerification(_ verification: StoreKit.VerificationResult<StoreKit.Transaction>) async throws {
@@ -156,7 +184,7 @@ final class StoreManager: ObservableObject {
             
             if transaction.productType == .autoRenewable {
                 if let product = try? await Product.products(for: [transaction.productID]).first {
-                    await logPurchaseAnalytics(product)
+                    await logPurchaseAnalytics(product, transaction: transaction)
                 }
             }
             
@@ -206,7 +234,7 @@ final class StoreManager: ObservableObject {
             
             if let product = try? await Product.products(for: [transaction.productID]).first,
                product.type == .autoRenewable {
-                await logPurchaseAnalytics(product)
+                await logPurchaseAnalytics(product, transaction: transaction)
             }
             
             onPuchaseCompleted.send(reason)

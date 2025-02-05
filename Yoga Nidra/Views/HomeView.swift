@@ -4,6 +4,7 @@ struct HomeView: View {
     @StateObject var router = Router<HomeTabDestination>()
     @EnvironmentObject var sheetPresenter: Presenter
     @EnvironmentObject var overlayManager: OverlayManager
+    @EnvironmentObject var progressManager: ProgressManager
     @StateObject private var audioManager = AudioManager.shared
     let sessions = YogaNidraSession.allSessions
     @Binding var selectedTab: Int
@@ -28,7 +29,7 @@ struct HomeView: View {
                 VStack(spacing: 24) {
                     // Header Banner
                     ZStack(alignment: .bottomLeading) {
-                        Image("banner_background")
+                        Image("header")
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                             .frame(height: 280)  // Increased from default height
@@ -99,13 +100,9 @@ struct HomeView: View {
                 ForEach(sessions.prefix(2), id: \.id) { session in
                     Button {
                         Task {
-                            do {
-                                try await audioManager.onPlaySession(session: session)
-                            } catch {
-                                print("Failed to play session: \(error)")
-                            }
+                            await audioManager.play(session)
+                            sheetPresenter.present(.sessionDetials(session))
                         }
-                        sheetPresenter.present(.sessionDetials(session))
                     } label: {
                         SessionCard(session: session)
                     }
@@ -133,19 +130,25 @@ struct HomeView: View {
                 ForEach(recommendedSessions) { session in
                     Button {
                         Task {
-                            do {
-                                try await audioManager.onPlaySession(session: session)
-                            } catch {
-                                print("Failed to play session: \(error)")
-                            }
+                            await audioManager.play(session)
+                            sheetPresenter.present(.sessionDetials(session))
                         }
-                        sheetPresenter.present(.sessionDetials(session))
                     } label: {
                         RecommendedSessionCard(session: session)
                     }
                 }
             }
             .padding(.horizontal, 24)
+            .alert("Playback Error", isPresented: .init(
+                get: { audioManager.errorMessage != nil },
+                set: { if !$0 { audioManager.errorMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                if let error = audioManager.errorMessage {
+                    Text(error)
+                }
+            }
             
             Button("See All") {
                 selectedTab = 1
@@ -167,5 +170,6 @@ struct HomeView_Previews: PreviewProvider {
         HomeView(selectedTab: .constant(0))
             .environmentObject(Presenter())
             .environmentObject(OverlayManager())
+            .environmentObject(ProgressManager.shared)
     }
 }

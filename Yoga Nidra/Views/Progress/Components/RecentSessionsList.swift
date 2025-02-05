@@ -1,54 +1,106 @@
 import SwiftUI
+import Foundation
+
+// MARK: - Helper Types
+
+struct RecentSessionItem: Identifiable {
+    let session: YogaNidraSession
+    let progress: SessionProgress
+    
+    var id: UUID { session.id }
+}
+
+// MARK: - Date Formatting
+
+private extension Date {
+    func timeAgoString() -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .short
+        return formatter.localizedString(for: self, relativeTo: Date())
+    }
+}
 
 struct RecentSessionsList: View {
     @EnvironmentObject var progressManager: ProgressManager
     @EnvironmentObject var sheetPresenter: Presenter
     @StateObject private var audioManager = AudioManager.shared
     
-    @State private var recentSessions: [(YogaNidraSession, SessionProgress)] = []
+    @State private var recentSessions: [RecentSessionItem] = []
     
     var body: some View {
         VStack(spacing: 12) {
-            HStack {
-                Text("Recent Sessions")
-                    .font(.title3)
-                    .fontWeight(.bold)
-                Spacer()
-            }
+            headerSection
             
             if recentSessions.isEmpty {
-                Text("No recent sessions")
-                    .foregroundColor(.gray)
+                emptyStateSection
             } else {
-                ForEach(recentSessions, id: \.0.id) { session, progress in
-                    Button {
-                        Task {
-                            // Try to play immediately
-                            do {
-                                try await audioManager.onPlaySession(session: session)
-                            } catch {
-                                print("Failed to play session: \(error)")
-                            }
-                        }
-                        // Also show the details sheet
-                        sheetPresenter.present(.sessionDetials(session))
-                    } label: {
-                        RecentSessionRow(session: session, progress: progress)
-                    }
-                }
+                recentSessionsSection
             }
         }
         .padding(.horizontal)
         .onAppear {
-            recentSessions = progressManager.sessionProgress
-                .sorted { $0.value.lastCompleted ?? .distantPast > $1.value.lastCompleted ?? .distantPast }
-                .prefix(5)
-                .compactMap { progress in
-                    guard let session = YogaNidraSession.previewData.first(where: { $0.id == progress.key }) else {
-                        return nil
-                    }
-                    return (session, progress.value)
-                }
+            loadRecentSessions()
+        }
+        .alert("Playback Error", isPresented: .init(
+            get: { audioManager.errorMessage != nil },
+            set: { if !$0 { audioManager.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            if let error = audioManager.errorMessage {
+                Text(error)
+            }
+        }
+    }
+    
+    // MARK: - View Components
+    
+    private var headerSection: some View {
+        HStack {
+            Text("Recent Sessions")
+                .font(.title3)
+                .fontWeight(.bold)
+            Spacer()
+        }
+    }
+    
+    private var emptyStateSection: some View {
+        Text("No recent sessions")
+            .foregroundColor(.gray)
+    }
+    
+    private var recentSessionsSection: some View {
+        ForEach(recentSessions) { item in
+            RecentSessionButton(session: item.session, progress: item.progress)
+        }
+    }
+    
+    // MARK: - Data Loading
+    
+    private func loadRecentSessions() {
+        // Convert tuples to RecentSessionItems
+        recentSessions = progressManager.recentSessions
+            .prefix(5)
+            .map { RecentSessionItem(session: $0.0, progress: $0.1) }
+    }
+}
+
+// MARK: - Supporting Views
+
+struct RecentSessionButton: View {
+    let session: YogaNidraSession
+    let progress: SessionProgress
+    @EnvironmentObject var sheetPresenter: Presenter
+    @StateObject private var audioManager = AudioManager.shared
+    
+    var body: some View {
+        Button {
+            Task {
+                await audioManager.play(session)
+                sheetPresenter.present(.sessionDetials(session))
+            }
+        } label: {
+            RecentSessionRow(session: session, progress: progress)
         }
     }
 }
@@ -62,37 +114,29 @@ struct RecentSessionRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(session.title)
                     .font(.headline)
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                
+                Text(session.instructor)
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .lineLimit(1)
                 
                 if let lastCompleted = progress.lastCompleted {
-                    Text(lastCompleted, style: .relative)
+                    Text("Last completed: \(lastCompleted.timeAgoString())")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.gray)
                 }
-                
-                Text("\(progress.completionCount) times completed")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
             }
             
             Spacer()
             
-            Text(formatDuration(progress.totalTimeListened))
-                .font(.caption)
-                .foregroundColor(.secondary)
+            Image(systemName: "play.circle.fill")
+                .font(.system(size: 32))
+                .foregroundColor(.white)
         }
         .padding()
-        .background(Color(uiColor: .systemGray6))
+        .background(Color.white.opacity(0.05))
         .cornerRadius(12)
-    }
-    
-    private func formatDuration(_ duration: TimeInterval) -> String {
-        let hours = Int(duration) / 3600
-        let minutes = Int(duration) / 60 % 60
-        
-        if hours > 0 {
-            return "\(hours)h \(minutes)m"
-        } else {
-            return "\(minutes)m"
-        }
     }
 }
