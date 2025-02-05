@@ -5,14 +5,15 @@ struct ProgressView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 24) {
+                    // Stats Section
+                    StatsView()
+                        .padding(.top)
+                    
                     // Recent Sessions List
                     RecentSessionsList()
-                        .padding(.top)
                     
                     // Favorites Section
                     FavoritesView()
-                    
-                    // Stats or other sections can be added here
                 }
                 .padding(.horizontal)
             }
@@ -26,4 +27,5 @@ struct ProgressView: View {
 #Preview {
     ProgressView()
         .environmentObject(Presenter())
+        .environmentObject(ProgressManager.preview)
 }

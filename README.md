@@ -8,7 +8,8 @@
 - set up firebase analytics
   - subscription metrics
   - progress metrics on progress tab
-
+**
+- firebase app check to do
 
 1.1 -> Feb 2. 
 
