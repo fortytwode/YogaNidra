@@ -140,13 +140,13 @@ final class ProgressManager: ObservableObject {
     
     private func progressDictionary() -> [String: Any] {
         [
-            "sessions": sessionProgress.mapValues { progress in
-                [
-                    "startTime": progress.startTime.timeIntervalSince1970,
-                    "duration": progress.duration,
-                    "completed": progress.completed
-                ]
-            },
+//            "sessions": sessionProgress.mapValues { progress in
+//                [
+//                    "startTime": progress.startTime.timeIntervalSince1970,
+//                    "duration": progress.duration,
+//                    "completed": progress.completed
+//                ]
+//            },
             "metrics": [
                 "totalTimeListened": totalTimeListened,
                 "sessionsCompleted": sessionsCompleted,
