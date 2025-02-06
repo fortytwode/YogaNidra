@@ -1,5 +1,4 @@
 import StoreKit
-import SwiftUI
 import Combine
 
 @MainActor
@@ -151,7 +150,7 @@ final class StoreManager: ObservableObject {
             if transaction.isUpgraded {
                 // Trial conversion
                 firebaseManager.logTrialConverted(productId: product.id)
-            } else if transaction.isAutoRenewable {
+            } else {
                 if isInTrialPeriod {
                     firebaseManager.logTrialStarted(productId: product.id)
                 } else {

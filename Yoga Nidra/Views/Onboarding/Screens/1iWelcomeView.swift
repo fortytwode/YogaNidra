@@ -4,25 +4,9 @@ struct IWelcomeView: View {
     let nextPage: () -> Void
     
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                // Background
-                Image("northern-lights")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: geometry.size.width, height: geometry.size.height)
-                
-                // Gradient overlay
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color.black.opacity(0.4),
-                        Color.black.opacity(0.6)
-                    ]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                
-                // Content
+        ZStack {
+            // Content
+            VStack {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 40) {
                         // Title
@@ -35,7 +19,7 @@ struct IWelcomeView: View {
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
                         .textShadowEffect()
-                        .padding(.top, 60)
+                        .padding(.top, 40)
                         .frame(maxWidth: .infinity)
                         
                         // Value Proposition
@@ -98,26 +82,40 @@ struct IWelcomeView: View {
                                 .textShadowEffect()
                             }
                         }
-                        
-                        Spacer()
-                            .frame(height: 30)
-                        
-                        // CTA Button
-                        Button(action: nextPage) {
-                            Text("Begin Your Journey →")
-                                .font(.headline)
-                                .foregroundColor(.black)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(12)
-                        }
-                        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
                     }
                     .padding(.horizontal, 24)
                 }
+                // CTA Button
+                Button(action: nextPage) {
+                    Text("Begin Your Journey →")
+                        .font(.headline)
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(12)
+                }
                 .padding(.horizontal, 16)
+                .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
             }
+            .padding(.horizontal, 16)
+        }
+        .background {
+            Image("northern-lights")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+        }
+        .background {
+            // Gradient overlay
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color.black.opacity(0.4),
+                    Color.black.opacity(0.6)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
             .ignoresSafeArea()
         }
     }

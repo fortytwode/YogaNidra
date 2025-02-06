@@ -15,17 +15,17 @@ struct StatsView: View {
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: 16) {
-                StatCard(
+                StatisticCard(
                     title: "Total Time",
                     value: formatTime(progressManager.totalTimeListened)
                 )
                 
-                StatCard(
+                StatisticCard(
                     title: "Sessions",
                     value: "\(progressManager.sessionsCompleted)"
                 )
                 
-                StatCard(
+                StatisticCard(
                     title: "Streak",
                     value: "\(progressManager.currentStreak) days"
                 )
@@ -46,7 +46,7 @@ struct StatsView: View {
     }
 }
 
-struct StatCard: View {
+struct StatisticCard: View {
     let title: String
     let value: String
     

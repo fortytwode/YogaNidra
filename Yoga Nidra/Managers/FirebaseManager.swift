@@ -167,7 +167,7 @@ final class FirebaseManager {
     // MARK: - Subscription Analytics
     
     func logSubscriptionStarted(productId: String, isTrial: Bool = false) {
-        Analytics.logEvent(AnalyticsEventSubscribe, parameters: [
+        Analytics.logEvent("subscription_renewed", parameters: [
             AnalyticsParameterItemID: productId,
             AnalyticsParameterItemName: "Premium Subscription",
             "is_trial": isTrial,
