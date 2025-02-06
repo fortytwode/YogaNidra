@@ -19,7 +19,7 @@ struct OnboardingQuestionWrapper<Content: View>: View {
                 
                 // Progress bar
                 GeometryReader { geometry in
-                    let progress = CGFloat(currentStep) / 16.0 // 16 screens total
+                    let progress = CGFloat(currentStep) / 11 // 11 questions total
                     
                     ZStack(alignment: .leading) {
                         // Background bar

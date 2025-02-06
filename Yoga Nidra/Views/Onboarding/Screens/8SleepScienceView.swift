@@ -5,22 +5,6 @@ struct SleepScienceView: View {
     
     var body: some View {
         ZStack {
-            // Background
-            Image("mountain-lake-twilight")
-                .resizable()
-                .scaledToFill()
-                .overlay(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.black.opacity(0.4),
-                            Color.black.opacity(0.6)
-                        ]),
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .ignoresSafeArea()
-            
             // Content
             VStack(spacing: 0) {
                 VStack(spacing: 24) {
@@ -73,6 +57,23 @@ struct SleepScienceView: View {
                     .padding(.bottom, 32)
                 }
             }
+        }
+        .background {
+            // Background
+            Image("mountain-lake-twilight")
+                .resizable()
+                .scaledToFill()
+                .overlay(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.black.opacity(0.4),
+                            Color.black.opacity(0.6)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .ignoresSafeArea()
         }
     }
     

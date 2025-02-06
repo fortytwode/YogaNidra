@@ -15,9 +15,7 @@ struct OnboardingContainerView: View {
                 Group {
                     switch currentPageIndex {
                     case 0:
-                        OnboardingQuestionWrapper(currentStep: 0) {
-                            IWelcomeView(nextPage: nextPage)
-                        }
+                        IWelcomeView(nextPage: nextPage)
                     case 1:
                         OnboardingQuestionWrapper(currentStep: 1) {
                             GoalsView(nextPage: nextPage)
@@ -63,21 +61,13 @@ struct OnboardingContainerView: View {
                             AfterPoorSleepView(nextPage: nextPage)
                         }
                     case 12:
-                        OnboardingQuestionWrapper(currentStep: 12) {
-                            ProcessingDataView(nextPage: nextPage)
-                        }
+                        ProcessingDataView(nextPage: nextPage)
                     case 13:
-                        OnboardingQuestionWrapper(currentStep: 13) {
-                            FinalProfileView(nextPage: nextPage)
-                        }
+                        FinalProfileView(nextPage: nextPage)
                     case 14:
-                        OnboardingQuestionWrapper(currentStep: 14) {
-                            TrialExplanationView(currentPage: $currentPageIndex)
-                        }
+                        TrialExplanationView(currentPage: $currentPageIndex)
                     case 15:
-                        OnboardingQuestionWrapper(currentStep: 15) {
-                            PaywallView()
-                        }
+                        PaywallView()
                     default:
                         EmptyView()
                     }
