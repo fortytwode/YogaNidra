@@ -17,17 +17,23 @@ struct StatsView: View {
             ], spacing: 16) {
                 StatCard(
                     title: "Total Time",
-                    value: formatTime(progressManager.totalTimeListened)
+                    value: formatTime(progressManager.totalTimeListened),
+                    unit: "listened",
+                    icon: "clock.fill"
                 )
                 
                 StatCard(
                     title: "Sessions",
-                    value: "\(progressManager.sessionsCompleted)"
+                    value: "\(progressManager.sessionsCompleted)",
+                    unit: "completed",
+                    icon: "checkmark.circle.fill"
                 )
                 
                 StatCard(
                     title: "Streak",
-                    value: "\(progressManager.currentStreak) days"
+                    value: "\(progressManager.currentStreak)",
+                    unit: "days",
+                    icon: "flame.fill"
                 )
             }
         }
@@ -39,32 +45,10 @@ struct StatsView: View {
     private func formatTime(_ timeInterval: TimeInterval) -> String {
         let hours = Int(timeInterval / 3600)
         if hours > 0 {
-            return "\(hours)h"
+            return "\(hours)"
         }
         let minutes = Int(timeInterval / 60)
-        return "\(minutes)m"
-    }
-}
-
-struct StatCard: View {
-    let title: String
-    let value: String
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            Text(title)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            
-            Text(value)
-                .font(.title3)
-                .bold()
-                .foregroundColor(.primary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(8)
+        return "\(minutes)"
     }
 }
 

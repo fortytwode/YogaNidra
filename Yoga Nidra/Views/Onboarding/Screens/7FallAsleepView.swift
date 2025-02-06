@@ -6,29 +6,31 @@ struct FallAsleepView: View {
     @State private var selectedOption: QuestionOption?
     
     private let options = [
-        QuestionOption(emoji: "⚡️", text: "Quick as a wink (< 15 mins)"),
-        QuestionOption(emoji: "🌙", text: "Gentle drift (15-30 mins)"),
-        QuestionOption(emoji: "⏰", text: "Taking my time (30-60 mins)"),
-        QuestionOption(emoji: "😴", text: "Need some extra help (60+ mins)")
+        QuestionOption(emoji: "⚡️", text: "Fast as lightning (< 10 min)"),
+        QuestionOption(emoji: "🌙", text: "Takes a little while (10-30 min)"),
+        QuestionOption(emoji: "🌟", text: "Quite some time (30-60 min)"),
+        QuestionOption(emoji: "✨", text: "Feels like forever (> 60 min)")
     ]
     
     var body: some View {
-        QuestionScreenView(
-            question: "How long does it take you to fall asleep?",
-            subtitle: "We'll help you find your sleepy sweet spot",
-            helperText: "Yoga Nidra is perfect for shortening that drift-off time 💫",
-            options: options,
-            selectedOption: $selectedOption,
-            nextPage: {
-                if let selected = selectedOption {
-                    preferencesManager.updateFallAsleepTime(selected.text)
+        VStack {
+            QuestionScreenView(
+                question: "How long does it take you to fall asleep?",
+                subtitle: "Let's find your perfect bedtime rhythm 🌙",
+                helperText: "Sweet dreams are on the way ✨",
+                options: options,
+                selectedOption: $selectedOption,
+                nextPage: {
+                    if let selected = selectedOption {
+                        preferencesManager.updateFallAsleepTime(selected.text)
+                    }
+                    nextPage()
                 }
-                nextPage()
-            }
-        )
+            )
+        }
         .background(
             ZStack {
-                Image("mountain-lake-twilight")
+                Image("northern-lights")
                     .resizable()
                     .scaledToFill()
                 

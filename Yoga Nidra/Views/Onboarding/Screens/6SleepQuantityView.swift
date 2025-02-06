@@ -6,25 +6,44 @@ struct SleepQuantityView: View {
     @State private var selectedOption: QuestionOption?
     
     private let options = [
-        QuestionOption(emoji: "⏰", text: "Just a cat nap (< 6 hours)"),
-        QuestionOption(emoji: "🌓", text: "Getting there (6-8 hours)"),
-        QuestionOption(emoji: "✨", text: "Sweet spot (8-10 hours)"),
-        QuestionOption(emoji: "💫", text: "Sleeping champion (10+ hours)")
+        QuestionOption(emoji: "😴", text: "Less than 6 hours"),
+        QuestionOption(emoji: "🌙", text: "6-7 hours"),
+        QuestionOption(emoji: "✨", text: "7-8 hours"),
+        QuestionOption(emoji: "💫", text: "More than 8 hours")
     ]
     
     var body: some View {
-        QuestionScreenView(
-            question: "How long do you usually sleep each night?",
-            subtitle: "Let's talk about your sleep time ✨",
-            helperText: "Together we'll find your natural sleep rhythm ✨",
-            options: options,
-            selectedOption: $selectedOption,
-            nextPage: {
-                if let selected = selectedOption {
-                    preferencesManager.updateSleepDuration(selected.text)
+        VStack {
+            QuestionScreenView(
+                question: "How many hours do you usually sleep?",
+                subtitle: "Let's understand your sleep patterns 🌙",
+                helperText: "Every minute of rest counts ✨",
+                options: options,
+                selectedOption: $selectedOption,
+                nextPage: {
+                    if let selected = selectedOption {
+                        preferencesManager.updateSleepDuration(selected.text)
+                    }
+                    nextPage()
                 }
-                nextPage()
+            )
+        }
+        .background(
+            ZStack {
+                Image("northern-lights")
+                    .resizable()
+                    .scaledToFill()
+                
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.black.opacity(0.3),
+                        Color.black.opacity(0.5)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
             }
+            .ignoresSafeArea()
         )
     }
 }

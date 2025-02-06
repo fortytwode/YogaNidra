@@ -9,7 +9,7 @@ struct BenefitsView: View {
                 VStack(spacing: 32) {
                     // Header Section
                     VStack(spacing: 16) {
-                        Text("✨ LOVE IT OR SNOOZE IT: FAIR TRIAL POLICY")
+                        Text("✨FAIR TRIAL POLICY✨")
                             .font(.system(size: 14, weight: .medium))
                             .kerning(1.2)
                             .foregroundColor(.white.opacity(0.9))

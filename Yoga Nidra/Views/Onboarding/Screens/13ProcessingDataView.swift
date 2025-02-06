@@ -41,4 +41,4 @@ struct ProcessingDataView: View {
 
 #Preview {
     ProcessingDataView(nextPage: {})
-} 
+}

@@ -96,7 +96,7 @@ struct TrialExplanationView: View {
             VStack(spacing: 0) {
                 Button {
                     withAnimation {
-                        currentPage = 8 // Navigate to PaywallView
+                        currentPage = 15 // Navigate to PaywallView
                     }
                 } label: {
                     Text("Continue")
@@ -157,12 +157,16 @@ struct TimelineItem: View {
 struct TrialExplanationView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            TrialExplanationView(currentPage: .constant(0))
-                .environmentObject(StoreManager.preview)
+            OnboardingQuestionWrapper(currentStep: 15) {
+                TrialExplanationView(currentPage: .constant(0))
+                    .environmentObject(StoreManager.preview)
+            }
             
-            TrialExplanationView(currentPage: .constant(0))
-                .environmentObject(StoreManager.preview)
-                .previewDevice("iPhone SE (3rd generation)")
+            OnboardingQuestionWrapper(currentStep: 15) {
+                TrialExplanationView(currentPage: .constant(0))
+                    .environmentObject(StoreManager.preview)
+                    .previewDevice("iPhone SE (3rd generation)")
+            }
         }
     }
 }

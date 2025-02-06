@@ -142,7 +142,7 @@ final class StoreManager: ObservableObject {
     }
     
     @MainActor
-    private func logPurchaseAnalytics(_ product: Product, transaction: Transaction? = nil) {
+    private func logPurchaseAnalytics(_ product: Product, transaction: StoreKit.Transaction? = nil) {
         guard product.type == .autoRenewable else { return }
         
         let firebaseManager = FirebaseManager.shared
@@ -151,7 +151,7 @@ final class StoreManager: ObservableObject {
             if transaction.isUpgraded {
                 // Trial conversion
                 firebaseManager.logTrialConverted(productId: product.id)
-            } else if transaction.isAutoRenewable {
+            } else if product.subscription != nil {
                 if isInTrialPeriod {
                     firebaseManager.logTrialStarted(productId: product.id)
                 } else {
@@ -164,7 +164,7 @@ final class StoreManager: ObservableObject {
         }
     }
     
-    private func handleSubscriptionCancellation(_ transaction: Transaction) {
+    private func handleSubscriptionCancellation(_ transaction: StoreKit.Transaction) {
         if isInTrialPeriod {
             FirebaseManager.shared.logTrialCancelled(productId: transaction.productID)
         } else {
@@ -172,7 +172,7 @@ final class StoreManager: ObservableObject {
         }
     }
     
-    private func handleSubscriptionRenewal(_ transaction: Transaction) {
+    private func handleSubscriptionRenewal(_ transaction: StoreKit.Transaction) {
         FirebaseManager.shared.logSubscriptionRenewed(productId: transaction.productID)
     }
     

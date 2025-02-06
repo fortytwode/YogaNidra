@@ -120,7 +120,7 @@ struct PaywallView: View {
                     
                     HStack(spacing: 24) {
                         Button {
-                            openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-terms")!)
+                            openURL(URL(string: "https://rocketshiphq.com/yoga-nidra-terms")!)
                         } label: {
                             Text("Terms")
                                 .font(.footnote)
@@ -129,7 +129,7 @@ struct PaywallView: View {
                         }
                         
                         Button {
-                            openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-privacy")!)
+                            openURL(URL(string: "https://rocketshiphq.com/yoga-nidra-privacy")!)
                         } label: {
                             Text("Privacy Policy")
                                 .font(.footnote)
@@ -214,15 +214,19 @@ struct StatRow: View {
 struct PaywallView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            PaywallView()
-                .environmentObject(StoreManager.preview)
-                .environmentObject(OnboardingManager.preview)
+            OnboardingQuestionWrapper(currentStep: 16) {
+                PaywallView()
+                    .environmentObject(StoreManager.preview)
+                    .environmentObject(OnboardingManager.preview)
+            }
             
-            PaywallView()
-                .environmentObject(StoreManager.preview)
-                .environmentObject(OnboardingManager.preview)
-                .previewDevice("iPhone SE (3rd generation)")
-                .previewDisplayName("iPhone SE")
+            OnboardingQuestionWrapper(currentStep: 16) {
+                PaywallView()
+                    .environmentObject(StoreManager.preview)
+                    .environmentObject(OnboardingManager.preview)
+            }
+            .previewDevice("iPhone SE (3rd generation)")
+            .previewDisplayName("iPhone SE")
         }
     }
 }

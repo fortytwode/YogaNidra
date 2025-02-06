@@ -13,19 +13,21 @@ struct SleepSatisfactionView: View {
     ]
     
     var body: some View {
-        QuestionScreenView(
-            question: "Let's talk about your sleep ✨",
-            subtitle: "Your answers help us weave the perfect sleep routine 💫",
-            helperText: "Better sleep is just around the corner 🌙",
-            options: options,
-            selectedOption: $selectedOption,
-            nextPage: {
-                if let selected = selectedOption {
-                    preferencesManager.updateSleepQuality(selected.text)
+        VStack {
+            QuestionScreenView(
+                question: "How satisfied are you with your sleep?",
+                subtitle: "Help us weave the perfect sleep routine for you 💫",
+                helperText: "Let's talk about your sleep ✨",
+                options: options,
+                selectedOption: $selectedOption,
+                nextPage: {
+                    if let selected = selectedOption {
+                        preferencesManager.updateSleepQuality(selected.text)
+                    }
+                    nextPage()
                 }
-                nextPage()
-            }
-        )
+            )
+        }
         .background(
             ZStack {
                 Image("northern-lights")
