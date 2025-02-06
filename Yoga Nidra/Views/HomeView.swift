@@ -31,8 +31,9 @@ struct HomeView: View {
                     ZStack(alignment: .bottomLeading) {
                         Image("header")
                             .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(height: 280)  // Increased from default height
+                            .frame(height: 220)
+                            .frame(maxWidth: .infinity)
+                            .scaledToFit()
                             .clipped()
                         
                         LinearGradient(
@@ -40,7 +41,7 @@ struct HomeView: View {
                             startPoint: .bottom,
                             endPoint: .top
                         )
-                        .frame(height: 280)  // Match the image height
+                        .frame(height: 220)  // Match the image height
                         
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Time to Unwind")

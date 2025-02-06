@@ -28,7 +28,7 @@ struct BenefitsView: View {
                     
                     // Price Comparison Cards
                     HStack(spacing: 20) {
-                        VStack(spacing: 8) {
+                        HStack(spacing: 8) {
                             Text("😴")
                                 .font(.system(size: 32))
                             Text("Sweet\ndreams\nnightly")
@@ -43,7 +43,7 @@ struct BenefitsView: View {
                             .foregroundColor(.white.opacity(0.9))
                             .multilineTextAlignment(.center)
                         
-                        VStack(spacing: 8) {
+                        HStack(spacing: 8) {
                             Text("☕️")
                                 .font(.system(size: 32))
                             Text("your daily\ncaffeine fix")
@@ -58,7 +58,7 @@ struct BenefitsView: View {
                     
                     // Value Proposition
                     Text("Every subscription helps us bake more peaceful moments for those who need them most 🌙")
-                        .font(.system(size: 17))
+                        .font(.system(size: 15))
                         .multilineTextAlignment(.center)
                         .foregroundColor(.white)
                         .padding(.horizontal, 24)

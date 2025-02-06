@@ -15,21 +15,21 @@ struct StatsView: View {
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: 16) {
-                StatCard(
+                StatisticCard(
                     title: "Total Time",
                     value: formatTime(progressManager.totalTimeListened),
                     unit: "listened",
                     icon: "clock.fill"
                 )
                 
-                StatCard(
+                StatisticCard(
                     title: "Sessions",
                     value: "\(progressManager.sessionsCompleted)",
                     unit: "completed",
                     icon: "checkmark.circle.fill"
                 )
                 
-                StatCard(
+                StatisticCard(
                     title: "Streak",
                     value: "\(progressManager.currentStreak)",
                     unit: "days",
@@ -49,6 +49,34 @@ struct StatsView: View {
         }
         let minutes = Int(timeInterval / 60)
         return "\(minutes)"
+    }
+}
+
+struct StatisticCard: View {
+    let title: String
+    let value: String
+    let unit: String
+    let icon: String
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.subheadline)
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            
+            Text("\(value) \(unit)")
+                .font(.title3)
+                .bold()
+                .foregroundColor(.primary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(8)
     }
 }
 

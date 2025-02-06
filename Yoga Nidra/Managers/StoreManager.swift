@@ -1,5 +1,4 @@
 import StoreKit
-import SwiftUI
 import Combine
 
 @MainActor
@@ -152,11 +151,8 @@ final class StoreManager: ObservableObject {
                 // Trial conversion
                 firebaseManager.logTrialConverted(productId: product.id)
             } else if product.subscription != nil {
-                if isInTrialPeriod {
-                    firebaseManager.logTrialStarted(productId: product.id)
-                } else {
-                    firebaseManager.logSubscriptionStarted(productId: product.id, isTrial: false)
-                }
+                // Regular subscription purchase
+                firebaseManager.logSubscriptionStarted(productId: product.id)
             }
         } else {
             // Default subscription start

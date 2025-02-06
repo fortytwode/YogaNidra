@@ -84,7 +84,7 @@ struct PaywallView: View {
                         } else {
                             Text("Start Free Trial")
                                 .font(.headline)
-                                .foregroundColor(.white)
+                                .foregroundColor(.accentColor)
                                 .frame(maxWidth: .infinity)
                         }
                     }

@@ -176,8 +176,8 @@ final class FirebaseManager {
     
     func logSubscriptionRenewed(productId: String) {
         Analytics.logEvent("subscription_renewed", parameters: [
-            "product_id": productId,
-            "timestamp": Date().timeIntervalSince1970
+            AnalyticsParameterItemID: productId,
+            AnalyticsParameterItemName: "Premium Subscription"
         ])
     }
     
