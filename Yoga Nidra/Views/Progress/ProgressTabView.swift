@@ -74,8 +74,12 @@ struct ProgressTabView: View {
 struct ProgressTabView_Previews: PreviewProvider {
     static var previews: some View {
         ProgressTabView()
+            .environmentObject(Presenter())
+            #if DEBUG
             .environmentObject(ProgressManager.preview)
-            .environmentObject(OverlayManager())
+            #else
+            .environmentObject(ProgressManager.shared)
+            #endif
     }
 }
 #endif

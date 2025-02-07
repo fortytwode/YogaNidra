@@ -7,10 +7,9 @@ final class ProgressManager: ObservableObject {
     #if DEBUG
     static var preview: ProgressManager {
         let manager = ProgressManager()
-        manager.streakDays = 5
-        manager.totalMinutesListened = 120
-        manager.sessionsCompleted = 8
-        manager.progress = 0.75
+        manager.sessionsCompleted = 5
+        manager.streakDays = 3
+        manager.totalTimeListened = 3600 // 1 hour
         return manager
     }
     #endif

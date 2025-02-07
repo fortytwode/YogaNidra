@@ -82,6 +82,11 @@ struct StatisticCard: View {
 
 #Preview {
     StatsView()
+        .environmentObject(Presenter())
+        #if DEBUG
         .environmentObject(ProgressManager.preview)
+        #else
+        .environmentObject(ProgressManager.shared)
+        #endif
         .preferredColorScheme(.dark)
 }

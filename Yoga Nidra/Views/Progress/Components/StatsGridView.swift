@@ -27,6 +27,10 @@ struct StatsGridView: View {
 
 #Preview {
     StatsGridView()
+        #if DEBUG
         .environmentObject(ProgressManager.preview)
+        #else
+        .environmentObject(ProgressManager.shared)
+        #endif
         .padding()
 }
