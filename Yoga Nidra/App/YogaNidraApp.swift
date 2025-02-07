@@ -3,6 +3,7 @@ import StoreKit
 import FirebaseCore
 import FirebaseAnalytics
 import FirebaseAuth
+import FirebaseCrashlytics
 
 @main
 struct YogaNidraApp: App {
@@ -16,6 +17,8 @@ struct YogaNidraApp: App {
     
     init() {
         FirebaseApp.configure()
+        Analytics.setAnalyticsCollectionEnabled(true)
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
     }
     
     var body: some Scene {

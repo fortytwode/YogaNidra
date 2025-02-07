@@ -11,6 +11,7 @@ final class AudioEngine: NSObject {
     private var statusObserver: NSKeyValueObservation?
     private var itemObserver: NSKeyValueObservation?
     private var audioSession: AVAudioSession
+    private var isSeekInProgress = false
     
     var currentTime: TimeInterval {
         player?.currentTime().seconds ?? 0
@@ -141,7 +142,10 @@ final class AudioEngine: NSObject {
     
     @discardableResult
     func addPeriodicTimeObserver(forInterval interval: CMTime, queue: DispatchQueue?, using block: @escaping (CMTime) -> Void) -> Any? {
-        player?.addPeriodicTimeObserver(forInterval: interval, queue: queue ?? .main, using: block)
+        player?.addPeriodicTimeObserver(forInterval: interval, queue: queue ?? .main) { [weak self] time in
+            guard let self = self, !self.isSeekInProgress else { return }
+            block(time)
+        }
     }
     
     func play() {
@@ -154,8 +158,21 @@ final class AudioEngine: NSObject {
         updateNowPlaying()
     }
     
-    func seek(to time: CMTime) {
-        player?.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
+    func seek(to time: TimeInterval) async {
+        isSeekInProgress = true
+        let cmTime = CMTime(seconds: time, preferredTimescale: 1000)
+        await player?.seek(to: cmTime, toleranceBefore: .zero, toleranceAfter: .zero)
+        isSeekInProgress = false
+    }
+    
+    func skipForward(by seconds: TimeInterval = 15) async {
+        let newTime = min(currentTime + seconds, duration)
+        await seek(to: newTime)
+    }
+    
+    func skipBackward(by seconds: TimeInterval = 15) async {
+        let newTime = max(currentTime - seconds, 0)
+        await seek(to: newTime)
     }
     
     @objc private func handleInterruption(notification: Notification) {

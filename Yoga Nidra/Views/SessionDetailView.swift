@@ -120,7 +120,6 @@ struct SessionDetailView: View {
     private var actionButtons: some View {
         HStack(spacing: 40) {
             favoriteButton
-            playPauseButton
             shareButton
         }
         .padding(.vertical)
@@ -143,41 +142,6 @@ struct SessionDetailView: View {
                     .foregroundColor(.gray)
             }
         }
-    }
-    
-    private var playPauseButton: some View {
-        Button(action: {
-            Task {
-                if audioManager.isPlaying {
-                    await audioManager.pause()
-                } else {
-                    await audioManager.play(session)
-                }
-            }
-        }) {
-            VStack(spacing: 4) {
-                ZStack {
-                    Circle()
-                        .fill(Color.white.opacity(0.2))
-                        .frame(width: 44, height: 44)
-                    
-                    if audioManager.isLoading {
-                        ProgressView()
-                            .tint(.white)
-                            .frame(width: 44, height: 44)
-                    } else {
-                        Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.title)
-                            .foregroundColor(.white)
-                    }
-                }
-                
-                Text(audioManager.isPlaying ? "Pause" : "Play")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            }
-        }
-        .disabled(audioManager.isLoading)
     }
     
     private var shareButton: some View {
@@ -205,6 +169,21 @@ struct SessionDetailView: View {
             timeControls
         }
         .padding(.horizontal)
+        .onChange(of: audioManager.currentTime) { _ in
+            // Check if session is complete (progress > 90%)
+            if audioManager.progress > 0.9 {
+                if progressManager.shouldShowRatingPrompt() {
+                    Task { @MainActor in
+                        // Small delay to ensure session completion is registered
+                        try? await Task.sleep(nanoseconds: 2 * 1_000_000_000)
+                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                            SKStoreReviewController.requestReview(in: windowScene)
+                            progressManager.recordRatingPrompt()
+                        }
+                    }
+                }
+            }
+        }
     }
     
     private var progressSlider: some View {
@@ -214,7 +193,9 @@ struct SessionDetailView: View {
                     get: { audioManager.progress },
                     set: { progress in
                         let time = audioManager.duration * progress
-                        audioManager.currentTime = time
+                        Task {
+                            await audioManager.seek(to: time)
+                        }
                     }
                 ),
                 in: 0...1
@@ -236,21 +217,41 @@ struct SessionDetailView: View {
     }
     
     private var timeControls: some View {
-        HStack(spacing: 30) {
+        HStack(spacing: 40) {
+            // Skip Backward
             Button(action: {
-                let newTime = max(audioManager.currentTime - 15, 0)
-                audioManager.currentTime = newTime
+                Task {
+                    await audioManager.skipBackward()
+                }
             }) {
                 Image(systemName: "gobackward.15")
                     .font(.title)
                     .foregroundColor(.white)
             }
             
+            // Play/Pause
             Button(action: {
-                let newTime = min(audioManager.currentTime + 30, audioManager.duration)
-                audioManager.currentTime = newTime
+                Task {
+                    if audioManager.isPlaying {
+                        await audioManager.pause()
+                    } else {
+                        await audioManager.play(session)
+                    }
+                }
             }) {
-                Image(systemName: "goforward.30")
+                Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
+                    .font(.title)
+                    .foregroundColor(.white)
+            }
+            .disabled(audioManager.isLoading)
+            
+            // Skip Forward
+            Button(action: {
+                Task {
+                    await audioManager.skipForward()
+                }
+            }) {
+                Image(systemName: "goforward.15")
                     .font(.title)
                     .foregroundColor(.white)
             }

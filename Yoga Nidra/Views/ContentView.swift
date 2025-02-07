@@ -36,13 +36,14 @@ struct ContentView: View {
                     .tag(2)
             }
             
-            // Middle layer: Mini Player - now tied to audio playback
-            if audioManager.isPlaying,
-               let session = audioManager.currentPlayingSession {
+            // Middle layer: Mini Player - show when there's a current session
+            if let _ = audioManager.currentPlayingSession {
                 VStack(spacing: 0) {
-                    MiniPlayerView(session: session)
+                    MiniPlayerView()
                         .onTapGesture {
-                            sheetPresenter.present(.sessionDetials(session))
+                            if let session = audioManager.currentPlayingSession {
+                                sheetPresenter.present(.sessionDetials(session))
+                            }
                         }
                     Spacer().frame(height: 49)
                 }

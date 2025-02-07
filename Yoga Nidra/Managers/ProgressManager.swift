@@ -38,17 +38,45 @@ final class ProgressManager: ObservableObject {
     @Published var audioStartTime: Date?
     @Published var totalSessionListenTime: TimeInterval = 0
     @Published var lastRatingDialogDate: Date?
+    @Published var lastRatingPrompt: Date?
     
     private let lastRatingDialogDateKey = "lastRatingDialogDate"
     private let totalSessionListenTimeKey = "totalSessionListenTime"
     private let ratingPromptsInYearKey = "ratingPromptsInYear"
     private let ratingYearStartDateKey = "ratingYearStartDate"
+    private let lastRatingPromptKey = "lastRatingPrompt"
     
     // Made public for debug view
     public private(set) var ratingPromptsInYear: Int = 0
-    public private(set) var ratingYearStartDate: Date?
+    private var ratingYearStartDate: Date?
+    
+    private let userDefaults = UserDefaults.standard
     
     private init() {
+        // Load last rating prompt date and yearly counts
+        if let date = userDefaults.object(forKey: lastRatingPromptKey) as? Date {
+            lastRatingPrompt = date
+        }
+        
+        ratingPromptsInYear = userDefaults.integer(forKey: ratingPromptsInYearKey)
+        if let date = userDefaults.object(forKey: ratingYearStartDateKey) as? Date {
+            ratingYearStartDate = date
+        }
+        
+        // Reset yearly count if it's been more than a year
+        if let startDate = ratingYearStartDate {
+            let daysSinceStart = Calendar.current.dateComponents([.day], from: startDate, to: Date()).day ?? 0
+            if daysSinceStart >= 365 {
+                ratingPromptsInYear = 0
+                ratingYearStartDate = Date()
+                userDefaults.set(0, forKey: ratingPromptsInYearKey)
+                userDefaults.set(Date(), forKey: ratingYearStartDateKey)
+            }
+        } else {
+            ratingYearStartDate = Date()
+            userDefaults.set(Date(), forKey: ratingYearStartDateKey)
+        }
+        
         loadDataOnAppLaunch()
         checkRatingDialog()
         loadProgressFromFirebase()
@@ -249,19 +277,6 @@ final class ProgressManager: ObservableObject {
     }
     
     private func checkRatingDialog() {
-        // Reset year counter if needed
-        if let yearStart = ratingYearStartDate {
-            if !Calendar.current.isDate(yearStart, equalTo: .now, toGranularity: .year) {
-                ratingPromptsInYear = 0
-                ratingYearStartDate = .now
-                UserDefaults.standard.set(0, forKey: ratingPromptsInYearKey)
-                UserDefaults.standard.set(Date(), forKey: ratingYearStartDateKey)
-            }
-        } else {
-            ratingYearStartDate = .now
-            UserDefaults.standard.set(Date(), forKey: ratingYearStartDateKey)
-        }
-        
         // Only proceed if we haven't hit the yearly limit
         guard ratingPromptsInYear < 3 else { return }
         
@@ -274,14 +289,56 @@ final class ProgressManager: ObservableObject {
             showRaitnsDialog.send()  // Trigger the rating dialog
             setRatingDialogShown()
         }
+        
+        if shouldShowRatingPrompt() {
+            recordRatingPrompt()
+        }
     }
     
     private func setRatingDialogShown() {
         lastRatingDialogDate = .now
         UserDefaults.standard.set(Date(), forKey: lastRatingDialogDateKey)
+    }
+    
+    func shouldShowRatingPrompt() -> Bool {
+        // Don't show more than 3 times in a year
+        if ratingPromptsInYear >= 3 {
+            return false
+        }
         
+        // Don't show more than once every 30 days
+        if let lastPrompt = lastRatingPrompt {
+            let daysSinceLastPrompt = Calendar.current.dateComponents([.day], from: lastPrompt, to: Date()).day ?? 0
+            if daysSinceLastPrompt < 30 {
+                return false
+            }
+        }
+        
+        // First rating prompt after completing first session
+        if lastRatingPrompt == nil && sessionsCompleted == 1 {
+            return true
+        }
+        
+        // Subsequent prompts when user:
+        // 1. Has completed 5 or more sessions
+        // 2. Hasn't been prompted in the last 30 days
+        // 3. Hasn't exceeded 3 prompts in the last 365 days
+        return sessionsCompleted >= 5
+    }
+    
+    func recordRatingPrompt() {
+        lastRatingPrompt = Date()
+        userDefaults.set(lastRatingPrompt, forKey: lastRatingPromptKey)
+        
+        // Update yearly count
         ratingPromptsInYear += 1
-        UserDefaults.standard.set(ratingPromptsInYear, forKey: ratingPromptsInYearKey)
+        userDefaults.set(ratingPromptsInYear, forKey: ratingPromptsInYearKey)
+        
+        // Set start date for yearly tracking if not set
+        if ratingYearStartDate == nil {
+            ratingYearStartDate = Date()
+            userDefaults.set(Date(), forKey: ratingYearStartDateKey)
+        }
     }
     
     public func setTotalSessionListenTime(_ time: TimeInterval) {

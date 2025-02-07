@@ -125,13 +125,27 @@ final class AudioManager: ObservableObject {
         }
     }
     
-    /// Seeks to a specific time
+    // MARK: - Time Control
+    
     func seek(to time: TimeInterval) async {
-        await MainActor.run {
-            let cmTime = CMTime(seconds: time, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-            audioEngine.seek(to: cmTime)
-            updateNowPlayingInfo()
-        }
+        await audioEngine.seek(to: time)
+        self.currentTime = time
+        self.progress = time / duration
+        updateNowPlayingInfo()
+    }
+    
+    func skipForward() async {
+        await audioEngine.skipForward()
+        self.currentTime = audioEngine.currentTime
+        self.progress = currentTime / duration
+        updateNowPlayingInfo()
+    }
+    
+    func skipBackward() async {
+        await audioEngine.skipBackward()
+        self.currentTime = audioEngine.currentTime
+        self.progress = currentTime / duration
+        updateNowPlayingInfo()
     }
     
     // MARK: - Private Methods
