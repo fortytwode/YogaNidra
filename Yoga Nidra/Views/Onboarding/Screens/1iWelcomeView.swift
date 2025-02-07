@@ -63,6 +63,7 @@ struct IWelcomeView: View {
                                 .foregroundColor(.white)
                                 .textShadowEffect()
                             }
+                            .cardBackgroundEffect()
                             
                             // Challenges Section
                             VStack(alignment: .leading, spacing: 16) {
@@ -73,14 +74,15 @@ struct IWelcomeView: View {
                                     .textShadowEffect()
                                 
                                 VStack(alignment: .leading, spacing: 12) {
-                                    Text("😴 Those midnight thought parties")
-                                    Text("🌑 The endless bedtime scroll")
-                                    Text("💤 The 3am ceiling stare")
+                                    Text("🤯 Midnight thought parties")
+                                    Text("📱 The bedtime scroll")
+                                    Text("😫 3am ceiling stares")
                                 }
                                 .font(.body)
                                 .foregroundColor(.white)
                                 .textShadowEffect()
                             }
+                            .cardBackgroundEffect()
                         }
                     }
                     .padding(.horizontal, 24)
@@ -101,33 +103,41 @@ struct IWelcomeView: View {
             .padding(.horizontal, 16)
         }
         .background {
-            Image("northern-lights")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-        }
-        .background {
-            // Gradient overlay
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color.black.opacity(0.4),
-                    Color.black.opacity(0.6)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            ZStack {
+                // Background image
+                Image("northern-lights")
+                    .resizable()
+                    .scaledToFill()
+                    .edgesIgnoringSafeArea(.all)
+                
+                // Gradient overlay
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.black.opacity(0.5),
+                        Color.black.opacity(0.3),
+                        Color.black.opacity(0.4)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .edgesIgnoringSafeArea(.all)
+            }
         }
     }
 }
 
 extension View {
     func textShadowEffect() -> some View {
-        self.shadow(color: .black.opacity(0.6), radius: 3, x: 0, y: 2)
+        self.shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
+    }
+    
+    func cardBackgroundEffect() -> some View {
+        self.padding(16)
+            .background(Color.black.opacity(0.3))
+            .cornerRadius(12)
     }
 }
 
-// Custom label style for emoji + text
 struct EmojiLabelStyle: LabelStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack(spacing: 12) {

@@ -35,20 +35,12 @@ struct TrialExplanationView: View {
         VStack(spacing: 0) {
             // Headline
             VStack(spacing: 0) {
-                VStack(spacing: 0) {
-                    Text("Begin your journey")
-                        .font(.system(size: 38))
-                        .fontWeight(.medium)
-                    Text("to rejuvenating")
-                        .font(.system(size: 38))
-                        .fontWeight(.medium)
-                    Text("sleep")
-                        .font(.system(size: 38))
-                        .fontWeight(.medium)
-                }
-                .padding(.top, 20)
+                Text("Your Dreamy Journey Begins ✨")
+                    .font(.system(size: 38))
+                    .fontWeight(.medium)
+                    .padding(.top, 20)
                 
-                Text("How does your free trial work?")
+                Text("Tonight's treats 🌟")
                     .font(.title2)
                     .fontWeight(.medium)
                     .opacity(0.9)
@@ -62,31 +54,31 @@ struct TrialExplanationView: View {
             VStack(spacing: 10) {
                 TimelineItem(
                     icon: "sparkles",
-                    title: "Today",
+                    title: "Tonight's treats 🌟",
                     descriptions: [
-                        "Full access to all sleep sessions & features.",
-                        "Unlock all premium meditations.",
-                        "Sleep restfully. Tonight."
+                        "All dreamy stories unlocked & ready ✨",
+                        "Your sleep sanctuary awaits 🛋️",
+                        "Start your first peaceful night 🌙"
                     ]
                 )
                 
                 TimelineItem(
                     icon: "moon.stars",
-                    title: "In 3 days",
+                    title: "3 sleeps later 💫",
                     descriptions: [
-                        "Keep exploring your favorite sessions.",
-                        "Continue your relaxation practice.",
-                        "Deepen your sleep experience."
+                        "Find your favorite bedtime stories 📖",
+                        "Create your perfect wind-down ritual 🍵",
+                        "Drift into deeper dreams 💭"
                     ]
                 )
                 
                 TimelineItem(
-                    icon: "checkmark.circle",
-                    title: "In 7 days",
+                    icon: "sparkles.rectangle.stack",
+                    title: "A week of dreams 🌌",
                     descriptions: [
-                        "You wont be charged before \(trialEndDate.formatted(date: .abbreviated, time: .omitted)).",
-                        "Continue your journey from here.",
-                        "Cancel anytime before this."
+                        "Keep snoozing soundly until \(trialEndDate.formatted(date: .abbreviated, time: .omitted)) 💝",
+                        "Your peaceful journey continues ⭐",
+                        "Easy to pause anytime before then ✨"
                     ]
                 )
             }
@@ -99,16 +91,20 @@ struct TrialExplanationView: View {
                         currentPage = 15 // Navigate to PaywallView
                     }
                 } label: {
-                    Text("Continue")
-                        .font(.headline)
-                        .foregroundColor(.black)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(.white)
-                        .cornerRadius(28)
+                    HStack {
+                        Text("Let's get cozy")
+                        Text("→")
+                        Text("🌙")
+                    }
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(Color.white)
+                    .cornerRadius(16)
+                    .padding(.horizontal, 24)
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 16)
             }
         }
     }

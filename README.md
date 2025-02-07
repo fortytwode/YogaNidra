@@ -9,7 +9,9 @@
   - subscription metrics
   - progress metrics on progress tab
 **
+to do:
 - firebase app check to do
+- fix sleep science view
 
 1.1 -> Feb 2. 
 

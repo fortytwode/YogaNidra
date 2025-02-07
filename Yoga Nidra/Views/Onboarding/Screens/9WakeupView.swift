@@ -41,6 +41,9 @@ struct WakeupView: View {
                             Text(options[index].text)
                                 .font(.body)
                                 .foregroundColor(.white)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .lineLimit(2)
+                                .multilineTextAlignment(.leading)
                             
                             Spacer()
                             
@@ -49,7 +52,8 @@ struct WakeupView: View {
                                     .foregroundColor(.blue)
                             }
                         }
-                        .padding()
+                        .padding(.vertical, 16)
+                        .padding(.horizontal, 20)
                         .frame(maxWidth: .infinity)
                         .background(Color(white: selectedOption == index ? 0.3 : 0.2))
                         .cornerRadius(12)

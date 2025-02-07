@@ -13,7 +13,7 @@ struct PaywallView: View {
                 // Main Content
                 VStack(spacing: 24) {
                     // Headline
-                    Text("Transform Your Sleep. NOW.")
+                    Text("Sweet Dreams Start Here ✨")
                         .font(.system(size: 32, weight: .bold))
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
@@ -24,27 +24,32 @@ struct PaywallView: View {
                     ScrollView {
                         // Benefits
                         VStack(alignment: .leading, spacing: 16) {
-                            BenefitRow(icon: "moon.stars",
-                                      title: "Reduce time to fall asleep with guided Yoga Nidra")
+                            Text("Snuggle up with better sleep 🛏️")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding(.bottom, 4)
                             
-                            BenefitRow(icon: "waveform.path",
-                                      title: "Increase deep sleep through proven relaxation techniques")
+                            BenefitRow(icon: "bed.double.fill",
+                                      title: "Find deep sleep faster with guided rest")
                             
-                            BenefitRow(icon: "heart.fill",
-                                      title: "Lower stress and anxiety with regular practice")
+                            BenefitRow(icon: "leaf.fill",
+                                      title: "Enhance your sleep quality naturally")
+                            
+                            BenefitRow(icon: "theatermasks.fill",
+                                      title: "Melt away stress, night after night")
                         }
                         .padding(.horizontal)
                         
                         // Research Stats
                         VStack(spacing: 16) {
-                            Text("Scientifically Proven Results")
+                            Text("Snooze Report 🌙")
                                 .font(.headline)
                                 .foregroundColor(.white)
                             
                             VStack(alignment: .leading, spacing: 12) {
-                                StatRow(emoji: "🌙", text: "84% reduction in insomnia symptoms")
-                                StatRow(emoji: "✨", text: "Significant increase in deep sleep phases")
-                                StatRow(emoji: "⏰", text: "30-minute average decrease in sleep onset time")
+                                StatRow(emoji: "🌛", text: "84% fewer sleepless nights")
+                                StatRow(emoji: "🌠", text: "More time in deep, restorative sleep")
+                                StatRow(emoji: "⏰", text: "Fall asleep 30 minutes faster")
                             }
                         }
                         .padding(20)
@@ -58,12 +63,13 @@ struct PaywallView: View {
                 // Bottom Section
                 VStack(spacing: 16) {
                     VStack(spacing: 8) {
-                        Text("7-Day Free Trial")
+                        Text("7 nights of sweet dreams on us 🎁")
                             .font(.headline)
                             .foregroundColor(.white)
                         
-                        Text("Then $59.99/year")
+                        Text("Then just $59.99/year (that's $5/month for better sleep) 💎")
                             .foregroundColor(.white.opacity(0.9))
+                            .multilineTextAlignment(.center)
                     }
                     
                     Button {
@@ -82,10 +88,14 @@ struct PaywallView: View {
                                 .progressViewStyle(.circular)
                                 .tint(.white)
                         } else {
-                            Text("Start Free Trial")
-                                .font(.headline)
-                                .foregroundColor(.accentColor)
-                                .frame(maxWidth: .infinity)
+                            HStack {
+                                Text("Start your free trial")
+                                Text("→")
+                                Text("🌜")
+                            }
+                            .font(.headline)
+                            .foregroundColor(.accentColor)
+                            .frame(maxWidth: .infinity)
                         }
                     }
                     .frame(height: 56)

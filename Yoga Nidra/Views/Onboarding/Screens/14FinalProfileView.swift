@@ -38,7 +38,7 @@ struct FinalProfileView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
-                Text("Your Sleep Profile")
+                Text("Your Sleep Story ✨")
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
@@ -51,7 +51,7 @@ struct FinalProfileView: View {
                 
                 // Highlights Section
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Here are your highlights:")
+                    Text("The Tea on Your Sleep ☕️")
                         .font(.title2)
                         .bold()
                         .foregroundColor(.white)
@@ -94,9 +94,9 @@ struct FinalProfileView: View {
             // Next Step Button
             Button(action: nextPage) {
                 HStack {
-                    Text("Next step")
+                    Text("Start your dreamy journey")
                         .font(.headline)
-                    Image(systemName: "arrow.right")
+                    Text("→")
                 }
                 .foregroundColor(.black)
                 .frame(maxWidth: .infinity)
@@ -129,23 +129,35 @@ struct FinalProfileView: View {
     
     private func getStrengthDescription(for metric: String) -> String {
         switch metric {
-        case "Sleep Quality": return "You're maintaining good sleep habits!"
-        case "Relaxation": return "You have a good foundation for relaxation"
-        case "Energy": return "Your energy levels are well maintained"
-        case "Focus": return "You're maintaining good mental focus"
-        case "Sleep Pattern": return "You have a consistent sleep pattern"
-        default: return "You're doing well in this area"
+        case "Sleep Quality":
+            return "You're a natural at finding dreamland"
+        case "Relaxation":
+            return "Your mind knows how to unwind"
+        case "Sleep Pattern":
+            return "Your inner clock is ticking nicely"
+        case "Energy":
+            return "You've got a good energy flow going"
+        case "Focus":
+            return "Your mind stays sharp like morning coffee"
+        default:
+            return ""
         }
     }
     
     private func getGrowthDescription(for metric: String) -> String {
         switch metric {
-        case "Sleep Quality": return "We'll help you improve your sleep quality"
-        case "Relaxation": return "Let's work on better relaxation techniques"
-        case "Energy": return "We'll help boost your energy levels"
-        case "Focus": return "We'll help enhance your mental focus"
-        case "Sleep Pattern": return "We'll help stabilize your sleep pattern"
-        default: return "We'll help you improve in this area"
+        case "Sleep Quality":
+            return "Let's make your dreams even sweeter"
+        case "Relaxation":
+            return "We'll help your mind float like a cloud"
+        case "Sleep Pattern":
+            return "Time to sync with your natural rhythm"
+        case "Energy":
+            return "We'll help your inner light shine brighter"
+        case "Focus":
+            return "Let's get your mind as clear as starlight"
+        default:
+            return ""
         }
     }
     
