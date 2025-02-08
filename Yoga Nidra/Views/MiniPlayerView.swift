@@ -2,13 +2,13 @@ import SwiftUI
 
 struct MiniPlayerView: View {
     @StateObject private var audioManager = AudioManager.shared
-    @State private var showPlayer = false
+    @EnvironmentObject private var sheetPresenter: Presenter
     
     var body: some View {
         Group {
             if let session = audioManager.currentPlayingSession {
                 Button {
-                    showPlayer = true
+                    sheetPresenter.present(.sessionDetials(session))
                 } label: {
                     HStack(spacing: 12) {
                         // Thumbnail
@@ -64,10 +64,6 @@ struct MiniPlayerView: View {
                     )
                 }
                 .buttonStyle(.plain)
-                .sheet(isPresented: $showPlayer) {
-                    PlayerView(session: session)
-                        .presentationDragIndicator(.visible)
-                }
             }
         }
     }

@@ -80,16 +80,25 @@ struct SessionDetailView: View {
         Image(session.thumbnailUrl)
             .resizable()
             .scaledToFit()
-            .frame(width: 200, height: 200)
+            .frame(maxWidth: 240)
             .cornerRadius(20)
     }
     
     private var sessionInfo: some View {
         VStack(spacing: 8) {
-            Text(session.title)
-                .font(.title)
-                .foregroundColor(.white)
-                .multilineTextAlignment(.center)
+            ZStack {
+                Text(session.title)
+                    .font(.title)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                
+                HStack {
+                    Spacer()
+                    DownloadButton(session: session)
+                        .padding(.trailing)
+                }
+            }
             
             Text(session.description)
                 .font(.callout)

@@ -17,10 +17,23 @@ struct DownloadButton: View {
     var body: some View {
         Group {
             if session.isDownloaded {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
+                Menu {
+                    Button(role: .destructive) {
+                        downloadManager.deleteSession(session)
+                    } label: {
+                        Label("Remove Download", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.green)
+                        .background(Circle().fill(.white).shadow(radius: 2))
+                }
+            } else if downloadManager.isDownloading(session) {
+                ProgressView()
+                    .frame(width: 32, height: 32)
+                    .background(Circle().fill(.white).shadow(radius: 2))
             } else {
-                // Download button
                 Button {
                     Task {
                         if storeManager.isSubscribed {
@@ -35,8 +48,10 @@ struct DownloadButton: View {
                         }
                     }
                 } label: {
-                    Image(systemName: "arrow.down.circle")
+                    Image(systemName: "arrow.down.circle.fill")
+                        .font(.title2)
                         .foregroundColor(.accentColor)
+                        .background(Circle().fill(.white).shadow(radius: 2))
                 }
             }
         }
@@ -49,4 +64,4 @@ struct DownloadButton: View {
             Text(errorMessage)
         }
     }
-} 
+}

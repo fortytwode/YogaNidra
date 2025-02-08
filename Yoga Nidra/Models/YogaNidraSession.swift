@@ -11,11 +11,12 @@ struct YogaNidraSession: Identifiable, Codable, Equatable, Hashable {
     let category: SessionCategory
     let instructor: String
     
-    // Add Equatable conformance
+    // MARK: - Equatable
     static func == (lhs: YogaNidraSession, rhs: YogaNidraSession) -> Bool {
         lhs.id == rhs.id
     }
     
+    // MARK: - File Management
     var fileName: String {
         audioFileName.split(separator: ".").first?.description ?? ""
     }
@@ -24,20 +25,31 @@ struct YogaNidraSession: Identifiable, Codable, Equatable, Hashable {
         audioFileName.split(separator: ".").last?.description ?? ""
     }
     
-    @MainActor
-    var isDownloaded: Bool {
-        guard let fileURL = DownloadManager.shared.fileURLForSession(self) else {
-            return false
-        }
-        return FileManager.default.fileExists(atPath: fileURL.path(percentEncoded: false))
+    var storageFileName: String {
+        "\(fileName).\(fileExtension)"
     }
     
-    // Load all sessions from CSV
+    // MARK: - Download Status
+    @MainActor
+    var isDownloaded: Bool {
+        guard let localURL = localURL else { return false }
+        return FileManager.default.fileExists(atPath: localURL.path)
+    }
+    
+    var localURL: URL? {
+        guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+        return documentsPath
+            .appendingPathComponent("YogaNidraSessions", isDirectory: true)
+            .appendingPathComponent(storageFileName)
+    }
+    
+    // MARK: - Static Properties
     static var allSessions: [YogaNidraSession] = {
         SessionDataParser.loadSessions()
     }()
     
-    // Keep minimal preview data for SwiftUI previews only
     static let preview = YogaNidraSession(
         id: UUID(),
         title: "Preview Session",
@@ -52,4 +64,4 @@ struct YogaNidraSession: Identifiable, Codable, Equatable, Hashable {
     
     // For preview purposes only
     static let previewData = [preview]
-} 
+}

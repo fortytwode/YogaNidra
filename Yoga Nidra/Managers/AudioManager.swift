@@ -28,6 +28,7 @@ final class AudioManager: ObservableObject {
     // MARK: - Public API
     
     /// Plays a meditation session
+    @MainActor
     func play(_ session: YogaNidraSession) async {
         do {
             // Stop any existing playback
@@ -37,44 +38,20 @@ final class AudioManager: ObservableObject {
             errorMessage = nil
             currentPlayingSession = session
             
-            // Get the audio file URL
-            let audioFileURL: URL
-            if isFileCached(session.audioFileName) {
-                print("📂 Using cached file")
-                audioFileURL = getLocalFileURL(for: session.audioFileName)
+            // Try to get local URL first
+            if session.isDownloaded, let localURL = session.localURL {
+                try await playFromURL(localURL)
             } else {
-                print("⬇️ Downloading from Firebase: \(session.audioFileName)")
-                audioFileURL = try await downloadFromFirebase(fileName: session.audioFileName)
+                // Fallback to streaming from Firebase
+                let downloadURL = try await downloadFromFirebase(fileName: session.audioFileName)
+                try await playFromURL(downloadURL)
             }
             
-            // Prepare audio engine for playback
-            await withCheckedContinuation { continuation in
-                audioEngine.prepareForPlayback(url: audioFileURL) { [weak self] result in
-                    guard let self = self else {
-                        continuation.resume()
-                        return
-                    }
-                    
-                    switch result {
-                    case .success:
-                        self.setupTimeObserver()
-                        Task { @MainActor in
-                            await self.resume()
-                        }
-                        self.isLoading = false
-                        print("✅ Playback started successfully")
-                        
-                    case .failure(let error):
-                        print("❌ Failed to prepare playback: \(error)")
-                        self.isLoading = false
-                        self.errorMessage = error.localizedDescription
-                    }
-                    continuation.resume()
-                }
-            }
+            currentPlayingSession = session
+            isPlaying = true
             
         } catch {
-            print("❌ Failed to setup playback: \(error)")
+            print("Failed to play session: \(error.localizedDescription)")
             isLoading = false
             errorMessage = error.localizedDescription
             currentPlayingSession = nil
@@ -256,6 +233,34 @@ final class AudioManager: ObservableObject {
                 if task.description.contains("was already running") {
                     task.cancel()
                 }
+            }
+        }
+    }
+    
+    private func playFromURL(_ url: URL) async throws {
+        // Prepare audio engine for playback
+        await withCheckedContinuation { continuation in
+            audioEngine.prepareForPlayback(url: url) { [weak self] result in
+                guard let self = self else {
+                    continuation.resume()
+                    return
+                }
+                
+                switch result {
+                case .success:
+                    self.setupTimeObserver()
+                    Task { @MainActor in
+                        await self.resume()
+                    }
+                    self.isLoading = false
+                    print("✅ Playback started successfully")
+                    
+                case .failure(let error):
+                    print("❌ Failed to prepare playback: \(error)")
+                    self.isLoading = false
+                    self.errorMessage = error.localizedDescription
+                }
+                continuation.resume()
             }
         }
     }
