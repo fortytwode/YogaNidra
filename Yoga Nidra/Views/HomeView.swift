@@ -2,10 +2,10 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject var router = Router<HomeTabDestination>()
+    @StateObject private var audioManager = AudioManager.shared
     @EnvironmentObject var sheetPresenter: Presenter
     @EnvironmentObject var overlayManager: OverlayManager
     @EnvironmentObject var progressManager: ProgressManager
-    @StateObject private var audioManager = AudioManager.shared
     let sessions = YogaNidraSession.allSessions
     @Binding var selectedTab: Int
     
@@ -43,18 +43,14 @@ struct HomeView: View {
                         )
                         .frame(height: 220)  // Match the image height
                         
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Time to Unwind")
-                                .font(.system(size: 36, weight: .bold))
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Drift Into Dreams ✨")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
                                 .foregroundColor(.white)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .textShadowEffect()
-                            
-                            Text("Let your mind drift into peaceful dreams")
-                                .font(.subheadline)
+                            Text("Float away into your nightly escape.")
+                                .font(.headline)
                                 .foregroundColor(.white.opacity(0.8))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .textShadowEffect()
                         }
                         .padding(.horizontal)
                         .padding(.bottom, 16)
@@ -80,9 +76,9 @@ struct HomeView: View {
     var popularSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Popular")
+                Text("Dreamy Picks ⭐️")
                     .font(.title2)
-                    .bold()
+                    .fontWeight(.bold)
                 Spacer()
                 Button("See All") {
                     selectedTab = 1
@@ -113,9 +109,9 @@ struct HomeView: View {
     var recommendedSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Recommended for You")
+                Text("Made Just for You 💫")
                     .font(.title2)
-                    .bold()
+                    .fontWeight(.bold)
                 Spacer()
                 Button("See All") {
                     selectedTab = 1
