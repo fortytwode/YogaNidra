@@ -24,10 +24,18 @@ final class AudioEngine: NSObject {
     private override init() {
         audioSession = AVAudioSession.sharedInstance()
         super.init()
-        Task { @MainActor in
-            setupAudioSession()
-            setupNotifications()
-        }
+        
+        // Configure audio session immediately
+        setupAudioSession()
+        setupNotifications()
+        
+        // Begin observing interruptions
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleInterruption),
+            name: AVAudioSession.interruptionNotification,
+            object: audioSession
+        )
     }
     
     deinit {
@@ -48,9 +56,17 @@ final class AudioEngine: NSObject {
     
     private func setupAudioSession() {
         do {
-            try audioSession.setCategory(.playback, mode: .spokenAudio, policy: .longFormAudio, options: [.allowAirPlay, .allowBluetoothA2DP])
-            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
-            print("✅ Audio Engine: Session configured")
+            // Configure basic playback session
+            try audioSession.setCategory(
+                .playback,
+                mode: .default,
+                options: [.mixWithOthers, .allowAirPlay]
+            )
+            
+            // Activate the audio session
+            try audioSession.setActive(true)
+            
+            print("✅ Audio Engine: Session configured for background playback")
         } catch {
             print("❌ Audio Engine: Failed to configure session - \(error)")
         }
@@ -79,6 +95,68 @@ final class AudioEngine: NSObject {
             name: AVAudioSession.routeChangeNotification,
             object: audioSession
         )
+        
+        // Setup remote control events
+        setupRemoteTransportControls()
+    }
+    
+    private func setupRemoteTransportControls() {
+        // Get the shared command center
+        let commandCenter = MPRemoteCommandCenter.shared()
+        
+        // Add handler for play command
+        commandCenter.playCommand.addTarget { [weak self] _ in
+            self?.play()
+            return .success
+        }
+        
+        // Add handler for pause command
+        commandCenter.pauseCommand.addTarget { [weak self] _ in
+            self?.pause()
+            return .success
+        }
+        
+        // Add handler for toggle play/pause command
+        commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
+            guard let self = self else { return .commandFailed }
+            if self.player?.rate == 0 {
+                self.play()
+            } else {
+                self.pause()
+            }
+            return .success
+        }
+        
+        // Add handler for seek command
+        commandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
+            guard let self = self,
+                  let event = event as? MPChangePlaybackPositionCommandEvent else {
+                return .commandFailed
+            }
+            Task {
+                await self.seek(to: event.positionTime)
+            }
+            return .success
+        }
+        
+        // Enable skip commands
+        commandCenter.skipForwardCommand.preferredIntervals = [15]
+        commandCenter.skipForwardCommand.addTarget { [weak self] _ in
+            guard let self = self else { return .commandFailed }
+            Task {
+                await self.skipForward()
+            }
+            return .success
+        }
+        
+        commandCenter.skipBackwardCommand.preferredIntervals = [15]
+        commandCenter.skipBackwardCommand.addTarget { [weak self] _ in
+            guard let self = self else { return .commandFailed }
+            Task {
+                await self.skipBackward()
+            }
+            return .success
+        }
     }
     
     func prepareForPlayback(url: URL, completion: @escaping (Result<Void, Error>) -> Void) {
@@ -104,15 +182,23 @@ final class AudioEngine: NSObject {
                 return
             }
             
-            // Configure audio behavior
+            // Configure audio behavior for background playback
             player.automaticallyWaitsToMinimizeStalling = false
             player.allowsExternalPlayback = true
+            
+            // Enable background audio session if needed
+            do {
+                try AVAudioSession.sharedInstance().setActive(true)
+            } catch {
+                print("❌ Audio Engine: Failed to activate session - \(error)")
+            }
             
             // Observe player status
             statusObserver = playerItem.observe(\.status) { [weak self] item, _ in
                 guard let self = self else { return }
                 switch item.status {
                 case .readyToPlay:
+                    self.updateNowPlayingInfo()  // Set initial now playing info
                     completion(.success(()))
                 case .failed:
                     completion(.failure(item.error ?? NSError(domain: "AudioEngine", code: -1)))
@@ -148,14 +234,32 @@ final class AudioEngine: NSObject {
         }
     }
     
+    private func updateNowPlayingInfo(title: String? = nil, artist: String? = nil) {
+        var nowPlayingInfo = [String: Any]()
+        
+        // Add media info
+        nowPlayingInfo[MPMediaItemPropertyTitle] = title ?? "Sleep Meditation"
+        nowPlayingInfo[MPMediaItemPropertyArtist] = artist ?? "Yoga Nidra"
+        
+        // Add playback info
+        if let player = player {
+            nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime().seconds
+            nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = player.currentItem?.duration.seconds
+            nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = player.rate
+        }
+        
+        // Update the now playing info
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+    
     func play() {
         player?.play()
-        setupNowPlaying()
+        updateNowPlayingInfo()
     }
     
     func pause() {
         player?.pause()
-        updateNowPlaying()
+        updateNowPlayingInfo()
     }
     
     func seek(to time: TimeInterval) async {
@@ -209,30 +313,5 @@ final class AudioEngine: NSObject {
         default:
             break
         }
-    }
-    
-    private func setupNowPlaying() {
-        var nowPlayingInfo = [String: Any]()
-        
-        if let player = player {
-            nowPlayingInfo[MPMediaItemPropertyTitle] = "Sleep Meditation"
-            nowPlayingInfo[MPMediaItemPropertyArtist] = "Yoga Nidra"
-            nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime().seconds
-            nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = player.currentItem?.duration.seconds
-            nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = player.rate
-        }
-        
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-    }
-    
-    private func updateNowPlaying() {
-        guard var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo else { return }
-        
-        if let player = player {
-            nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime().seconds
-            nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = player.rate
-        }
-        
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
     }
 }
