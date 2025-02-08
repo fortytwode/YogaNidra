@@ -56,15 +56,23 @@ final class AudioEngine: NSObject {
     
     private func setupAudioSession() {
         do {
-            // Configure basic playback session
-            try audioSession.setCategory(
+            // Configure audio session for background playback
+            let session = AVAudioSession.sharedInstance()
+            
+            // Set category with options
+            try session.setCategory(
                 .playback,
                 mode: .default,
-                options: [.mixWithOthers, .allowAirPlay]
+                policy: .longFormAudio,
+                options: [.duckOthers, .allowBluetooth, .allowBluetoothA2DP, .allowAirPlay]
             )
             
-            // Activate the audio session
-            try audioSession.setActive(true)
+            // Set active and request route to speaker
+            try session.setActive(true, options: .notifyOthersOnDeactivation)
+            
+            // Configure audio session for background playback
+            try session.setCategory(.playback)
+            try session.setActive(true)
             
             print("✅ Audio Engine: Session configured for background playback")
         } catch {
@@ -74,7 +82,7 @@ final class AudioEngine: NSObject {
     
     private func deactivateAudioSession() {
         do {
-            try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
+            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
             print("✅ Audio Engine: Session deactivated")
         } catch {
             print("❌ Audio Engine: Failed to deactivate session - \(error)")
@@ -253,8 +261,14 @@ final class AudioEngine: NSObject {
     }
     
     func play() {
-        player?.play()
-        updateNowPlayingInfo()
+        do {
+            // Ensure audio session is active before playing
+            try AVAudioSession.sharedInstance().setActive(true)
+            player?.play()
+            updateNowPlayingInfo()
+        } catch {
+            print("❌ Audio Engine: Failed to activate session for playback - \(error)")
+        }
     }
     
     func pause() {
