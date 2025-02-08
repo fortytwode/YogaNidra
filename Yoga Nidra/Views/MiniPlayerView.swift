@@ -4,6 +4,15 @@ struct MiniPlayerView: View {
     @StateObject private var audioManager = AudioManager.shared
     @EnvironmentObject private var sheetPresenter: Presenter
     
+    private var remainingTime: String {
+        let duration = audioManager.duration
+        let currentTime = audioManager.currentTime
+        let remaining = duration - currentTime
+        let minutes = Int(remaining / 60)
+        let seconds = Int(remaining.truncatingRemainder(dividingBy: 60))
+        return String(format: "-%d:%02d", minutes, seconds)
+    }
+    
     var body: some View {
         Group {
             if let session = audioManager.currentPlayingSession {
@@ -18,11 +27,17 @@ struct MiniPlayerView: View {
                             .frame(width: 40, height: 40)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                         
-                        // Title
-                        Text(session.title)
-                            .lineLimit(1)
-                            .font(.subheadline)
-                            .foregroundColor(.primary)
+                        // Title and Duration
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(session.title)
+                                .lineLimit(1)
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                            
+                            Text(remainingTime)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                         
                         Spacer()
                         
