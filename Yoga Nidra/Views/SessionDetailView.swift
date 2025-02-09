@@ -18,16 +18,23 @@ struct SessionDetailView: View {
     }
     
     var body: some View {
-        GeometryReader { geometry in
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 20) {
-                    topBar
-                    mainContent
+        ScrollView(showsIndicators: false) {
+            ZStack(alignment: .topLeading) {
+                Button(action: {
+                    sheetPresenter.dismiss()
+                }) {
+                    Image(systemName: "chevron.down")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                        .frame(width: 44, height: 44)
+                        .background(Color.white.opacity(0.2))
+                        .clipShape(Circle())
                 }
+                .padding([.top, .leading], 20)
+                mainContent
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.black.edgesIgnoringSafeArea(.all))
         }
+        .background(Color.black.edgesIgnoringSafeArea(.all))
         .ignoresSafeArea()
         .background(Color.black)
         .preferredColorScheme(.dark)
@@ -47,25 +54,6 @@ struct SessionDetailView: View {
     }
     
     // MARK: - View Components
-    
-    private var topBar: some View {
-        HStack {
-            Button(action: {
-                sheetPresenter.dismiss()
-            }) {
-                Image(systemName: "chevron.down")
-                    .font(.title2)
-                    .foregroundColor(.white)
-                    .frame(width: 44, height: 44)
-                    .background(Color.white.opacity(0.2))
-                    .clipShape(Circle())
-            }
-            
-            Spacer()
-        }
-        .padding(.horizontal)
-    }
-    
     private var mainContent: some View {
         VStack(spacing: 16) {
             sessionImage
@@ -73,13 +61,14 @@ struct SessionDetailView: View {
             actionButtons
             playerControls
         }
+        .padding(.top, 20)
     }
     
     private var sessionImage: some View {
         Image(session.thumbnailUrl)
             .resizable()
             .scaledToFit()
-            .frame(maxWidth: 240)
+            .frame(maxHeight: 200)
             .cornerRadius(20)
     }
     
