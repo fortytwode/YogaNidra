@@ -33,6 +33,7 @@ final class AudioManager: ObservableObject {
     // MARK: - Initialization
     private init() {
         setupRemoteCommandCenter()
+        activateAudioSession()
     }
     
     // MARK: - Public API
@@ -47,6 +48,9 @@ final class AudioManager: ObservableObject {
             isLoading = true
             errorMessage = nil
             currentPlayingSession = session
+            
+            // Update Now Playing state immediately
+            updateNowPlayingInfo()
             
             // Try to get local URL first
             if session.isDownloaded, let localURL = session.localURL {
@@ -163,17 +167,13 @@ final class AudioManager: ObservableObject {
     }
     
     func skipForward() async {
-        await audioEngine.skipForward()
-        self.currentTime = audioEngine.currentTime
-        self.progress = currentTime / duration
-        updateNowPlayingInfo()
+        let newTime = min(currentTime + 15, duration)  // 15 seconds forward
+        await seek(to: newTime)
     }
     
     func skipBackward() async {
-        await audioEngine.skipBackward()
-        self.currentTime = audioEngine.currentTime
-        self.progress = currentTime / duration
-        updateNowPlayingInfo()
+        let newTime = max(currentTime - 15, 0)  // 15 seconds backward
+        await seek(to: newTime)
     }
     
     // MARK: - Private Methods
@@ -199,31 +199,50 @@ final class AudioManager: ObservableObject {
     private func setupRemoteCommandCenter() {
         let commandCenter = MPRemoteCommandCenter.shared()
         
-        commandCenter.playCommand.removeTarget(nil)
-        commandCenter.pauseCommand.removeTarget(nil)
-        commandCenter.togglePlayPauseCommand.removeTarget(nil)
+        // Clear existing handlers
+        [commandCenter.playCommand,
+         commandCenter.pauseCommand,
+         commandCenter.skipBackwardCommand,
+         commandCenter.skipForwardCommand,
+         commandCenter.changePlaybackPositionCommand].forEach { $0.removeTarget(nil) }
         
+        // Enable commands with 15 second intervals
+        commandCenter.skipBackwardCommand.preferredIntervals = [15]
+        commandCenter.skipForwardCommand.preferredIntervals = [15]
+        
+        // Setup new handlers
         commandCenter.playCommand.addTarget { [weak self] _ in
-            Task { @MainActor [weak self] in
+            Task {
                 await self?.resume()
             }
             return .success
         }
         
         commandCenter.pauseCommand.addTarget { [weak self] _ in
-            Task { @MainActor [weak self] in
+            Task {
                 await self?.pause()
             }
             return .success
         }
         
-        commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
-            Task { @MainActor [weak self] in
-                if self?.isPlaying == true {
-                    await self?.pause()
-                } else {
-                    await self?.resume()
-                }
+        commandCenter.skipBackwardCommand.addTarget { [weak self] _ in
+            Task {
+                await self?.skipBackward()
+            }
+            return .success
+        }
+        
+        commandCenter.skipForwardCommand.addTarget { [weak self] _ in
+            Task {
+                await self?.skipForward()
+            }
+            return .success
+        }
+        
+        commandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
+            guard let event = event as? MPChangePlaybackPositionCommandEvent else { return .commandFailed }
+            Task {
+                await self?.seek(to: event.positionTime)
             }
             return .success
         }
@@ -235,11 +254,20 @@ final class AudioManager: ObservableObject {
         var nowPlayingInfo = [String: Any]()
         nowPlayingInfo[MPMediaItemPropertyTitle] = session.title
         nowPlayingInfo[MPMediaItemPropertyArtist] = "Yoga Nidra"
-        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = currentTime
         nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = duration
+        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = currentTime
         nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
         
+        // Add high-quality artwork
+        if let image = UIImage(named: session.thumbnailUrl) {
+            let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+            nowPlayingInfo[MPMediaItemPropertyArtwork] = artwork
+        }
+        
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+        
+        // Update playback state for app icon indicator
+        MPNowPlayingInfoCenter.default().playbackState = isPlaying ? .playing : .paused
     }
     
     // MARK: - Firebase Storage
@@ -313,6 +341,22 @@ final class AudioManager: ObservableObject {
                 }
                 continuation.resume()
             }
+        }
+    }
+    
+    private func activateAudioSession() {
+        do {
+            try AVAudioSession.sharedInstance().setActive(true, options: [])
+        } catch {
+            print("Failed to activate audio session: \(error)")
+        }
+    }
+    
+    private func deactivateAudioSession() {
+        do {
+            try AVAudioSession.sharedInstance().setActive(false, options: [])
+        } catch {
+            print("Failed to deactivate audio session: \(error)")
         }
     }
 }

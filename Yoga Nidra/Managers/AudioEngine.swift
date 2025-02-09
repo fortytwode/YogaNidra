@@ -27,10 +27,12 @@ final class AudioEngine: NSObject {
         audioSession = AVAudioSession.sharedInstance()
         super.init()
         
-        // Configure audio session immediately
+        // Configure audio session first
         setupAudioSession()
-        setupNotifications()
+        
+        // Then setup remote controls and notifications
         setupRemoteCommandCenter()
+        setupNotifications()
         
         // Begin observing interruptions
         NotificationCenter.default.addObserver(
@@ -62,14 +64,13 @@ final class AudioEngine: NSObject {
             // Configure audio session for background playback
             let session = AVAudioSession.sharedInstance()
             
-            // First deactivate the session
-            try session.setActive(false)
+            // Configure the audio session category and mode with options
+            try session.setCategory(.playback, 
+                                  mode: .spokenAudio,  
+                                  options: [.allowAirPlay, .allowBluetooth])
             
-            // Configure the audio session category and mode
-            try session.setCategory(.playback, mode: .default)
-            
-            // Activate the session
-            try session.setActive(true)
+            // Set active with options
+            try session.setActive(true, options: [.notifyOthersOnDeactivation])
             
             print("✅ Audio Engine: Session configured for background playback")
         } catch {
@@ -188,6 +189,22 @@ final class AudioEngine: NSObject {
             nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = player.rate
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
         }
+    }
+    
+    private func setupNowPlaying() {
+        // Configure audio session again when starting playback
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback, 
+                                  mode: .spokenAudio,
+                                  options: [.allowAirPlay, .allowBluetooth])
+            try session.setActive(true, options: [.notifyOthersOnDeactivation])
+        } catch {
+            print("❌ Audio Engine: Failed to configure session during playback - \(error)")
+        }
+        
+        // Update Now Playing info
+        updateNowPlayingInfo()
     }
     
     func prepareForPlayback(url: URL, completion: @escaping (Result<Void, Error>) -> Void) {
