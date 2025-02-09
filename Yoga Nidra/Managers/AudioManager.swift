@@ -33,7 +33,35 @@ final class AudioManager: ObservableObject {
     // MARK: - Initialization
     private init() {
         setupRemoteCommandCenter()
-        activateAudioSession()
+        
+        // Observe audio engine state changes
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioEngineDidStartPlaying),
+            name: .audioEngineDidStartPlaying,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioEngineDidPause),
+            name: .audioEngineDidPause,
+            object: nil
+        )
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func handleAudioEngineDidStartPlaying() {
+        isPlaying = true
+        updateNowPlayingInfo()
+    }
+    
+    @objc private func handleAudioEngineDidPause() {
+        isPlaying = false
+        updateNowPlayingInfo()
     }
     
     // MARK: - Public API
@@ -353,18 +381,12 @@ final class AudioManager: ObservableObject {
     }
     
     private func activateAudioSession() {
-        do {
-            try AVAudioSession.sharedInstance().setActive(true, options: [])
-        } catch {
-            print("Failed to activate audio session: \(error)")
-        }
+        // Removed duplicate audio session activation
+        // Now handled by AudioEngine
     }
     
     private func deactivateAudioSession() {
-        do {
-            try AVAudioSession.sharedInstance().setActive(false, options: [])
-        } catch {
-            print("Failed to deactivate audio session: \(error)")
-        }
+        // Removed duplicate audio session deactivation
+        // Now handled by AudioEngine
     }
 }

@@ -3,6 +3,12 @@ import MediaPlayer
 import Combine
 import UIKit
 
+// MARK: - Notification Names
+extension Notification.Name {
+    static let audioEngineDidStartPlaying = Notification.Name("audioEngineDidStartPlaying")
+    static let audioEngineDidPause = Notification.Name("audioEngineDidPause")
+}
+
 @MainActor
 final class AudioEngine: NSObject {
     static let shared = AudioEngine()
@@ -10,8 +16,7 @@ final class AudioEngine: NSObject {
     private var player: AVPlayer?
     private var timeObserver: Any?
     private var statusObserver: NSKeyValueObservation?
-    private var itemObserver: NSKeyValueObservation?
-    private var audioSession: AVAudioSession
+    private let audioSession: AVAudioSession  // Strong reference
     private var isSeekInProgress: Bool = false
     private var currentPlayingSession: YogaNidraSession?
     
@@ -24,53 +29,68 @@ final class AudioEngine: NSObject {
     }
     
     private override init() {
+        // Initialize audio session first
         audioSession = AVAudioSession.sharedInstance()
+        
         super.init()
         
-        // Configure audio session first
+        // Configure audio session
         setupAudioSession()
         
-        // Then setup remote controls and notifications
+        // Setup observers and controls
         setupRemoteCommandCenter()
         setupNotifications()
         
-        // Begin observing interruptions
+        // Begin observing interruptions and route changes
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleInterruption),
             name: AVAudioSession.interruptionNotification,
             object: audioSession
         )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRouteChange),
+            name: AVAudioSession.routeChangeNotification,
+            object: audioSession
+        )
+        
+        // Observe app lifecycle
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAppDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAppWillResignActive),
+            name: UIApplication.willResignActiveNotification,
+            object: nil
+        )
     }
     
     deinit {
-        Task { @MainActor in
-            // Clean up observers and player
-            if let timeObserver = timeObserver {
-                removeTimeObserver(timeObserver)
-                self.timeObserver = nil
-            }
-            statusObserver?.invalidate()
-            itemObserver?.invalidate()
-            NotificationCenter.default.removeObserver(self)
-            
-            // Clean up audio session
-            deactivateAudioSession()
+        NotificationCenter.default.removeObserver(self)
+        statusObserver?.invalidate()
+        if let timeObserver = timeObserver {
+            player?.removeTimeObserver(timeObserver)
         }
     }
     
     private func setupAudioSession() {
         do {
             // Configure audio session for background playback
-            let session = AVAudioSession.sharedInstance()
-            
-            // Configure the audio session category and mode with options
-            try session.setCategory(.playback, 
-                                  mode: .spokenAudio,
-                                  options: [.allowAirPlay, .allowBluetooth, .allowBluetoothA2DP, .duckOthers])
+            try audioSession.setCategory(
+                .playback,
+                mode: .spokenAudio,
+                options: [.allowAirPlay, .allowBluetooth, .allowBluetoothA2DP, .duckOthers]
+            )
             
             // Set active with options
-            try session.setActive(true, options: [.notifyOthersOnDeactivation])
+            try audioSession.setActive(true, options: [.notifyOthersOnDeactivation])
             
             print("✅ Audio Engine: Session configured for background playback")
         } catch {
@@ -78,23 +98,38 @@ final class AudioEngine: NSObject {
         }
     }
     
-    private func deactivateAudioSession() {
+    @objc private func handleAppDidBecomeActive() {
         do {
-            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-            print("✅ Audio Engine: Session deactivated")
+            try audioSession.setActive(true, options: [.notifyOthersOnDeactivation])
         } catch {
-            print("❌ Audio Engine: Failed to deactivate session - \(error)")
+            print("❌ Audio Engine: Failed to reactivate session - \(error)")
         }
     }
     
-    private func ensureAudioSessionActive() {
-        do {
-            let session = AVAudioSession.sharedInstance()
-            if !session.isOtherAudioPlaying {
-                try session.setActive(true, options: .notifyOthersOnDeactivation)
+    @objc private func handleAppWillResignActive() {
+        // Keep session active for background playback
+    }
+    
+    private func observePlayerStatus() {
+        guard let player = player else { return }
+        
+        // Observe time control status
+        statusObserver?.invalidate()
+        statusObserver = player.observe(\.timeControlStatus) { [weak self] player, _ in
+            guard let self = self else { return }
+            
+            DispatchQueue.main.async {
+                switch player.timeControlStatus {
+                case .playing:
+                    NotificationCenter.default.post(name: .audioEngineDidStartPlaying, object: nil)
+                case .paused:
+                    NotificationCenter.default.post(name: .audioEngineDidPause, object: nil)
+                case .waitingToPlayAtSpecifiedRate:
+                    break
+                @unknown default:
+                    break
+                }
             }
-        } catch {
-            print("❌ Audio Engine: Failed to activate session - \(error)")
         }
     }
     
@@ -182,7 +217,7 @@ final class AudioEngine: NSObject {
     }
     
     private func updateNowPlayingInfo() {
-        // Remove this method as it's now handled by AudioManager
+        // Removed updateNowPlayingInfo call
     }
     
     private func setupNowPlaying() {
@@ -202,11 +237,10 @@ final class AudioEngine: NSObject {
         Task { @MainActor in
             // Remove existing observers and player
             if let timeObserver = timeObserver {
-                removeTimeObserver(timeObserver)
+                player?.removeTimeObserver(timeObserver)
                 self.timeObserver = nil
             }
             statusObserver?.invalidate()
-            itemObserver?.invalidate()
             
             // Create new AVPlayer
             let playerItem = AVPlayerItem(url: url)
@@ -233,36 +267,18 @@ final class AudioEngine: NSObject {
             }
             
             // Observe player status
-            statusObserver = playerItem.observe(\.status) { [weak self] item, _ in
-                guard let self = self else { return }
-                switch item.status {
-                case .readyToPlay:
-                    self.setupNowPlaying()
-                    completion(.success(()))
-                case .failed:
-                    completion(.failure(item.error ?? NSError(domain: "AudioEngine", code: -1)))
-                default:
-                    break
-                }
-            }
-            
-            // Observe current item
-            itemObserver = player.observe(\.currentItem) { [weak self] player, _ in
-                Task { @MainActor [weak self] in
-                    if player.currentItem == nil {
-                        if let timeObserver = self?.timeObserver {
-                            self?.removeTimeObserver(timeObserver)
-                            self?.timeObserver = nil
-                        }
-                    }
-                }
-            }
+            observePlayerStatus()
             
             // Add periodic time observer
             let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
             timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
                 // Removed updateNowPlayingInfo call
             }
+            
+            // Start playback
+            player.play()
+            
+            completion(.success(()))
         }
     }
     
@@ -282,11 +298,8 @@ final class AudioEngine: NSObject {
     func play() {
         do {
             // Ensure audio session is active before playing
-            ensureAudioSessionActive()
+            try audioSession.setActive(true, options: [.notifyOthersOnDeactivation])
             player?.play()
-            
-            // Set audio session active again after starting playback
-            try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
             print("❌ Audio Engine: Failed to activate session for playback - \(error)")
         }
