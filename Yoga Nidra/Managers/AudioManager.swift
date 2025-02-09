@@ -29,6 +29,7 @@ final class AudioManager: ObservableObject {
     private let audioEngine = AudioEngine.shared
     private var timeObserverToken: Any?
     private var preparedSession: YogaNidraSession?
+    private var isPlayingOnboarding: Bool = false
     
     // MARK: - Initialization
     private init() {
@@ -65,6 +66,23 @@ final class AudioManager: ObservableObject {
     }
     
     // MARK: - Public API
+    func startOnboardingMusic() {
+        guard let fileURL = Bundle.main.url(forResource: "calm-ambient", withExtension: "mp3"), !isPlayingOnboarding else {
+            return
+        }
+        Task {
+            try await playFromURL(fileURL)
+            isPlayingOnboarding = true
+        }
+    }
+    
+    func stopOnboardingMusic() {
+        guard isPlayingOnboarding else { return }
+        Task {
+            await stop()
+            isPlayingOnboarding = false
+        }
+    }
     
     /// Plays a meditation session
     @MainActor

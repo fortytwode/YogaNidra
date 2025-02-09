@@ -46,8 +46,14 @@ struct YogaNidraApp: App {
                                 }
                             }
                         }
+                        .onLoad {
+                            audioManager.stopOnboardingMusic()
+                        }
                 } else {
                     OnboardingContainerView()
+                        .onLoad {
+                            audioManager.startOnboardingMusic()
+                        }
                 }
             }
             .onReceive(progressManager.showRaitnsDialogPublisher) {
