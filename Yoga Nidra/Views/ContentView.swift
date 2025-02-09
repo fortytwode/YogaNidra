@@ -8,7 +8,6 @@ struct ContentView: View {
     @StateObject private var storeManager = StoreManager.shared
     @StateObject private var progressManager = ProgressManager.shared
     @State private var selectedTab = 0
-    @State private var isDetailViewPresenting = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -38,8 +37,7 @@ struct ContentView: View {
             }
             
             // Middle layer: Mini Player - show when there's a current session
-            if let _ = audioManager.currentPlayingSession,
-               !isDetailViewPresenting {
+            if let _ = audioManager.currentPlayingSession {
                 VStack(spacing: 0) {
                     MiniPlayerView()
                         .onTapGesture {
@@ -52,11 +50,6 @@ struct ContentView: View {
             }
         }
         .preferredColorScheme(.dark)
-        .onChange(of: sheetPresenter.presenation) { newValue in
-            withAnimation {
-                isDetailViewPresenting = (newValue != nil)
-            }
-        }
         .task {
             // Load products when view appears
             do {

@@ -13,6 +13,7 @@ final class AudioEngine: NSObject {
     private var itemObserver: NSKeyValueObservation?
     private var audioSession: AVAudioSession
     private var isSeekInProgress: Bool = false
+    private var currentPlayingSession: YogaNidraSession?
     
     var currentTime: TimeInterval {
         player?.currentTime().seconds ?? 0
@@ -340,6 +341,40 @@ final class AudioEngine: NSObject {
             pause()
         default:
             break
+        }
+    }
+    
+    func play(_ session: YogaNidraSession) async {
+        do {
+            // Configure audio session for playback
+            setupAudioSession()
+            
+            // Load audio URL
+            guard let url = Bundle.main.url(forResource: session.audioFileName, withExtension: "mp3") else {
+                print("❌ Audio Engine: Could not find audio file: \(session.audioFileName)")
+                return
+            }
+            
+            // Create player item
+            let playerItem = AVPlayerItem(url: url)
+            
+            // Replace current item
+            if player == nil {
+                player = AVPlayer(playerItem: playerItem)
+            } else {
+                player?.replaceCurrentItem(with: playerItem)
+            }
+            
+            // Start playback
+            player?.play()
+            
+            // Add delay before setting current session to allow sheet animation
+            try await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
+            currentPlayingSession = session
+            
+            print("✅ Audio Engine: Started playback of \(session.title)")
+        } catch {
+            print("❌ Audio Engine: Failed to play - \(error)")
         }
     }
 }
