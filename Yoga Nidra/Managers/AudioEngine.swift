@@ -66,8 +66,8 @@ final class AudioEngine: NSObject {
             
             // Configure the audio session category and mode with options
             try session.setCategory(.playback, 
-                                  mode: .spokenAudio,  
-                                  options: [.allowAirPlay, .allowBluetooth])
+                                  mode: .spokenAudio,
+                                  options: [.allowAirPlay, .allowBluetooth, .allowBluetoothA2DP, .duckOthers])
             
             // Set active with options
             try session.setActive(true, options: [.notifyOthersOnDeactivation])
@@ -182,13 +182,7 @@ final class AudioEngine: NSObject {
     }
     
     private func updateNowPlayingInfo() {
-        guard var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo else { return }
-        
-        if let player = player {
-            nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime().seconds
-            nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = player.rate
-            MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-        }
+        // Remove this method as it's now handled by AudioManager
     }
     
     private func setupNowPlaying() {
@@ -202,9 +196,6 @@ final class AudioEngine: NSObject {
         } catch {
             print("❌ Audio Engine: Failed to configure session during playback - \(error)")
         }
-        
-        // Update Now Playing info
-        updateNowPlayingInfo()
     }
     
     func prepareForPlayback(url: URL, completion: @escaping (Result<Void, Error>) -> Void) {
@@ -270,7 +261,7 @@ final class AudioEngine: NSObject {
             // Add periodic time observer
             let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
             timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-                self?.updateNowPlayingInfo()
+                // Removed updateNowPlayingInfo call
             }
         }
     }
@@ -293,7 +284,6 @@ final class AudioEngine: NSObject {
             // Ensure audio session is active before playing
             ensureAudioSessionActive()
             player?.play()
-            updateNowPlayingInfo()
             
             // Set audio session active again after starting playback
             try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
@@ -304,7 +294,6 @@ final class AudioEngine: NSObject {
     
     func pause() {
         player?.pause()
-        updateNowPlayingInfo()
     }
     
     func seek(to time: TimeInterval) {
@@ -312,7 +301,6 @@ final class AudioEngine: NSObject {
         let cmTime = CMTime(seconds: time, preferredTimescale: 1)
         player?.seek(to: cmTime, toleranceBefore: .zero, toleranceAfter: .zero)
         isSeekInProgress = false
-        updateNowPlayingInfo()
     }
     
     func skipForward(by seconds: TimeInterval = 15) async {

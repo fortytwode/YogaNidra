@@ -264,10 +264,18 @@ final class AudioManager: ObservableObject {
             nowPlayingInfo[MPMediaItemPropertyArtwork] = artwork
         }
         
+        // Update Now Playing info
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
         
         // Update playback state for app icon indicator
         MPNowPlayingInfoCenter.default().playbackState = isPlaying ? .playing : .paused
+        
+        // Ensure audio session is active
+        do {
+            try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
+        } catch {
+            print("❌ Failed to activate audio session: \(error)")
+        }
     }
     
     // MARK: - Firebase Storage
