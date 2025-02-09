@@ -30,9 +30,10 @@ struct DownloadButton: View {
                         .background(Circle().fill(.white).shadow(radius: 2))
                 }
             } else if downloadManager.isDownloading(session) {
-                ProgressView()
+                SwiftUI.ProgressView()
                     .frame(width: 32, height: 32)
                     .background(Circle().fill(.white).shadow(radius: 2))
+                    .tint(Color.blue)
             } else {
                 Button {
                     Task {
