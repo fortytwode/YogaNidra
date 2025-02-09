@@ -48,7 +48,7 @@ struct HomeView: View {
                                 .font(.largeTitle)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
-                            Text("Float away into your nightly escape.")
+                            Text("Float away into your nightly escape ☁️")
                                 .font(.headline)
                                 .foregroundColor(.white.opacity(0.8))
                         }
