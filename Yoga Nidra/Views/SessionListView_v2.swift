@@ -90,8 +90,8 @@ struct SessionCardButton: View {
     var body: some View {
         Button {
             Task {
-                await audioManager.play(session)
-                sheetPresenter.present(.sessionDetials(session))
+                sheetPresenter.present(.sessionDetials(session))  // First present the detail view
+                await audioManager.play(session)                  // Then start playing
             }
         } label: {
             SessionCard(session: session)
