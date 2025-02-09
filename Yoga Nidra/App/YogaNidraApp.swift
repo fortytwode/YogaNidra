@@ -83,11 +83,6 @@ struct YogaNidraApp: App {
                     break
                 }
             }
-            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
-                Task {
-                    await audioManager.pause()
-                }
-            }
             .environmentObject(progressManager)
             .environmentObject(playerState)
             .environmentObject(storeManager)
@@ -95,6 +90,14 @@ struct YogaNidraApp: App {
             .environmentObject(audioManager)
             .environmentObject(sheetPresenter)
             .environmentObject(overlayManager)
+        }
+    }
+    
+    private func beginBackgroundTask() {
+        var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+        backgroundTask = UIApplication.shared.beginBackgroundTask {
+            UIApplication.shared.endBackgroundTask(backgroundTask)
+            backgroundTask = .invalid
         }
     }
 }

@@ -1,6 +1,7 @@
 import AVFoundation
 import MediaPlayer
 import Combine
+import UIKit
 
 @MainActor
 final class AudioEngine: NSObject {
@@ -11,7 +12,7 @@ final class AudioEngine: NSObject {
     private var statusObserver: NSKeyValueObservation?
     private var itemObserver: NSKeyValueObservation?
     private var audioSession: AVAudioSession
-    private var isSeekInProgress = false
+    private var isSeekInProgress: Bool = false
     
     var currentTime: TimeInterval {
         player?.currentTime().seconds ?? 0
@@ -28,6 +29,7 @@ final class AudioEngine: NSObject {
         // Configure audio session immediately
         setupAudioSession()
         setupNotifications()
+        setupRemoteCommandCenter()
         
         // Begin observing interruptions
         NotificationCenter.default.addObserver(
@@ -59,19 +61,13 @@ final class AudioEngine: NSObject {
             // Configure audio session for background playback
             let session = AVAudioSession.sharedInstance()
             
-            // Set category with options
-            try session.setCategory(
-                .playback,
-                mode: .default,
-                policy: .longFormAudio,
-                options: [.duckOthers, .allowBluetooth, .allowBluetoothA2DP, .allowAirPlay]
-            )
+            // First deactivate the session
+            try session.setActive(false)
             
-            // Set active and request route to speaker
-            try session.setActive(true, options: .notifyOthersOnDeactivation)
+            // Configure the audio session category and mode
+            try session.setCategory(.playback, mode: .default)
             
-            // Configure audio session for background playback
-            try session.setCategory(.playback)
+            // Activate the session
             try session.setActive(true)
             
             print("✅ Audio Engine: Session configured for background playback")
@@ -89,6 +85,17 @@ final class AudioEngine: NSObject {
         }
     }
     
+    private func ensureAudioSessionActive() {
+        do {
+            let session = AVAudioSession.sharedInstance()
+            if !session.isOtherAudioPlaying {
+                try session.setActive(true, options: .notifyOthersOnDeactivation)
+            }
+        } catch {
+            print("❌ Audio Engine: Failed to activate session - \(error)")
+        }
+    }
+    
     private func setupNotifications() {
         NotificationCenter.default.addObserver(
             self,
@@ -103,67 +110,82 @@ final class AudioEngine: NSObject {
             name: AVAudioSession.routeChangeNotification,
             object: audioSession
         )
-        
-        // Setup remote control events
-        setupRemoteTransportControls()
     }
     
-    private func setupRemoteTransportControls() {
-        // Get the shared command center
+    private func setupRemoteCommandCenter() {
         let commandCenter = MPRemoteCommandCenter.shared()
         
-        // Add handler for play command
+        // Play Command
         commandCenter.playCommand.addTarget { [weak self] _ in
-            self?.play()
-            return .success
-        }
-        
-        // Add handler for pause command
-        commandCenter.pauseCommand.addTarget { [weak self] _ in
-            self?.pause()
-            return .success
-        }
-        
-        // Add handler for toggle play/pause command
-        commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
             guard let self = self else { return .commandFailed }
-            if self.player?.rate == 0 {
-                self.play()
-            } else {
-                self.pause()
-            }
+            self.play()
             return .success
         }
         
-        // Add handler for seek command
+        // Pause Command
+        commandCenter.pauseCommand.addTarget { [weak self] _ in
+            guard let self = self else { return .commandFailed }
+            self.pause()
+            return .success
+        }
+        
+        // Skip Forward
+        commandCenter.skipForwardCommand.addTarget { [weak self] _ in
+            guard let self = self else { return .commandFailed }
+            let newTime = min(self.currentTime + 30, self.duration)
+            self.seek(to: newTime)
+            return .success
+        }
+        
+        // Skip Backward
+        commandCenter.skipBackwardCommand.addTarget { [weak self] _ in
+            guard let self = self else { return .commandFailed }
+            let newTime = max(self.currentTime - 15, 0)
+            self.seek(to: newTime)
+            return .success
+        }
+        
+        // Enable seeking
         commandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
             guard let self = self,
                   let event = event as? MPChangePlaybackPositionCommandEvent else {
                 return .commandFailed
             }
-            Task {
-                await self.seek(to: event.positionTime)
-            }
+            self.seek(to: event.positionTime)
             return .success
         }
+    }
+    
+    private func setupNowPlaying(title: String? = nil, artist: String? = nil) {
+        var nowPlayingInfo = [String: Any]()
         
-        // Enable skip commands
-        commandCenter.skipForwardCommand.preferredIntervals = [15]
-        commandCenter.skipForwardCommand.addTarget { [weak self] _ in
-            guard let self = self else { return .commandFailed }
-            Task {
-                await self.skipForward()
-            }
-            return .success
+        // Add metadata
+        nowPlayingInfo[MPMediaItemPropertyTitle] = title ?? "Sleep Meditation"
+        nowPlayingInfo[MPMediaItemPropertyArtist] = artist ?? "Yoga Nidra"
+        
+        // Add playback info
+        if let player = player {
+            nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime().seconds
+            nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = player.currentItem?.duration.seconds
+            nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = player.rate
         }
         
-        commandCenter.skipBackwardCommand.preferredIntervals = [15]
-        commandCenter.skipBackwardCommand.addTarget { [weak self] _ in
-            guard let self = self else { return .commandFailed }
-            Task {
-                await self.skipBackward()
-            }
-            return .success
+        // Add artwork if available
+        if let image = UIImage(named: "AppIcon") {
+            let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+            nowPlayingInfo[MPMediaItemPropertyArtwork] = artwork
+        }
+        
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+    
+    private func updateNowPlayingInfo() {
+        guard var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo else { return }
+        
+        if let player = player {
+            nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime().seconds
+            nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = player.rate
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
         }
     }
     
@@ -194,7 +216,7 @@ final class AudioEngine: NSObject {
             player.automaticallyWaitsToMinimizeStalling = false
             player.allowsExternalPlayback = true
             
-            // Enable background audio session if needed
+            // Configure audio session again to ensure it's active
             do {
                 try AVAudioSession.sharedInstance().setActive(true)
             } catch {
@@ -206,7 +228,7 @@ final class AudioEngine: NSObject {
                 guard let self = self else { return }
                 switch item.status {
                 case .readyToPlay:
-                    self.updateNowPlayingInfo()  // Set initial now playing info
+                    self.setupNowPlaying()
                     completion(.success(()))
                 case .failed:
                     completion(.failure(item.error ?? NSError(domain: "AudioEngine", code: -1)))
@@ -226,6 +248,12 @@ final class AudioEngine: NSObject {
                     }
                 }
             }
+            
+            // Add periodic time observer
+            let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+            timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
+                self?.updateNowPlayingInfo()
+            }
         }
     }
     
@@ -242,30 +270,15 @@ final class AudioEngine: NSObject {
         }
     }
     
-    private func updateNowPlayingInfo(title: String? = nil, artist: String? = nil) {
-        var nowPlayingInfo = [String: Any]()
-        
-        // Add media info
-        nowPlayingInfo[MPMediaItemPropertyTitle] = title ?? "Sleep Meditation"
-        nowPlayingInfo[MPMediaItemPropertyArtist] = artist ?? "Yoga Nidra"
-        
-        // Add playback info
-        if let player = player {
-            nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime().seconds
-            nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = player.currentItem?.duration.seconds
-            nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = player.rate
-        }
-        
-        // Update the now playing info
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-    }
-    
     func play() {
         do {
             // Ensure audio session is active before playing
-            try AVAudioSession.sharedInstance().setActive(true)
+            ensureAudioSessionActive()
             player?.play()
             updateNowPlayingInfo()
+            
+            // Set audio session active again after starting playback
+            try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
             print("❌ Audio Engine: Failed to activate session for playback - \(error)")
         }
@@ -276,11 +289,12 @@ final class AudioEngine: NSObject {
         updateNowPlayingInfo()
     }
     
-    func seek(to time: TimeInterval) async {
+    func seek(to time: TimeInterval) {
         isSeekInProgress = true
-        let cmTime = CMTime(seconds: time, preferredTimescale: 1000)
-        await player?.seek(to: cmTime, toleranceBefore: .zero, toleranceAfter: .zero)
+        let cmTime = CMTime(seconds: time, preferredTimescale: 1)
+        player?.seek(to: cmTime, toleranceBefore: .zero, toleranceAfter: .zero)
         isSeekInProgress = false
+        updateNowPlayingInfo()
     }
     
     func skipForward(by seconds: TimeInterval = 15) async {
