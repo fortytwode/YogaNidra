@@ -86,8 +86,9 @@ struct FavoriteSessionRow: View {
     var body: some View {
         Button {
             Task {
-                await audioManager.play(session)
+                audioManager.prepareSession(session)
                 sheetPresenter.present(.sessionDetials(session))
+                await audioManager.startPreparedSession()
             }
         } label: {
             HStack(spacing: 16) {

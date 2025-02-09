@@ -5,7 +5,8 @@ struct SessionListView_v2: View {
     @State private var selectedCategory: SessionCategory? = nil
     @StateObject var router = Router<LibraryTabDestination>()
     @EnvironmentObject var sheetPresenter: Presenter
-    @StateObject private var audioManager = AudioManager.shared
+    @EnvironmentObject private var audioManager: AudioManager
+    @State private var searchText = ""
     
     var filteredSessions: [YogaNidraSession] {
         guard let category = selectedCategory else {
@@ -85,13 +86,14 @@ struct SessionListView_v2: View {
 struct SessionCardButton: View {
     let session: YogaNidraSession
     @EnvironmentObject var sheetPresenter: Presenter
-    @StateObject private var audioManager = AudioManager.shared
+    @EnvironmentObject private var audioManager: AudioManager
     
     var body: some View {
         Button {
             Task {
-                sheetPresenter.present(.sessionDetials(session))  // First present the detail view
-                await audioManager.play(session)                  // Then start playing
+                audioManager.prepareSession(session)
+                sheetPresenter.present(.sessionDetials(session))
+                await audioManager.startPreparedSession()
             }
         } label: {
             SessionCard(session: session)

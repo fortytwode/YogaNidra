@@ -7,18 +7,28 @@ import FirebaseStorage
 final class AudioManager: ObservableObject {
     static let shared = AudioManager()
     
+    // MARK: - Types
+    
+    enum SessionClearMode {
+        case keepSession     // Just stop playback
+        case clearSession    // Full reset (for onboarding)
+        case switchSession   // For changing sessions
+    }
+    
     // MARK: - Published Properties
     @Published var isPlaying: Bool = false
     @Published var isLoading: Bool = false
+    @Published var progress: Double = 0
     @Published var currentTime: TimeInterval = 0
     @Published var duration: TimeInterval = 0
-    @Published var progress: Double = 0
-    @Published var currentPlayingSession: YogaNidraSession?
     @Published var errorMessage: String?
+    @Published private(set) var currentPlayingSession: YogaNidraSession?
+    @Published private(set) var isDetailViewPresented: Bool = false
     
     // MARK: - Private Properties
     private let audioEngine = AudioEngine.shared
     private var timeObserverToken: Any?
+    private var preparedSession: YogaNidraSession?
     
     // MARK: - Initialization
     private init() {
@@ -31,8 +41,8 @@ final class AudioManager: ObservableObject {
     @MainActor
     func play(_ session: YogaNidraSession) async {
         do {
-            // Stop any existing playback
-            await stop()
+            // Stop any existing playback but don't clear session yet
+            await stop(mode: .switchSession)
             
             isLoading = true
             errorMessage = nil
@@ -76,8 +86,8 @@ final class AudioManager: ObservableObject {
         }
     }
     
-    /// Stops playback and resets state
-    func stop() async {
+    /// Stops playback and optionally resets state
+    func stop(mode: SessionClearMode = .keepSession) async {
         await MainActor.run {
             // Stop playback
             audioEngine.pause()
@@ -88,9 +98,27 @@ final class AudioManager: ObservableObject {
                 timeObserverToken = nil
             }
             
-            // Reset state
-            currentPlayingSession = nil
-            isPlaying = false
+            // Handle session state based on mode
+            switch mode {
+            case .keepSession:
+                // Just stop playback, keep session
+                isPlaying = false
+                
+            case .clearSession:
+                // Full reset (for onboarding)
+                currentPlayingSession = nil
+                preparedSession = nil
+                isPlaying = false
+                
+            case .switchSession:
+                // Keep prepared session if exists
+                if preparedSession == nil {
+                    currentPlayingSession = nil
+                }
+                isPlaying = false
+            }
+            
+            // Always reset these
             currentTime = 0
             duration = 0
             progress = 0
@@ -99,6 +127,29 @@ final class AudioManager: ObservableObject {
             
             // Update now playing info
             updateNowPlayingInfo()
+        }
+    }
+    
+    // MARK: - Session Management
+    
+    func prepareSession(_ session: YogaNidraSession) {
+        guard !isLoading else { return }
+        preparedSession = session
+        isDetailViewPresented = true
+    }
+    
+    @MainActor
+    func startPreparedSession() async {
+        guard let session = preparedSession,
+              !isLoading else { return }
+        await play(session)
+    }
+    
+    func dismissDetailView() {
+        isDetailViewPresented = false
+        // Only clear prepared if not playing
+        if currentPlayingSession == nil {
+            preparedSession = nil
         }
     }
     

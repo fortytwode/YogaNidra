@@ -2,10 +2,10 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject var router = Router<HomeTabDestination>()
-    @StateObject private var audioManager = AudioManager.shared
     @EnvironmentObject var sheetPresenter: Presenter
     @EnvironmentObject var overlayManager: OverlayManager
     @EnvironmentObject var progressManager: ProgressManager
+    @EnvironmentObject private var audioManager: AudioManager
     let sessions = YogaNidraSession.allSessions
     @Binding var selectedTab: Int
     
@@ -94,8 +94,9 @@ struct HomeView: View {
                 ForEach(sessions.prefix(2), id: \.id) { session in
                     Button {
                         Task {
-                            await audioManager.play(session)
+                            audioManager.prepareSession(session)
                             sheetPresenter.present(.sessionDetials(session))
+                            await audioManager.startPreparedSession()
                         }
                     } label: {
                         SessionCard(session: session)
@@ -124,8 +125,9 @@ struct HomeView: View {
                 ForEach(recommendedSessions) { session in
                     Button {
                         Task {
-                            await audioManager.play(session)
+                            audioManager.prepareSession(session)
                             sheetPresenter.present(.sessionDetials(session))
+                            await audioManager.startPreparedSession()
                         }
                     } label: {
                         RecommendedSessionCard(session: session)
@@ -165,5 +167,6 @@ struct HomeView_Previews: PreviewProvider {
             .environmentObject(Presenter())
             .environmentObject(OverlayManager())
             .environmentObject(ProgressManager.shared)
+            .environmentObject(AudioManager.shared)
     }
 }

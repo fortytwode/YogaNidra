@@ -96,8 +96,9 @@ struct RecentSessionButton: View {
     var body: some View {
         Button {
             Task {
-                await audioManager.play(session)
+                audioManager.prepareSession(session)
                 sheetPresenter.present(.sessionDetials(session))
+                await audioManager.startPreparedSession()
             }
         } label: {
             RecentSessionRow(session: session, progress: progress)

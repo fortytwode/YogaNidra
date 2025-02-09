@@ -4,7 +4,7 @@ struct ContentView: View {
     @StateObject private var onboardingManager = OnboardingManager.shared
     @EnvironmentObject private var playerState: PlayerState
     @EnvironmentObject private var sheetPresenter: Presenter
-    @StateObject private var audioManager = AudioManager.shared
+    @EnvironmentObject private var audioManager: AudioManager
     @StateObject private var storeManager = StoreManager.shared
     @StateObject private var progressManager = ProgressManager.shared
     @State private var selectedTab = 0
@@ -37,9 +37,11 @@ struct ContentView: View {
             }
             
             // Middle layer: Mini Player - show when there's a current session
-            if let _ = audioManager.currentPlayingSession {
+            if let _ = audioManager.currentPlayingSession,
+               !audioManager.isDetailViewPresented {
                 VStack(spacing: 0) {
                     MiniPlayerView()
+                        .transition(.move(edge: .bottom))
                         .onTapGesture {
                             if let session = audioManager.currentPlayingSession {
                                 sheetPresenter.present(.sessionDetials(session))

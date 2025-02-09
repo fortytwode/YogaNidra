@@ -5,14 +5,13 @@ import StoreKit
 struct SessionDetailView: View {
     let session: YogaNidraSession
     
-    @StateObject private var audioManager = AudioManager.shared
     @StateObject private var storeManager = StoreManager.shared
     @StateObject private var favoritesManager = FavoritesManager.shared
     @StateObject private var progressManager = ProgressManager.shared
     @EnvironmentObject private var playerState: PlayerState
     @EnvironmentObject private var sheetPresenter: Presenter
+    @EnvironmentObject private var audioManager: AudioManager
     @State private var showingShareSheet = false
-    @Environment(\.dismiss) private var dismiss
     
     private var durationInMinutes: Int {
         Int(ceil(Double(session.duration) / 60.0))
@@ -52,7 +51,7 @@ struct SessionDetailView: View {
     private var topBar: some View {
         HStack {
             Button(action: {
-                dismiss()
+                sheetPresenter.dismiss()
             }) {
                 Image(systemName: "chevron.down")
                     .font(.title2)

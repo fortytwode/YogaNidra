@@ -11,6 +11,7 @@ import Foundation
 final class Presenter: ObservableObject {
     
     @Published var presenation: SheetPresentaiton?
+    private let audioManager = AudioManager.shared
     
     func present(_ destination: SheetPresentaiton) {
         if case .sessionDetials(let session) = destination,
@@ -22,6 +23,9 @@ final class Presenter: ObservableObject {
     }
     
     func dismiss() {
+        if case .sessionDetials = presenation {
+            audioManager.dismissDetailView()
+        }
         presenation = nil
     }
 }

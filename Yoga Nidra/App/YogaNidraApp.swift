@@ -26,6 +26,10 @@ struct YogaNidraApp: App {
             Group {
                 if onboardingManager.isOnboardingCompleted {
                     ContentView()
+                        .environmentObject(playerState)
+                        .environmentObject(sheetPresenter)
+                        .environmentObject(overlayManager)
+                        .environmentObject(audioManager)
                         .onAppear {
                             if let user = Auth.auth().currentUser {
                                 print("✅ User authenticated: \(user.uid)")
@@ -62,7 +66,7 @@ struct YogaNidraApp: App {
             .onReceive(onboardingManager.$isOnboardingCompleted) { isCompleted in
                 guard isCompleted else { return }
                 Task {
-                    await audioManager.stop()
+                    await audioManager.stop(mode: .clearSession)
                 }
             }
             .onReceive(storeManager.onPurchaseCompletedPublisher) { reason in

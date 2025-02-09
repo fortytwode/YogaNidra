@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MiniPlayerView: View {
-    @StateObject private var audioManager = AudioManager.shared
+    @EnvironmentObject private var audioManager: AudioManager
     @EnvironmentObject private var sheetPresenter: Presenter
     
     private var remainingTime: String {
