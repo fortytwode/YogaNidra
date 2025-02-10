@@ -116,8 +116,8 @@ final class ProgressManager: ObservableObject {
         let duration = Date().timeIntervalSince(progress.startTime)
         let progressPercent = duration / TimeInterval(currentSession.duration)
         
-        // Log analytics
-        if progressPercent >= 0.9 { // Consider it completed if 90% done
+        // Mark as completed if 90% done
+        if progressPercent >= 0.9 {
             await FirebaseManager.shared.logMeditationCompleted(
                 sessionId: currentSession.id.uuidString,
                 duration: duration,
@@ -127,6 +127,9 @@ final class ProgressManager: ObservableObject {
             progress.completed = true
             progress.lastCompleted = Date()
             progress.completionCount += 1
+            
+            // Only update streak for completed sessions
+            updateStreak()
         }
         
         await FirebaseManager.shared.logMeditationProgress(
@@ -140,7 +143,7 @@ final class ProgressManager: ObservableObject {
         
         // Update metrics
         updateTotalTimeListened()
-        updateStreak()
+        updateRecentSessions()
         await syncProgress()
     }
     
@@ -279,9 +282,10 @@ final class ProgressManager: ObservableObject {
     }
     
     private func updateTotalTimeListened() {
+        // Count all session time, not just completed sessions
+        // Prevent negative durations from corrupted data
         totalTimeListened = sessionProgress.values
-            .filter { $0.completed }
-            .reduce(0) { $0 + $1.duration }
+            .reduce(0) { $0 + max(0, $1.duration) }
         
         totalMinutesListened = Int(totalTimeListened / 60.0)
     }

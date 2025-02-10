@@ -164,6 +164,28 @@ final class FirebaseManager {
         return snapshot.data()?["progress"] as? [String: Any] ?? [:]
     }
     
+    // MARK: - User Data
+    
+    func updateUserData(userId: String, field: String, value: Any) async throws {
+        // Use transaction to ensure atomic update
+        try await firestore.runTransaction({ (transaction, errorPointer) -> Any? in
+            let docRef = self.firestore.collection("users").document(userId)
+            let _ = try transaction.getDocument(docRef)
+            
+            transaction.setData([
+                field: value,
+                "lastUpdated": FieldValue.serverTimestamp()
+            ], forDocument: docRef, merge: true)
+            
+            return nil
+        })
+    }
+    
+    func fetchUserData(userId: String) async throws -> [String: Any] {
+        let snapshot = try await firestore.collection("users").document(userId).getDocument()
+        return snapshot.data() ?? [:]
+    }
+    
     // MARK: - Subscription Analytics
     
     func logSubscriptionStarted(productId: String, isTrial: Bool = false) {
