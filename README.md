@@ -4,6 +4,7 @@
 progress tab
   recent activity calcs
   Streak card
+  session times
 
 
 1.2 Feb 9th

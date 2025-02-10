@@ -169,15 +169,20 @@ final class FirebaseManager {
     func updateUserData(userId: String, field: String, value: Any) async throws {
         // Use transaction to ensure atomic update
         try await firestore.runTransaction({ (transaction, errorPointer) -> Any? in
-            let docRef = self.firestore.collection("users").document(userId)
-            let _ = try transaction.getDocument(docRef)
-            
-            transaction.setData([
-                field: value,
-                "lastUpdated": FieldValue.serverTimestamp()
-            ], forDocument: docRef, merge: true)
-            
-            return nil
+            do {
+                let docRef = self.firestore.collection("users").document(userId)
+                let _ = try transaction.getDocument(docRef)
+                
+                transaction.setData([
+                    field: value,
+                    "lastUpdated": FieldValue.serverTimestamp()
+                ], forDocument: docRef, merge: true)
+                
+                return nil
+            } catch {
+                errorPointer?.pointee = error as NSError
+                return nil
+            }
         })
     }
     
