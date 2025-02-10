@@ -247,12 +247,16 @@ final class AudioEngine: NSObject {
                 "AVURLAssetPreferPreciseDurationAndTimingKey": true
             ])
             
+            // Enable preloading of content
+            asset.resourceLoader.preloadsEligibleContentKeys = true
+            
             // Create new AVPlayerItem with asset
             let playerItem = AVPlayerItem(asset: asset)
             
             // Configure buffering behavior
             playerItem.preferredForwardBufferDuration = 60 // Buffer 1 minute ahead
             playerItem.canUseNetworkResourcesForLiveStreamingWhilePaused = true
+            playerItem.preferredPeakBitRate = 0 // Auto-select based on conditions
             
             // Create or update player
             if player == nil {
@@ -267,7 +271,7 @@ final class AudioEngine: NSObject {
             }
             
             // Configure playback behavior
-            player.automaticallyWaitsToMinimizeStalling = true // Changed to true for better stalling handling
+            player.automaticallyWaitsToMinimizeStalling = true
             player.allowsExternalPlayback = true
             
             // Configure audio session again to ensure it's active
