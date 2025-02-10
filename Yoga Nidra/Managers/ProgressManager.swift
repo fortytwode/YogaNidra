@@ -44,6 +44,7 @@ final class ProgressManager: ObservableObject {
     private let ratingPromptsInYearKey = "ratingPromptsInYear"
     private let ratingYearStartDateKey = "ratingYearStartDate"
     private let lastRatingPromptKey = "lastRatingPrompt"
+    private let lastCompletedDateKey = "lastCompletedDate"
     
     // Made public for debug view
     public private(set) var ratingPromptsInYear: Int = 0
@@ -101,8 +102,14 @@ final class ProgressManager: ObservableObject {
         syncProgress()
     }
     
-    @MainActor
     func audioSessionEnded() {
+        Task { @MainActor in
+            await handleAudioSessionEnded()
+        }
+    }
+    
+    @MainActor
+    private func handleAudioSessionEnded() async {
         guard let currentSession = AudioManager.shared.currentPlayingSession,
               var progress = sessionProgress[currentSession.id] else { return }
         
@@ -111,7 +118,7 @@ final class ProgressManager: ObservableObject {
         
         // Log analytics
         if progressPercent >= 0.9 { // Consider it completed if 90% done
-            FirebaseManager.shared.logMeditationCompleted(
+            await FirebaseManager.shared.logMeditationCompleted(
                 sessionId: currentSession.id.uuidString,
                 duration: duration,
                 category: String(describing: currentSession.category)
@@ -122,7 +129,7 @@ final class ProgressManager: ObservableObject {
             progress.completionCount += 1
         }
         
-        FirebaseManager.shared.logMeditationProgress(
+        await FirebaseManager.shared.logMeditationProgress(
             sessionId: currentSession.id.uuidString,
             progressPercent: progressPercent
         )
@@ -134,7 +141,7 @@ final class ProgressManager: ObservableObject {
         // Update metrics
         updateTotalTimeListened()
         updateStreak()
-        syncProgress()
+        await syncProgress()
     }
     
     @MainActor
@@ -226,25 +233,37 @@ final class ProgressManager: ObservableObject {
         }
     }
     
+    @MainActor
     private func updateStreak() {
         let calendar = Calendar.current
         let lastCompletedDate = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: "lastCompletedDate"))
         let today = Date()
         
-        guard let daysBetween = calendar.dateComponents([.day], from: lastCompletedDate, to: today).day else {
-            currentStreak = 0
+        // If this is the first completion (lastCompletedDate will be 1970)
+        if lastCompletedDate.timeIntervalSince1970 == 0 {
+            streakDays = 1
             return
         }
         
-        if daysBetween > 1 {
-            currentStreak = 0
+        guard let daysBetween = calendar.dateComponents([.day], from: lastCompletedDate, to: today).day else {
+            streakDays = 0
+            return
         }
+        
+        if daysBetween == 1 {
+            // Yesterday - increment streak
+            streakDays += 1
+        } else if daysBetween > 1 {
+            // Missed a day - reset streak
+            streakDays = 1
+        }
+        // Same day - keep current streak
     }
     
     private func updateRecentSessions() {
         // First, filter and map sessions
         let sessionsWithProgress = sessionProgress.compactMap { id, progress -> (YogaNidraSession, SessionProgress)? in
-            guard let session = YogaNidraSession.previewData.first(where: { $0.id == id }) else {
+            guard let session = YogaNidraSession.allSessions.first(where: { $0.id == id }) else {
                 return nil
             }
             return (session, progress)
@@ -361,11 +380,13 @@ final class ProgressManager: ObservableObject {
     }
     
     private func loadDataOnAppLaunch() {
-        lastRatingDialogDate = UserDefaults.standard.object(forKey: lastRatingDialogDateKey) as? Date
-        totalSessionListenTime = UserDefaults.standard.double(forKey: totalSessionListenTimeKey)
-        ratingPromptsInYear = UserDefaults.standard.integer(forKey: ratingPromptsInYearKey)
-        ratingYearStartDate = UserDefaults.standard.object(forKey: ratingYearStartDateKey) as? Date
-        checkRatingDialog()
+        Task { @MainActor in
+            lastRatingDialogDate = UserDefaults.standard.object(forKey: lastRatingDialogDateKey) as? Date
+            totalSessionListenTime = UserDefaults.standard.double(forKey: totalSessionListenTimeKey)
+            ratingPromptsInYear = UserDefaults.standard.integer(forKey: ratingPromptsInYearKey)
+            ratingYearStartDate = UserDefaults.standard.object(forKey: ratingYearStartDateKey) as? Date
+            await updateStreak()
+        }
     }
     
     @MainActor

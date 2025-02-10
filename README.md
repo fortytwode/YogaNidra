@@ -1,4 +1,11 @@
 # Yoga Nidra App
+1.3
+
+progress tab
+  recent activity calcs
+  Streak card
+
+
 1.2 Feb 9th
 
 - added missing image - energy renewal
@@ -8,10 +15,11 @@
 - set up firebase analytics
   - subscription metrics
   - progress metrics on progress tab
-**
-to do:
 - firebase app check to do
 - fix sleep science view
+- enabled background audio playback
+- control center integration
+- download and play offline
 
 1.1 -> Feb 2. 
 
