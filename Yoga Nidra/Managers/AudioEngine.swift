@@ -242,8 +242,19 @@ final class AudioEngine: NSObject {
             }
             statusObserver?.invalidate()
             
-            // Create new AVPlayer
-            let playerItem = AVPlayerItem(url: url)
+            // Create asset with loading options
+            let asset = AVURLAsset(url: url, options: [
+                "AVURLAssetPreferPreciseDurationAndTimingKey": true
+            ])
+            
+            // Create new AVPlayerItem with asset
+            let playerItem = AVPlayerItem(asset: asset)
+            
+            // Configure buffering behavior
+            playerItem.preferredForwardBufferDuration = 60 // Buffer 1 minute ahead
+            playerItem.canUseNetworkResourcesForLiveStreamingWhilePaused = true
+            
+            // Create or update player
             if player == nil {
                 player = AVPlayer(playerItem: playerItem)
             } else {
@@ -255,8 +266,8 @@ final class AudioEngine: NSObject {
                 return
             }
             
-            // Configure audio behavior for background playback
-            player.automaticallyWaitsToMinimizeStalling = false
+            // Configure playback behavior
+            player.automaticallyWaitsToMinimizeStalling = true // Changed to true for better stalling handling
             player.allowsExternalPlayback = true
             
             // Configure audio session again to ensure it's active
@@ -373,12 +384,20 @@ final class AudioEngine: NSObject {
                 return
             }
             
-            // Create player item
-            let playerItem = AVPlayerItem(url: url)
+            // Create asset with loading options
+            let asset = AVURLAsset(url: url, options: [
+                "AVURLAssetPreferPreciseDurationAndTimingKey": true
+            ])
+            
+            // Create player item with improved buffering
+            let playerItem = AVPlayerItem(asset: asset)
+            playerItem.preferredForwardBufferDuration = 60 // Buffer 1 minute ahead
+            playerItem.canUseNetworkResourcesForLiveStreamingWhilePaused = true
             
             // Replace current item
             if player == nil {
                 player = AVPlayer(playerItem: playerItem)
+                player?.automaticallyWaitsToMinimizeStalling = true
             } else {
                 player?.replaceCurrentItem(with: playerItem)
             }
