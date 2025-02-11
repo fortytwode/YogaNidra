@@ -84,6 +84,16 @@ struct YogaNidraApp: App {
                     DispatchQueue.main.async {
                         appState.selectedTab = 0
                     }
+                } else if normalizedPath == "/tab1" {
+                    print("📱 Tab 1 link detected")
+                    DispatchQueue.main.async {
+                        appState.selectedTab = 1
+                    }
+                } else if normalizedPath == "/tab2" {
+                    print("📱 Tab 2 link detected")
+                    DispatchQueue.main.async {
+                        appState.selectedTab = 2
+                    }
                 } else {
                     print("❌ Unknown deep link path: \(normalizedPath)")
                 }
