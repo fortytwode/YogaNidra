@@ -80,6 +80,10 @@ struct YogaNidraApp: App {
                         print("📱 Skipping onboarding for universal link")
                         onboardingManager.isOnboardingCompleted = true
                     }
+                    // Navigate to home tab
+                    DispatchQueue.main.async {
+                        appState.selectedTab = 0
+                    }
                 } else {
                     print("❌ Unknown deep link path: \(normalizedPath)")
                 }
