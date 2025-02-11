@@ -5,6 +5,11 @@ import FirebaseAnalytics
 import FirebaseAuth
 import FirebaseCrashlytics
 
+class AppState: ObservableObject {
+    static let shared = AppState()
+    @Published var selectedTab: Int = 0
+}
+
 @main
 struct YogaNidraApp: App {
     @StateObject private var progressManager = ProgressManager.shared
@@ -14,11 +19,10 @@ struct YogaNidraApp: App {
     @StateObject private var audioManager = AudioManager.shared
     @StateObject private var sheetPresenter = Presenter()
     @StateObject private var overlayManager = OverlayManager.shared
+    @StateObject private var appState = AppState.shared
     
     init() {
         FirebaseApp.configure()
-        Analytics.setAnalyticsCollectionEnabled(true)
-        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
     }
     
     var body: some Scene {
@@ -30,6 +34,7 @@ struct YogaNidraApp: App {
                         .environmentObject(sheetPresenter)
                         .environmentObject(overlayManager)
                         .environmentObject(audioManager)
+                        .environmentObject(appState)
                         .onAppear {
                             if let user = Auth.auth().currentUser {
                                 print("✅ User authenticated: \(user.uid)")
@@ -56,6 +61,27 @@ struct YogaNidraApp: App {
                         .onLoad {
                             audioManager.startOnboardingMusic()
                         }
+                }
+            }
+            .onOpenURL { url in
+                print("📱 Universal Link received: \(url.absoluteString)")
+                print("📱 URL components: \(url)")
+                print("📱 URL scheme: \(url.scheme ?? "none")")
+                print("📱 URL host: \(url.host ?? "none")")
+                print("📱 URL path: \(url.path)")
+                
+                // Normalize path by removing trailing slash if present
+                let normalizedPath = url.path.hasSuffix("/") ? String(url.path.dropLast()) : url.path
+                
+                if normalizedPath == "/selflove14days" {
+                    print("📱 Self Love program link detected")
+                    // Skip onboarding for universal links
+                    if !onboardingManager.isOnboardingCompleted {
+                        print("📱 Skipping onboarding for universal link")
+                        onboardingManager.isOnboardingCompleted = true
+                    }
+                } else {
+                    print("❌ Unknown deep link path: \(normalizedPath)")
                 }
             }
             .onReceive(progressManager.showRaitnsDialogPublisher) {
@@ -102,6 +128,7 @@ struct YogaNidraApp: App {
             .environmentObject(audioManager)
             .environmentObject(sheetPresenter)
             .environmentObject(overlayManager)
+            .environmentObject(appState)
         }
     }
     

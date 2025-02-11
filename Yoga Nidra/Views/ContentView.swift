@@ -7,13 +7,13 @@ struct ContentView: View {
     @EnvironmentObject private var audioManager: AudioManager
     @StateObject private var storeManager = StoreManager.shared
     @StateObject private var progressManager = ProgressManager.shared
-    @State private var selectedTab = 0
+    @EnvironmentObject private var appState: AppState
     
     var body: some View {
         ZStack(alignment: .bottom) {
             // Base layer: Tab View
-            TabView(selection: $selectedTab) {
-                HomeView(selectedTab: $selectedTab)
+            TabView(selection: $appState.selectedTab) {
+                HomeView(selectedTab: $appState.selectedTab)
                     .environmentObject(progressManager)
                     .tabItem {
                         Image(systemName: "house.fill")
