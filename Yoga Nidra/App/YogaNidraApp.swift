@@ -51,6 +51,8 @@ struct YogaNidraApp: App {
                         }
                 } else {
                     OnboardingContainerView()
+                        .environmentObject(onboardingManager)
+                        .environmentObject(audioManager)
                         .onLoad {
                             audioManager.startOnboardingMusic()
                         }
