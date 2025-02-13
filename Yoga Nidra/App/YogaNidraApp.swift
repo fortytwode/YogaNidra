@@ -5,9 +5,11 @@ import FirebaseAnalytics
 import FirebaseAuth
 import FirebaseCrashlytics
 
+@MainActor
 class AppState: ObservableObject {
     static let shared = AppState()
     @Published var selectedTab: Int = 0
+    @Published var shouldAddValantineDaysTab: Bool = false
 }
 
 @main
@@ -82,7 +84,8 @@ struct YogaNidraApp: App {
                     }
                     // Navigate to home tab
                     DispatchQueue.main.async {
-                        appState.selectedTab = 0
+                        appState.shouldAddValantineDaysTab = true
+                        appState.selectedTab = 3
                     }
                 } else if normalizedPath == "/tab1" {
                     print("📱 Tab 1 link detected")

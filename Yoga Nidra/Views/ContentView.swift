@@ -34,6 +34,15 @@ struct ContentView: View {
                         Text("Progress")
                     }
                     .tag(2)
+                
+                if appState.shouldAddValantineDaysTab {
+                    Text("14 day's of self love")
+                        .tabItem {
+                            Image(systemName: "heart.fill")
+                            Text("Love")
+                        }
+                        .tag(3)
+                }
             }
             
             // Middle layer: Mini Player - show when there's a current session
