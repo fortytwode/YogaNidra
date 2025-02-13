@@ -36,6 +36,9 @@ struct SelfLove14days: View {
                 Text(error)
             }
         }
+        .onAppear {
+            AppState.shared.isValentinteTabShown = true
+        }
     }
     
     private var sessionGridSection: some View {

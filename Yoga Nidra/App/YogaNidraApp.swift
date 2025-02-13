@@ -8,7 +8,8 @@ import FirebaseCrashlytics
 class AppState: ObservableObject {
     static let shared = AppState()
     @Published var selectedTab: Int = 0
-    @Published var isFromValentrineDaysLink: Bool = false
+    @Published var shouldShowValentrineDayTab: Bool = false
+    @Published var isValentinteTabShown: Bool = false
 }
 
 @main
@@ -79,7 +80,7 @@ struct YogaNidraApp: App {
                     // Skip onboarding for universal links
                     // Navigate to home tab
                     DispatchQueue.main.async {
-                        appState.isFromValentrineDaysLink = true
+                        appState.shouldShowValentrineDayTab = true
                         appState.selectedTab = 3
                         if !onboardingManager.isOnboardingCompleted {
                             print("📱 Skipping onboarding for universal link")

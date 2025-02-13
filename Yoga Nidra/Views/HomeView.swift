@@ -55,8 +55,14 @@ struct HomeView: View {
                         .padding(.horizontal)
                         .padding(.bottom, 16)
                     }
-                    // Popular section
-                    popularSection
+                    
+                    if !AppState.shared.isValentinteTabShown {
+                        specialEventBanner
+                    } else {
+                        // Popular section
+                        popularSection
+                    }
+                    
                     // Recommended section
                     recommendedSection
                 }
@@ -71,6 +77,42 @@ struct HomeView: View {
                 }
             }
         }
+    }
+    
+    var specialEventBanner: some View {
+        ZStack {
+            Image("Unfamiliar_Place")
+                .resizable()
+                .aspectRatio(1, contentMode: .fill)
+                .frame(height: 160)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [.clear, .black.opacity(0.6)]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                )
+            VStack {
+                Text("Special event for Valentine's Day ✨")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding()
+                Spacer()
+                Button {
+                    AppState.shared.shouldShowValentrineDayTab = true
+                    AppState.shared.selectedTab = 3
+                } label: {
+                    Text("Check this out!")
+                }
+                .padding()
+            }
+        }
+        .padding()
     }
     
     var popularSection: some View {

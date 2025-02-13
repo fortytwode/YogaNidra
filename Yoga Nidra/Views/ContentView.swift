@@ -35,7 +35,7 @@ struct ContentView: View {
                     }
                     .tag(2)
                 
-                if appState.isFromValentrineDaysLink {
+                if appState.shouldShowValentrineDayTab {
                     SelfLove14days()
                         .tabItem {
                             Image(systemName: "heart.fill")
