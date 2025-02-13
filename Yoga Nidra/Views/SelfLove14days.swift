@@ -46,7 +46,10 @@ struct SelfLove14days: View {
         
         return LazyVGrid(columns: columns, alignment: .center, spacing: 16) {
             ForEach(sessions) { session in
-                SessionCardButton(session: session)
+                SessionCard(session: session)
+                    .onTapGesture {
+                        sheetPresenter.present(.sessionDetials(session))
+                    }
             }
         }
         .padding(.horizontal, 16)

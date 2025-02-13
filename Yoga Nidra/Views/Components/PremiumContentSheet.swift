@@ -9,7 +9,7 @@ struct PremiumContentSheet: View {
     var body: some View {
         VStack(spacing: 24) {
             // Premium Icon
-            Image(systemName: "crown.fill")
+            Image(systemName: "lock.fill")
                 .font(.system(size: 44))
                 .foregroundColor(.yellow)
             

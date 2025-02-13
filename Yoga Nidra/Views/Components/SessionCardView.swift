@@ -18,7 +18,7 @@ struct SessionCardView: View {
                             .font(.subheadline)
                             .foregroundColor(.white)
                         if session.isPremium {
-                            Image(systemName: "crown.fill")
+                            Image(systemName: "lock.fill")
                                 .foregroundColor(.yellow)
                         }
                     }
@@ -29,7 +29,7 @@ struct SessionCardView: View {
                 Text(session.title)
                     .font(.headline)
                 if session.isPremium {
-                    Image(systemName: "crown.fill")
+                    Image(systemName: "lock.fill")
                         .foregroundColor(.yellow)
                 }
             }

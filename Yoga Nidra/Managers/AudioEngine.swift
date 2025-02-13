@@ -25,7 +25,11 @@ final class AudioEngine: NSObject {
     }
     
     var duration: TimeInterval {
-        player?.currentItem?.duration.seconds ?? 0
+        let rawDuration = player?.currentItem?.duration.seconds ?? 0
+        guard rawDuration.isFinite && !rawDuration.isNaN else {
+            return Double(currentPlayingSession?.duration ?? 0)
+        }
+        return rawDuration
     }
     
     private override init() {

@@ -40,7 +40,7 @@ struct SessionRow: View {
                         .font(.headline)
                     
                     if shouldShowPremiumBadge {
-                        Image(systemName: "crown.fill")
+                        Image(systemName: "lock.fill")
                             .foregroundColor(.yellow)
                     }
                 }

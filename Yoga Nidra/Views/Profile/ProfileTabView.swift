@@ -11,7 +11,7 @@ struct ProfileTabView: View {
                 Section {
                     // Subscription Status
                     HStack {
-                        Image(systemName: "crown.fill")
+                        Image(systemName: "lock.fill")
                             .foregroundColor(.yellow)
                         Text(storeManager.isSubscribed ? "Premium Member" : "Free Member")
                             .font(.headline)

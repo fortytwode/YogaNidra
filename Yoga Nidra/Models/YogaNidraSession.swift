@@ -52,7 +52,7 @@ struct YogaNidraSession: Identifiable, Codable, Equatable, Hashable {
     
     // MARK: - Specifc event sessions Properties
     static var specialEventSessions: [YogaNidraSession] = {
-        SessionDataParser.loadSessions()
+        SessionDataParser.loadSessions().filter { $0.category.id == "14 Days of Self Love" }
     }()
     
     static let preview = YogaNidraSession(

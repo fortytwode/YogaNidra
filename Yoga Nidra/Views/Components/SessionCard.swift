@@ -39,7 +39,7 @@ struct SessionCard: View {
                         .foregroundColor(.white)
                     
                     if session.isPremium {
-                        Image(systemName: "crown.fill")
+                        Image(systemName: "lock.fill")
                             .foregroundColor(.yellow)
                     }
                 }
