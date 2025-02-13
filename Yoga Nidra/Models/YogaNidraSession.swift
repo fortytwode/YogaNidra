@@ -50,6 +50,11 @@ struct YogaNidraSession: Identifiable, Codable, Equatable, Hashable {
         SessionDataParser.loadSessions()
     }()
     
+    // MARK: - Specifc event sessions Properties
+    static var specialEventSessions: [YogaNidraSession] = {
+        SessionDataParser.loadSessions()
+    }()
+    
     static let preview = YogaNidraSession(
         id: UUID(),
         title: "Preview Session",

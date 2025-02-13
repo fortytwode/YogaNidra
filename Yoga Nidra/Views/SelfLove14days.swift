@@ -1,19 +1,11 @@
 import SwiftUI
 
 struct SelfLove14days: View {
-    let sessions = YogaNidraSession.allSessions
-    @State private var selectedCategory: SessionCategory? = nil
+    @State var sessions = YogaNidraSession.specialEventSessions
     @StateObject var router = Router<LibraryTabDestination>()
     @EnvironmentObject var sheetPresenter: Presenter
     @EnvironmentObject private var audioManager: AudioManager
     @State private var searchText = ""
-    
-    var filteredSessions: [YogaNidraSession] {
-        guard let category = selectedCategory else {
-            return sessions // Return all sessions when no category is selected
-        }
-        return sessions.filter { $0.category.id == category.id }
-    }
     
     var body: some View {
         NavigationStack(path: $router.path) {
@@ -46,33 +38,11 @@ struct SelfLove14days: View {
         }
     }
     
-    // MARK: - View Components
-    
-    private var categoryFiltersSection: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                CategoryFilterButton(title: "All", isSelected: selectedCategory == nil) {
-                    selectedCategory = nil
-                }
-                
-                ForEach(CategoryManager.shared.categories) { category in
-                    CategoryFilterButton(
-                        title: category.id,
-                        isSelected: selectedCategory?.id == category.id
-                    ) {
-                        selectedCategory = category
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
-        }
-    }
-    
     private var sessionGridSection: some View {
         let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 2)
         
         return LazyVGrid(columns: columns, alignment: .center, spacing: 16) {
-            ForEach(filteredSessions) { session in
+            ForEach(sessions) { session in
                 SessionCardButton(session: session)
             }
         }
