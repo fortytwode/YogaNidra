@@ -74,6 +74,9 @@ struct HomeView: View {
                     Text("No view for HomeTabDestination")
                 }
             }
+            .onAppear {
+                AppState.shared.shouldShowValentrineDayTab = true
+            }
         }
     }
     

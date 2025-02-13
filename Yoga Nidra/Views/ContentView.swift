@@ -38,10 +38,18 @@ struct ContentView: View {
                 if appState.shouldShowValentrineDayTab {
                     SelfLove14days()
                         .tabItem {
-                            Image(systemName: "heart.fill")
-                            Text("Love")
+                            ZStack {
+                                Image(systemName: "heart.fill")
+                                if appState.isNewFeature {
+                                    Circle()
+                                        .fill(.pink.opacity(0.2))
+                                        .frame(width: 40, height: 40)
+                                }
+                            }
+                            Text("Self-Love")
                         }
                         .tag(3)
+                        .badge("New")
                 }
             }
             
