@@ -24,19 +24,18 @@ struct SelfLove14days: View {
                     .allowsHitTesting(false)
                 
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 20) {
                         // Valentine's themed header
                         VStack(spacing: 8) {
-                            HStack {
-                                Image(systemName: "heart.fill")
-                                    .foregroundColor(.pink.opacity(0.8))
-                                Text("✨ Your journey to self-love ✨")
-                                    .font(.subheadline)
-                                    .foregroundColor(.pink.opacity(0.8))
-                                Image(systemName: "heart.fill")
-                                    .foregroundColor(.pink.opacity(0.8))
-                            }
-                            
+                            Text("✨ Your journey to self-love ✨")
+                                .font(.headline)
+                                .foregroundColor(.pink)
+                                .overlay(
+                                    Image(systemName: "heart.fill")
+                                        .foregroundColor(.pink.opacity(0.2))
+                                        .scaleEffect(1.5)
+                                        .blur(radius: 2)
+                                )
                             if daysUntilValentines > 0 {
                                 Text("\(daysUntilValentines) days until Valentine's Day 💝")
                                     .font(.caption)
@@ -106,9 +105,9 @@ struct SelfLove14days: View {
                         SessionCard(session: session)
                             .overlay(
                                 LinearGradient(
-                                    gradient: Gradient(colors: [.clear, .pink.opacity(0.1)]),
-                                    startPoint: .top,
-                                    endPoint: .bottom
+                                    gradient: Gradient(colors: [.pink.opacity(0.1), .clear]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
                                 )
                             )
                         
