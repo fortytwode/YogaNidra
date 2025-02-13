@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct SessionListView_v2: View {
+struct SelfLove14days: View {
     let sessions = YogaNidraSession.allSessions
     @State private var selectedCategory: SessionCategory? = nil
     @StateObject var router = Router<LibraryTabDestination>()
@@ -19,12 +19,11 @@ struct SessionListView_v2: View {
         NavigationStack(path: $router.path) {
             ScrollView {
                 VStack(spacing: 24) {
-                    categoryFiltersSection
                     sessionGridSection
                 }
                 .padding(.vertical)
             }
-            .navigationTitle("Library")
+            .navigationTitle("14 Days Self Love")
             .background(Color.black)
             .environmentObject(router)
             .navigationDestination(for: LibraryTabDestination.self) { destination in
@@ -78,44 +77,5 @@ struct SessionListView_v2: View {
             }
         }
         .padding(.horizontal, 16)
-    }
-}
-
-// MARK: - Supporting Views
-
-struct SessionCardButton: View {
-    let session: YogaNidraSession
-    @EnvironmentObject var sheetPresenter: Presenter
-    @EnvironmentObject private var audioManager: AudioManager
-    
-    var body: some View {
-        Button {
-            sheetPresenter.present(.sessionDetials(session))
-        } label: {
-            SessionCard(session: session)
-        }
-        .frame(maxWidth: .infinity)
-    }
-}
-
-struct CategoryFilterButton: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.subheadline)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(isSelected ? Color.white : Color.clear)
-                .foregroundColor(isSelected ? .black : .white)
-                .cornerRadius(16)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.white, lineWidth: 1)
-                )
-        }
     }
 }

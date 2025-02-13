@@ -93,11 +93,7 @@ struct HomeView: View {
             ], spacing: 16) {
                 ForEach(sessions.prefix(2), id: \.id) { session in
                     Button {
-                        Task {
-                            audioManager.prepareSession(session)
-                            sheetPresenter.present(.sessionDetials(session))
-                            await audioManager.startPreparedSession()
-                        }
+                        sheetPresenter.present(.sessionDetials(session))
                     } label: {
                         SessionCard(session: session)
                     }
@@ -124,11 +120,7 @@ struct HomeView: View {
             VStack(spacing: 12) {
                 ForEach(recommendedSessions) { session in
                     Button {
-                        Task {
-                            audioManager.prepareSession(session)
-                            sheetPresenter.present(.sessionDetials(session))
-                            await audioManager.startPreparedSession()
-                        }
+                        sheetPresenter.present(.sessionDetials(session))
                     } label: {
                         RecommendedSessionCard(session: session)
                     }

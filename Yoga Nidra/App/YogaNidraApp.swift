@@ -5,11 +5,10 @@ import FirebaseAnalytics
 import FirebaseAuth
 import FirebaseCrashlytics
 
-@MainActor
 class AppState: ObservableObject {
     static let shared = AppState()
     @Published var selectedTab: Int = 0
-    @Published var shouldAddValantineDaysTab: Bool = false
+    @Published var isFromValentrineDaysLink: Bool = false
 }
 
 @main
@@ -78,14 +77,14 @@ struct YogaNidraApp: App {
                 if normalizedPath == "/selflove14days" {
                     print("📱 Self Love program link detected")
                     // Skip onboarding for universal links
-                    if !onboardingManager.isOnboardingCompleted {
-                        print("📱 Skipping onboarding for universal link")
-                        onboardingManager.isOnboardingCompleted = true
-                    }
                     // Navigate to home tab
                     DispatchQueue.main.async {
-                        appState.shouldAddValantineDaysTab = true
+                        appState.isFromValentrineDaysLink = true
                         appState.selectedTab = 3
+                        if !onboardingManager.isOnboardingCompleted {
+                            print("📱 Skipping onboarding for universal link")
+                            onboardingManager.isOnboardingCompleted = true
+                        }
                     }
                 } else if normalizedPath == "/tab1" {
                     print("📱 Tab 1 link detected")

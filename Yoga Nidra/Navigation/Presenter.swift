@@ -14,11 +14,19 @@ final class Presenter: ObservableObject {
     private let audioManager = AudioManager.shared
     
     func present(_ destination: SheetPresentaiton) {
-        if case .sessionDetials(let session) = destination,
-           session.isPremium && !StoreManager.shared.isSubscribed {
+        switch destination {
+        case .subscriptionPaywall:
             presenation = .subscriptionPaywall
-        } else {
-            presenation = destination
+        case .sessionDetials(let session):
+            if session.isPremium && !StoreManager.shared.isSubscribed {
+                presenation = .subscriptionPaywall
+            } else {
+                presenation = destination
+                Task {
+                    audioManager.prepareSession(session)
+                    await audioManager.startPreparedSession()
+                }
+            }
         }
     }
     

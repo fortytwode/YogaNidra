@@ -206,7 +206,7 @@ final class AudioManager: ObservableObject {
     // MARK: - Time Control
     
     func seek(to time: TimeInterval) async {
-        await audioEngine.seek(to: time)
+        audioEngine.seek(to: time)
         self.currentTime = time
         self.progress = time / duration
         updateNowPlayingInfo()
