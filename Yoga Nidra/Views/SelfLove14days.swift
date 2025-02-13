@@ -37,7 +37,7 @@ struct SelfLove14days: View {
             }
         }
         .onAppear {
-            AppState.shared.isValentinteTabShown = true
+            AppState.shared.shouldShowValentrineDayTab = true
         }
     }
     

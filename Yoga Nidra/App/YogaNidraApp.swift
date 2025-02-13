@@ -9,7 +9,6 @@ class AppState: ObservableObject {
     static let shared = AppState()
     @Published var selectedTab: Int = 0
     @Published var shouldShowValentrineDayTab: Bool = false
-    @Published var isValentinteTabShown: Bool = false
 }
 
 @main

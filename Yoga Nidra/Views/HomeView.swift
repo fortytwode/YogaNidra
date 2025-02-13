@@ -56,12 +56,10 @@ struct HomeView: View {
                         .padding(.bottom, 16)
                     }
                     
-                    if !AppState.shared.isValentinteTabShown {
-                        specialEventBanner
-                    } else {
-                        // Popular section
-                        popularSection
-                    }
+                    valentinesBanner
+                    
+                    // Popular section
+                    popularSection
                     
                     // Recommended section
                     recommendedSection
@@ -79,7 +77,7 @@ struct HomeView: View {
         }
     }
     
-    var specialEventBanner: some View {
+    var valentinesBanner: some View {
         ZStack {
             Image("Unfamiliar_Place")
                 .resizable()
@@ -87,32 +85,32 @@ struct HomeView: View {
                 .frame(height: 160)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [.clear, .black.opacity(0.6)]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
+                    LinearGradient(
+                        gradient: Gradient(colors: [.pink.opacity(0.5), .purple.opacity(0.7)]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
                 )
             VStack {
-                Text("Special event for Valentine's Day ✨")
+                Text("Special Event: 14 Days of Self-Love 💝")
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                     .padding()
                 Spacer()
-                Button {
-                    AppState.shared.shouldShowValentrineDayTab = true
-                    AppState.shared.selectedTab = 3
-                } label: {
-                    Text("Check this out!")
+                VStack(spacing: 4) {
+                    Text("Find out more...")
+                        .foregroundColor(.white)
+                    HeartAnimation()
                 }
                 .padding()
             }
         }
         .padding()
+        .onTapGesture {
+            AppState.shared.shouldShowValentrineDayTab = true
+            AppState.shared.selectedTab = 3
+        }
     }
     
     var popularSection: some View {
@@ -191,6 +189,24 @@ struct HomeView: View {
             .padding(.horizontal, 24)
             .padding(.top, 8)
         }
+    }
+}
+
+struct HeartAnimation: View {
+    @State private var isAnimating = false
+    
+    var body: some View {
+        Text("❤️")
+            .font(.title)
+            .scaleEffect(isAnimating ? 1.2 : 1.0)
+            .animation(
+                Animation.easeInOut(duration: 0.8)
+                    .repeatForever(autoreverses: true),
+                value: isAnimating
+            )
+            .onAppear {
+                isAnimating = true
+            }
     }
 }
 

@@ -83,3 +83,10 @@ struct PremiumContentSheet: View {
         }
     }
 }
+
+struct PremiumContentSheet_Previews: PreviewProvider {
+    static var previews: some View {
+        PremiumContentSheet()
+            .environmentObject(StoreManager.shared)
+    }
+}
