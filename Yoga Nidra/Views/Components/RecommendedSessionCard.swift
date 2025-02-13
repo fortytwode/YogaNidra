@@ -31,6 +31,12 @@ struct RecommendedSessionCard: View {
                 Text(formattedDuration)
                     .font(.subheadline)
                     .foregroundColor(.white.opacity(0.9))
+                
+                if session.isPremium {
+                    Image(systemName: "lock.fill")
+                        .font(.caption)
+                        .foregroundColor(.yellow)
+                }
             }
             .multilineTextAlignment(.leading)
             

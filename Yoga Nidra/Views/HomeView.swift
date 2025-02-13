@@ -99,8 +99,9 @@ struct HomeView: View {
                     .padding()
                 Spacer()
                 VStack(spacing: 4) {
-                    Text("Find out more...")
+                    Text("A love letter to your wellbeing... tap to unwrap ✨")
                         .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
                     HeartAnimation()
                 }
                 .padding()
