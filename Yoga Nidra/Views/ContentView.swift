@@ -29,6 +29,7 @@ struct ContentView: View {
                     .tag(1)
                 
                 ProgressTabView()
+                    .environmentObject(progressManager)
                     .tabItem {
                         Image(systemName: "chart.bar.fill")
                         Text("Progress")

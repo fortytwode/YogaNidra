@@ -9,7 +9,7 @@ struct PremiumContentSheet: View {
     var body: some View {
         VStack(spacing: 24) {
             // Premium Icon
-            Image(systemName: "lock.fill")
+            Image(systemName: "crown.fill")
                 .font(.system(size: 44))
                 .foregroundColor(.yellow)
             
@@ -81,12 +81,5 @@ struct PremiumContentSheet: View {
         } message: {
             Text(errorMessage)
         }
-    }
-}
-
-struct PremiumContentSheet_Previews: PreviewProvider {
-    static var previews: some View {
-        PremiumContentSheet()
-            .environmentObject(StoreManager.shared)
     }
 }

@@ -106,6 +106,7 @@ class CategoryManager {
             
             // Get unique categories and create SessionCategory objects
             let uniqueCategories = Set(sessions.map { $0.category })
+                .filter { $0.lowercased() != "14 days of self love" }  // Filter out Valentine's
             categories = uniqueCategories.map { SessionCategory(id: $0) }.sorted { $0.id < $1.id }
             
             // Create a map for quick lookup

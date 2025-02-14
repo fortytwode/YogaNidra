@@ -7,6 +7,7 @@ import UIKit
 extension Notification.Name {
     static let audioEngineDidStartPlaying = Notification.Name("audioEngineDidStartPlaying")
     static let audioEngineDidPause = Notification.Name("audioEngineDidPause")
+    static let audioEngineDidFinishPlaying = Notification.Name("audioEngineDidFinishPlaying")
 }
 
 @MainActor

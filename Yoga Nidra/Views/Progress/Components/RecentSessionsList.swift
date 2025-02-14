@@ -25,7 +25,13 @@ struct RecentSessionsList: View {
     @EnvironmentObject var sheetPresenter: Presenter
     @StateObject private var audioManager = AudioManager.shared
     
-    @State private var recentSessions: [RecentSessionItem] = []
+    private var recentSessions: [RecentSessionItem] {
+        progressManager.recentSessions.compactMap { session, progress in
+            // Ensure session ID is valid
+            guard session.id != UUID.init() else { return nil }
+            return RecentSessionItem(session: session, progress: progress)
+        }
+    }
     
     var body: some View {
         VStack(spacing: 12) {
@@ -39,7 +45,7 @@ struct RecentSessionsList: View {
         }
         .padding(.horizontal)
         .onAppear {
-            loadRecentSessions()
+            // Removed loadRecentSessions() call
         }
         .alert("Playback Error", isPresented: .init(
             get: { audioManager.errorMessage != nil },
@@ -75,65 +81,56 @@ struct RecentSessionsList: View {
         }
     }
     
-    // MARK: - Data Loading
-    
-    private func loadRecentSessions() {
-        // Convert tuples to RecentSessionItems
-        recentSessions = progressManager.recentSessions
-            .prefix(5)
-            .map { RecentSessionItem(session: $0.0, progress: $0.1) }
-    }
-}
+    // MARK: - Supporting Views
 
-// MARK: - Supporting Views
-
-struct RecentSessionButton: View {
-    let session: YogaNidraSession
-    let progress: SessionProgress
-    @EnvironmentObject var sheetPresenter: Presenter
-    @StateObject private var audioManager = AudioManager.shared
-    
-    var body: some View {
-        Button {
-            sheetPresenter.present(.sessionDetials(session))
-        } label: {
-            RecentSessionRow(session: session, progress: progress)
-        }
-    }
-}
-
-struct RecentSessionRow: View {
-    let session: YogaNidraSession
-    let progress: SessionProgress
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(session.title)
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                
-                Text(session.instructor)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                    .lineLimit(1)
-                
-                if let lastCompleted = progress.lastCompleted {
-                    Text("Last completed: \(lastCompleted.timeAgoString())")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
+    struct RecentSessionButton: View {
+        let session: YogaNidraSession
+        let progress: SessionProgress
+        @EnvironmentObject var sheetPresenter: Presenter
+        @StateObject private var audioManager = AudioManager.shared
+        
+        var body: some View {
+            Button {
+                sheetPresenter.present(.sessionDetials(session))
+            } label: {
+                RecentSessionRow(session: session, progress: progress)
             }
-            
-            Spacer()
-            
-            Image(systemName: "play.circle.fill")
-                .font(.system(size: 32))
-                .foregroundColor(.white)
         }
-        .padding()
-        .background(Color.white.opacity(0.05))
-        .cornerRadius(12)
+    }
+
+    struct RecentSessionRow: View {
+        let session: YogaNidraSession
+        let progress: SessionProgress
+        
+        var body: some View {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(session.title)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                    
+                    Text(session.instructor)
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                        .lineLimit(1)
+                    
+                    if let lastCompleted = progress.lastCompleted {
+                        Text("Last completed: \(lastCompleted.timeAgoString())")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                }
+                
+                Spacer()
+                
+                Image(systemName: "play.circle.fill")
+                    .font(.system(size: 32))
+                    .foregroundColor(.white)
+            }
+            .padding()
+            .background(Color.white.opacity(0.05))
+            .cornerRadius(12)
+        }
     }
 }

@@ -18,12 +18,12 @@ final class Presenter: ObservableObject {
         case .subscriptionPaywall:
             presenation = .subscriptionPaywall
         case .sessionDetials(let session):
-            if session.isPremium && !StoreManager.shared.isSubscribed {
-                presenation = .subscriptionPaywall
-            } else {
-                presenation = destination
-                Task {
-                    audioManager.prepareSession(session)
+            // Always show session details first
+            presenation = destination
+            Task {
+                audioManager.prepareSession(session)
+                // Don't auto-start premium sessions
+                if !session.isPremium || StoreManager.shared.isSubscribed {
                     await audioManager.startPreparedSession()
                 }
             }

@@ -49,6 +49,14 @@ final class AudioManager: ObservableObject {
             name: .audioEngineDidPause,
             object: nil
         )
+        
+        // Add observer for playback completion
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handlePlaybackFinished),
+            name: .audioEngineDidFinishPlaying,
+            object: nil
+        )
     }
     
     deinit {
@@ -63,6 +71,12 @@ final class AudioManager: ObservableObject {
     @objc private func handleAudioEngineDidPause() {
         isPlaying = false
         updateNowPlayingInfo()
+    }
+    
+    @objc private func handlePlaybackFinished() async {
+        if let session = currentPlayingSession {
+            await ProgressManager.shared.audioSessionCompleted()
+        }
     }
     
     // MARK: - Public API
@@ -98,23 +112,25 @@ final class AudioManager: ObservableObject {
             // Update Now Playing state immediately
             updateNowPlayingInfo()
             
+            // Start progress tracking
+            ProgressManager.shared.audioSessionStarted()
+            
             // Try to get local URL first
-            if session.isDownloaded, let localURL = session.localURL {
+            if let localURL = session.localURL, FileManager.default.fileExists(atPath: localURL.path) {
                 try await playFromURL(localURL)
             } else {
-                // Fallback to streaming from Firebase
-                let downloadURL = try await downloadFromFirebase(fileName: session.audioFileName)
-                try await playFromURL(downloadURL)
+                // Download from Firebase if not available locally
+                let remoteURL = try await FirebaseManager.shared.getMeditationURL(fileName: session.audioFileName)
+                try await playFromURL(remoteURL)
             }
             
-            currentPlayingSession = session
-            isPlaying = true
+            isLoading = false
             
         } catch {
-            print("Failed to play session: \(error.localizedDescription)")
-            isLoading = false
-            errorMessage = error.localizedDescription
-            currentPlayingSession = nil
+            await MainActor.run {
+                isLoading = false
+                errorMessage = error.localizedDescription
+            }
         }
     }
     

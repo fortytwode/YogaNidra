@@ -45,18 +45,22 @@ struct ProgressTabView: View {
                 Divider()
                 
                 HStack(spacing: 24) {
-                    Button {
-                        openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-terms")!)
-                    } label: {
-                        Text("Terms")
-                            .foregroundColor(.secondary)
+                    if let termsURL = URL(string: "http://rocketshiphq.com/yoga-nidra-terms") {
+                        Button {
+                            openURL(termsURL)
+                        } label: {
+                            Text("Terms")
+                                .foregroundColor(.secondary)
+                        }
                     }
                     
-                    Button {
-                        openURL(URL(string: "http://rocketshiphq.com/yoga-nidra-privacy")!)
-                    } label: {
-                        Text("Privacy")
-                            .foregroundColor(.secondary)
+                    if let privacyURL = URL(string: "http://rocketshiphq.com/yoga-nidra-privacy") {
+                        Button {
+                            openURL(privacyURL)
+                        } label: {
+                            Text("Privacy")
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
                 .padding()
