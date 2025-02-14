@@ -139,19 +139,25 @@ final class AudioEngine: NSObject {
     }
     
     private func setupNotifications() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleInterruption),
-            name: AVAudioSession.interruptionNotification,
-            object: audioSession
-        )
+        // Observe player item status
+        statusObserver = player?.observe(\.currentItem?.status, options: [.new]) { [weak self] player, _ in
+            guard let self = self else { return }
+            if player.currentItem?.status == .failed {
+                print("❌ Audio Engine: Playback failed - \(player.currentItem?.error?.localizedDescription ?? "Unknown error")")
+            }
+        }
         
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleRouteChange),
-            name: AVAudioSession.routeChangeNotification,
-            object: audioSession
-        )
+        // Add periodic time observer
+        let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        timeObserver = player?.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
+            guard let self = self else { return }
+            
+            // Check if we've reached the end
+            if let duration = player?.currentItem?.duration.seconds,
+               time.seconds >= duration {
+                NotificationCenter.default.post(name: .audioEngineDidFinishPlaying, object: self)
+            }
+        }
     }
     
     private func setupRemoteCommandCenter() {

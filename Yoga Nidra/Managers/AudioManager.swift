@@ -50,6 +50,14 @@ final class AudioManager: ObservableObject {
             object: nil
         )
         
+        // Add completion observer
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioEngineDidFinish),
+            name: .audioEngineDidFinishPlaying,
+            object: nil
+        )
+        
         // Add observer for playback completion
         NotificationCenter.default.addObserver(
             self,
@@ -73,8 +81,16 @@ final class AudioManager: ObservableObject {
         updateNowPlayingInfo()
     }
     
-    @objc private func handlePlaybackFinished() async {
-        if let session = currentPlayingSession {
+    @objc private func handlePlaybackFinished() {
+        Task { @MainActor in
+            if let session = currentPlayingSession {
+                await ProgressManager.shared.audioSessionCompleted()
+            }
+        }
+    }
+    
+    @objc private func handleAudioEngineDidFinish() {
+        Task {
             await ProgressManager.shared.audioSessionCompleted()
         }
     }

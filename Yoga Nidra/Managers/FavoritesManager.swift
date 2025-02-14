@@ -8,8 +8,13 @@ class FavoritesManager: ObservableObject {
     private var pendingSync = false
     
     private init() {
-        loadFavorites()
-        loadFavoritesFromFirebase()
+        // Start with empty state
+        Task { @MainActor in
+            // First load from Firebase
+            await loadFavoritesFromFirebase()
+            // Then merge with local
+            loadFavorites()
+        }
     }
     
     func toggleFavorite(_ session: YogaNidraSession) {

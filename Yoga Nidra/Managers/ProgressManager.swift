@@ -100,14 +100,12 @@ final class ProgressManager: ObservableObject {
                         let duration = sessionData["duration"] as? TimeInterval ?? 0
                         let completed = sessionData["completed"] as? Bool ?? false
                         let lastCompletedTime = sessionData["lastCompleted"] as? TimeInterval
-                        let completionCount = sessionData["completionCount"] as? Int ?? 0
                         
                         sessionProgress[uuid] = SessionProgress(
                             startTime: startTime,
                             duration: duration,
                             completed: completed,
-                            lastCompleted: lastCompletedTime.map { Date(timeIntervalSince1970: $0) },
-                            completionCount: completionCount
+                            lastCompleted: lastCompletedTime.map { Date(timeIntervalSince1970: $0) }
                         )
                     }
                 }
@@ -119,6 +117,9 @@ final class ProgressManager: ObservableObject {
                     sessionsCompleted = metrics["sessionsCompleted"] as? Int ?? 0
                     streakDays = metrics["streakDays"] as? Int ?? 0
                 }
+                
+                // Validate streak on launch
+                await updateStreak()
                 
                 // Update UI
                 updateRecentSessions()
@@ -143,8 +144,7 @@ final class ProgressManager: ObservableObject {
                     "startTime": progress.startTime.timeIntervalSince1970,
                     "duration": progress.duration,
                     "completed": progress.completed,
-                    "lastCompleted": progress.lastCompleted?.timeIntervalSince1970 as Any,
-                    "completionCount": progress.completionCount
+                    "lastCompleted": progress.lastCompleted?.timeIntervalSince1970 as Any
                 ]
             }
             progressData["sessions"] = sessions
@@ -192,15 +192,17 @@ final class ProgressManager: ObservableObject {
               var progress = sessionProgress[currentSession.id] else { return }
         
         let duration = Date().timeIntervalSince(progress.startTime)
+        print("🎧 Session duration: \(duration) vs required: \(Double(currentSession.duration) * 0.9)")
         
-        // Mark as completed if listened to at least 90%
         if duration >= Double(currentSession.duration) * 0.9 {
+            print("✅ Session completed! Count before: \(sessionsCompleted)")
             progress.completed = true
             progress.lastCompleted = Date()
-            progress.completionCount += 1
+            progress.duration = duration
             sessionProgress[currentSession.id] = progress
             
             sessionsCompleted += 1
+            print("✅ Sessions completed after: \(sessionsCompleted)")
             await updateStreak()
         }
         
@@ -217,12 +219,13 @@ final class ProgressManager: ObservableObject {
     
     private func updateStreak() async {
         let calendar = Calendar.current
-        let lastCompletedDate = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: "lastCompletedDate"))
+        let lastCompletedDate = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: lastCompletedDateKey))
         let today = Date()
         
         // If this is the first completion
         if lastCompletedDate.timeIntervalSince1970 == 0 {
             streakDays = 1
+            UserDefaults.standard.set(today.timeIntervalSince1970, forKey: lastCompletedDateKey)
             return
         }
         
@@ -240,6 +243,9 @@ final class ProgressManager: ObservableObject {
             // More than one day - reset streak
             streakDays = 1
         }
+        
+        // Save new completion date
+        UserDefaults.standard.set(today.timeIntervalSince1970, forKey: lastCompletedDateKey)
     }
     
     private func updateRecentSessions() {
