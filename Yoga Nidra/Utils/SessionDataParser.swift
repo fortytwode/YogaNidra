@@ -2,6 +2,39 @@ import Foundation
 
 class SessionDataParser {
     
+    static func loadEventSessions() -> [YogaNidraSession] {
+        guard let path = Bundle.main.path(forResource: "14days", ofType: "json") else {
+            print("❌ Could not find 14days.json in path: \(Bundle.main.bundlePath)")
+            return []
+        }
+        
+        do {
+            let data = try Data(contentsOf: URL(fileURLWithPath: path))
+            let decoder = JSONDecoder()
+            let sessions = try decoder.decode([Session].self, from: data)
+            
+            print("✅ Successfully loaded \(sessions.count) sessions")
+            return sessions.sorted {
+                $0.order < $1.order
+            }.compactMap { item in
+                YogaNidraSession(
+                    id: UUID(),
+                    title: item.title,
+                    description: item.description,
+                    duration: item.duration,
+                    thumbnailUrl: item.thumbnailUrl,
+                    audioFileName: item.audioFileName,
+                    isPremium: item.premium != "n",
+                    category: SessionCategory(id: item.category),
+                    instructor: item.instructor
+                )
+            }
+        } catch {
+            print("❌ Error reading sessions.json:", error)
+            return []
+        }
+    }
+    
     static func loadSessions() -> [YogaNidraSession] {
         guard let path = Bundle.main.path(forResource: "sessions", ofType: "json") else {
             print("❌ Could not find sessions.json in path: \(Bundle.main.bundlePath)")
