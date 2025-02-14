@@ -188,33 +188,41 @@ final class ProgressManager: ObservableObject {
     
     @MainActor
     func audioSessionCompleted() async {
+        print("📊 Progress Manager: Completing session")
         guard let currentSession = AudioManager.shared.currentPlayingSession,
-              var progress = sessionProgress[currentSession.id] else { return }
+              var progress = sessionProgress[currentSession.id] else {
+            print("❌ Progress Manager: No current session or progress")
+            return
+        }
         
         let duration = Date().timeIntervalSince(progress.startTime)
-        print("🎧 Session duration: \(duration) vs required: \(Double(currentSession.duration) * 0.9)")
+        print("⏱️ Session duration: \(Int(duration))s vs required: \(Int(Double(currentSession.duration) * 0.9))s")
         
         if duration >= Double(currentSession.duration) * 0.9 {
-            print("✅ Session completed! Count before: \(sessionsCompleted)")
+            print("✨ Session completed! Count before: \(sessionsCompleted)")
             progress.completed = true
             progress.lastCompleted = Date()
             progress.duration = duration
             sessionProgress[currentSession.id] = progress
             
             sessionsCompleted += 1
-            print("✅ Sessions completed after: \(sessionsCompleted)")
+            print("🎯 Sessions completed after: \(sessionsCompleted)")
             await updateStreak()
+            
+            // Update UI
+            updateRecentSessions()
+            print("🔄 Recent sessions updated")
+            
+            // Sync to Firebase
+            await syncProgress()
+            print("☁️ Progress synced to Firebase")
+        } else {
+            print("⚠️ Session not long enough to count as complete")
         }
         
         // Update total time
         totalTimeListened += duration
         totalMinutesListened = Int(totalTimeListened / 60)
-        
-        // Update UI
-        updateRecentSessions()
-        
-        // Sync to Firebase
-        await syncProgress()
     }
     
     private func updateStreak() async {

@@ -90,6 +90,13 @@ final class AudioManager: ObservableObject {
     }
     
     @objc private func handleAudioEngineDidFinish() {
+        print("🎵 Audio finished playing")
+        guard let session = currentPlayingSession else {
+            print("❌ No current session")
+            return
+        }
+        print("✅ Completing session: \(session.title)")
+        
         Task {
             await ProgressManager.shared.audioSessionCompleted()
         }
