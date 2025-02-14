@@ -66,6 +66,7 @@ struct HomeView: View {
                 }
                 .padding(.vertical)
             }
+            .contentMargins(.bottom, audioManager.currentPlayingSession != nil ? 52 : 0, for: .scrollContent)
             .navigationTitle("Yoga Nidra")
             .environmentObject(router)
             .navigationDestination(for: HomeTabDestination.self) { destination in

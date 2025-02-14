@@ -55,8 +55,7 @@ struct ContentView: View {
             }
             
             // Middle layer: Mini Player - show when there's a current session
-            if let _ = audioManager.currentPlayingSession,
-               !audioManager.isDetailViewPresented {
+            if let _ = audioManager.currentPlayingSession {
                 VStack(spacing: 0) {
                     MiniPlayerView()
                         .transition(.move(edge: .bottom))

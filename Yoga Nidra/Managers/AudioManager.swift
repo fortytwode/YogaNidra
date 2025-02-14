@@ -23,7 +23,6 @@ final class AudioManager: ObservableObject {
     @Published var duration: TimeInterval = 0
     @Published var errorMessage: String?
     @Published private(set) var currentPlayingSession: YogaNidraSession?
-    @Published private(set) var isDetailViewPresented: Bool = false
     
     // MARK: - Private Properties
     private let audioEngine = AudioEngine.shared
@@ -83,7 +82,7 @@ final class AudioManager: ObservableObject {
     
     @objc private func handlePlaybackFinished() {
         Task { @MainActor in
-            if let session = currentPlayingSession {
+            if let _ = currentPlayingSession {
                 await ProgressManager.shared.audioSessionCompleted()
             }
         }
@@ -224,7 +223,6 @@ final class AudioManager: ObservableObject {
     func prepareSession(_ session: YogaNidraSession) {
         guard !isLoading else { return }
         preparedSession = session
-        isDetailViewPresented = true
     }
     
     @MainActor
@@ -235,7 +233,6 @@ final class AudioManager: ObservableObject {
     }
     
     func dismissDetailView() {
-        isDetailViewPresented = false
         // Only clear prepared if not playing
         if currentPlayingSession == nil {
             preparedSession = nil

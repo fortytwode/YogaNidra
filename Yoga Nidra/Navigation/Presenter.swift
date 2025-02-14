@@ -20,11 +20,13 @@ final class Presenter: ObservableObject {
         case .sessionDetials(let session):
             // Always show session details first
             presenation = destination
-            Task {
-                audioManager.prepareSession(session)
-                // Don't auto-start premium sessions
-                if !session.isPremium || StoreManager.shared.isSubscribed {
-                    await audioManager.startPreparedSession()
+            if audioManager.currentPlayingSession != session {
+                Task {
+                    audioManager.prepareSession(session)
+                    // Don't auto-start premium sessions
+                    if !session.isPremium || StoreManager.shared.isSubscribed {
+                        await audioManager.startPreparedSession()
+                    }
                 }
             }
         }

@@ -105,7 +105,9 @@ struct YogaNidraApp: App {
                 overlayManager.showOverlay(RatingPromptView())
             }
             .overlayContent(overlayManager)
-            .sheet(item: $sheetPresenter.presenation) { destination in
+            .sheet(item: $sheetPresenter.presenation) {
+                sheetPresenter.dismiss()
+            } content: { destination in
                 switch destination {
                 case .sessionDetials(let session):
                     SessionDetailView(session: session)

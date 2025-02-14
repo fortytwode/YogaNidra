@@ -48,6 +48,7 @@ struct SelfLove14days: View {
                     }
                     .padding(.vertical)
                 }
+                .contentMargins(.bottom, audioManager.currentPlayingSession != nil ? 52 : 0, for: .scrollContent)
             }
             .navigationTitle("14 Days of Self-Love")
             .toolbarBackground(.visible, for: .navigationBar)

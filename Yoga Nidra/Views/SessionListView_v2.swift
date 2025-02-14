@@ -24,6 +24,7 @@ struct SessionListView_v2: View {
                 }
                 .padding(.vertical)
             }
+            .contentMargins(.bottom, audioManager.currentPlayingSession != nil ? 52 : 0, for: .scrollContent)
             .navigationTitle("Library")
             .background(Color.black)
             .environmentObject(router)

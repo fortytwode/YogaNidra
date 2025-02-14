@@ -3,6 +3,7 @@ import SwiftUI
 struct ProgressTabView: View {
     @StateObject var router = Router<ProgressTabDestination>()
     @EnvironmentObject var progressManager: ProgressManager
+    @EnvironmentObject var audioManager: AudioManager
     @Environment(\.openURL) private var openURL
     
     var body: some View {
@@ -41,6 +42,7 @@ struct ProgressTabView: View {
                     }
                     .padding(.vertical)
                 }
+                .contentMargins(.bottom, audioManager.currentPlayingSession != nil ? 52 : 0, for: .scrollContent)
                 
                 Divider()
                 
