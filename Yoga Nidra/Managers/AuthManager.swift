@@ -15,6 +15,7 @@ final class AuthManager {
             Task {
                 do {
                     try await Auth.auth().signInAnonymously()
+                    FirebaseManager.shared.syncProgress()
                     print("✅ Created anonymous user")
                 } catch {
                     print("❌ Failed to create anonymous user: \(error)")
@@ -25,5 +26,6 @@ final class AuthManager {
     
     func signInAnonymously() async throws {
         try await Auth.auth().signInAnonymously()
+        FirebaseManager.shared.syncProgress()
     }
 }

@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct StatsView: View {
-    @AppStorage(ProgressManager.shared.totalSessionListenTimeKey) var totalTimeListened = 0.0
-    @AppStorage(ProgressManager.shared.totalSessionsCompletedKey) var sessionsCompleted = 0
-    @AppStorage(ProgressManager.shared.streakCountKey) var currentStreak = 0
+    @AppStorage(StroageKeys.totalSessionListenTimeKey) var totalTimeListened = 0.0
+    @AppStorage(StroageKeys.totalSessionsCompletedKey) var sessionsCompleted = 0
+    @AppStorage(StroageKeys.streakCountKey) var currentStreak = 0
     
     var body: some View {
         VStack(spacing: 16) {

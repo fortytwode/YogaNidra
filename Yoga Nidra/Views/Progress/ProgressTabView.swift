@@ -4,8 +4,8 @@ struct ProgressTabView: View {
     @StateObject var router = Router<ProgressTabDestination>()
     @EnvironmentObject var audioManager: AudioManager
     @Environment(\.openURL) private var openURL
-    @AppStorage(ProgressManager.shared.streakCountKey) var currentStreak = 0
-    @AppStorage(ProgressManager.shared.totalSessionsCompletedKey) var sessionsCompleted = 0
+    @AppStorage(StroageKeys.streakCountKey) var currentStreak = 0
+    @AppStorage(StroageKeys.totalSessionsCompletedKey) var sessionsCompleted = 0
     
     var body: some View {
         NavigationStack(path: $router.path) {

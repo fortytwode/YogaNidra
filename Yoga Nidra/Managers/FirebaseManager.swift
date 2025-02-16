@@ -49,11 +49,6 @@ final class FirebaseManager {
         storage.reference().child("meditations")
     }
     
-    // Firestore references
-    private var userProgressRef: CollectionReference {
-        firestore.collection("user_progress")
-    }
-    
     private init() {
         configureFirestore()
     }
@@ -150,51 +145,6 @@ final class FirebaseManager {
         ])
     }
     
-    // MARK: - Progress Sync
-    
-    func syncProgress(for userId: String, progress: [String: Any]) async throws {
-        let db = Firestore.firestore()
-        try await db.collection("users").document(userId).setData([
-            "progress": progress,
-            "lastUpdated": FieldValue.serverTimestamp()
-        ], merge: true)
-    }
-    
-    func fetchProgress(for userId: String) async throws -> [String: Any] {
-        let db = Firestore.firestore()
-        let snapshot = try await db.collection("users").document(userId).getDocument()
-        return snapshot.data()?["progress"] as? [String: Any] ?? [:]
-    }
-    
-    // MARK: - User Data
-    
-    func updateUserData(userId: String, field: String, value: Any) async throws {
-        _ = try await firestore.runTransaction({ (transaction, errorPointer) -> Any? in
-            do {
-                let docRef = self.firestore.collection("users").document(userId)
-                let _ = try transaction.getDocument(docRef)
-                
-                // Create nested structure to preserve other fields
-                var updateData: [String: Any] = [
-                    "lastUpdated": FieldValue.serverTimestamp()
-                ]
-                updateData[field] = value
-                
-                transaction.setData(updateData, forDocument: docRef, merge: true)
-                
-                return nil
-            } catch {
-                errorPointer?.pointee = error as NSError
-                return nil
-            }
-        })
-    }
-    
-    func fetchUserData(userId: String) async throws -> [String: Any] {
-        let snapshot = try await firestore.collection("users").document(userId).getDocument()
-        return snapshot.data() ?? [:]
-    }
-    
     // MARK: - Subscription Analytics
     
     func logSubscriptionStarted(productId: String, isTrial: Bool = false) {
@@ -245,5 +195,59 @@ final class FirebaseManager {
             "source": source,
             "timestamp": Date().timeIntervalSince1970
         ])
+    }
+}
+
+// MARK: User progress tracking
+extension FirebaseManager {
+    
+    func getUserDocument() -> DocumentReference? {
+        guard let userId = AuthManager.shared.currentUserId else { return nil }
+        return firestore.collection(StroageKeys.usersCollectionKey).document("\(userId)")
+    }
+    
+    func getUserStreaks() async -> Int {
+        let document = try? await getUserDocument()?.getDocument()
+        return document?.data()?[StroageKeys.streakCountKey] as? Int ?? 0
+    }
+    
+    func getTotalListenedTime() async -> Double {
+        let document = try? await getUserDocument()?.getDocument()
+        return document?.data()?[StroageKeys.totalSessionListenTimeKey] as? Double ?? 0
+    }
+    
+    func getCompletedSessionsCount() async -> Int {
+        let document = try? await getUserDocument()?.getDocument()
+        return document?.data()?[StroageKeys.totalSessionsCompletedKey] as? Int ?? 0
+    }
+    
+    func setTotalListenedTime(time: TimeInterval) {
+        getUserDocument()?.updateData([
+            StroageKeys.totalSessionListenTimeKey: time
+        ])
+    }
+    
+    func setUserStreaks(count: Int) {
+        getUserDocument()?.updateData([
+            StroageKeys.streakCountKey: count
+        ])
+    }
+    
+    func setCompletedSessionsCount(count: Int) {
+        getUserDocument()?.updateData([
+            StroageKeys.totalSessionsCompletedKey: count
+        ])
+    }
+    
+    func syncProgress() {
+        Task {
+            if !Defaults.bool(forKey: StroageKeys.isLaunchedBefore) {
+                setUserStreaks(count: 0)
+                UserDefaults.standard.set(true, forKey: StroageKeys.isLaunchedBefore)
+            }
+            await Defaults.set(getUserStreaks(), forKey: StroageKeys.streakCountKey)
+            await Defaults.set(getTotalListenedTime(), forKey: StroageKeys.totalSessionListenTimeKey)
+            await Defaults.set(getCompletedSessionsCount(), forKey: StroageKeys.totalSessionsCompletedKey)
+        }
     }
 }

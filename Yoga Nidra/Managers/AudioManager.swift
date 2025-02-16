@@ -187,7 +187,7 @@ final class AudioManager: ObservableObject {
         // Update now playing info
         updateNowPlayingInfo()
         
-        ProgressManager.shared.audioSessionStarted()
+        ProgressManager.shared.audioSessionEnded()
     }
     
     // MARK: - Session Management

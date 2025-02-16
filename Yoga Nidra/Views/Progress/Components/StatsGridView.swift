@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct StatsGridView: View {
-    @AppStorage(ProgressManager.shared.totalSessionListenTimeKey) var totalTimeListened = 0.0
-    @AppStorage(ProgressManager.shared.totalSessionsCompletedKey) var sessionsCompleted = 0
+    @AppStorage(StroageKeys.totalSessionListenTimeKey) var totalTimeListened = 0.0
+    @AppStorage(StroageKeys.totalSessionsCompletedKey) var sessionsCompleted = 0
     
     var body: some View {
         LazyVGrid(columns: [
