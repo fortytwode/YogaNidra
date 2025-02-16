@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct StatsGridView: View {
-    @EnvironmentObject var progressManager: ProgressManager
+    @AppStorage(ProgressManager.shared.totalSessionListenTimeKey) var totalTimeListened = 0.0
+    @AppStorage(ProgressManager.shared.totalSessionsCompletedKey) var sessionsCompleted = 0
     
     var body: some View {
         LazyVGrid(columns: [
@@ -10,14 +11,14 @@ struct StatsGridView: View {
         ], spacing: 16) {
             StatCard(
                 title: "Total Time",
-                value: "\(progressManager.totalMinutesListened)",
+                value: String(format: "%.2f", totalTimeListened / 60),
                 unit: "minutes",
                 icon: "clock.fill"
             )
             
             StatCard(
                 title: "Sessions",
-                value: "\(progressManager.sessionsCompleted)",
+                value: "\(sessionsCompleted)",
                 unit: "completed",
                 icon: "checkmark.circle.fill"
             )
@@ -27,10 +28,6 @@ struct StatsGridView: View {
 
 #Preview {
     StatsGridView()
-        #if DEBUG
-        .environmentObject(ProgressManager.preview)
-        #else
         .environmentObject(ProgressManager.shared)
-        #endif
         .padding()
 }

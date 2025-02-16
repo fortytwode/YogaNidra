@@ -60,8 +60,10 @@ final class FirebaseManager {
     
     private func configureFirestore() {
         let settings = FirestoreSettings()
-        settings.isPersistenceEnabled = true
-        settings.cacheSizeBytes = FirestoreCacheSizeUnlimited
+        // Use memory-only cache
+        settings.cacheSettings = MemoryCacheSettings(garbageCollectorSettings: MemoryLRUGCSettings())
+        // Use persistent disk cache, with 100 MB cache size
+        settings.cacheSettings = PersistentCacheSettings(sizeBytes: 100 * 1024 * 1024 as NSNumber)
         firestore.settings = settings
     }
     
@@ -167,7 +169,7 @@ final class FirebaseManager {
     // MARK: - User Data
     
     func updateUserData(userId: String, field: String, value: Any) async throws {
-        try await firestore.runTransaction({ (transaction, errorPointer) -> Any? in
+        _ = try await firestore.runTransaction({ (transaction, errorPointer) -> Any? in
             do {
                 let docRef = self.firestore.collection("users").document(userId)
                 let _ = try transaction.getDocument(docRef)

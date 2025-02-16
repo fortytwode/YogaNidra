@@ -68,14 +68,15 @@ struct MiniPlayerView: View {
                     .padding(.vertical, 8)
                     .background(Color(.systemBackground))
                     .overlay(
-                        GeometryReader { geometry in
+                        HStack {
                             Rectangle()
                                 .fill(Color.accentColor)
-                                .frame(width: geometry.size.width * audioManager.progress, height: 2)
+                                .frame(width: UIScreen.main.bounds.width * audioManager.progress, height: 2)
                                 .animation(.linear, value: audioManager.progress)
-                        }
-                        .frame(height: 2)
-                        , alignment: .top
+                                .frame(height: 2)
+                            Spacer()
+                        },
+                        alignment: .top
                     )
                 }
                 .buttonStyle(.plain)

@@ -10,7 +10,7 @@ struct NotificationSettingsView: View {
         Form {
             Section {
                 Toggle("Enable Notifications", isOn: $isNotificationsEnabled)
-                    .onChange(of: isNotificationsEnabled) { newValue in
+                    .onChange(of: isNotificationsEnabled) { _, newValue in
                         if newValue {
                             requestNotificationPermission()
                         } else {
@@ -45,7 +45,7 @@ struct NotificationSettingsView: View {
                               selection: $selectedTime,
                               displayedComponents: .hourAndMinute)
                         .datePickerStyle(.wheel)
-                        .onChange(of: selectedTime) { newTime in
+                        .onChange(of: selectedTime) { _, newTime in
                             scheduleNotification(at: newTime)
                         }
                 }

@@ -26,11 +26,7 @@ struct RecentSessionsList: View {
     @StateObject private var audioManager = AudioManager.shared
     
     private var recentSessions: [RecentSessionItem] {
-        progressManager.recentSessions.compactMap { session, progress in
-            // Ensure session ID is valid
-            guard session.id != UUID.init() else { return nil }
-            return RecentSessionItem(session: session, progress: progress)
-        }
+        []
     }
     
     var body: some View {

@@ -118,9 +118,7 @@ struct YogaNidraApp: App {
             }
             .onReceive(onboardingManager.$isOnboardingCompleted) { isCompleted in
                 guard isCompleted else { return }
-                Task {
-                    await audioManager.stop(mode: .clearSession)
-                }
+                audioManager.stop(mode: .clearSession)
             }
             .onReceive(storeManager.onPurchaseCompletedPublisher) { reason in
                 switch reason {

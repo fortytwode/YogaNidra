@@ -3,20 +3,10 @@ import MediaPlayer
 import Combine
 import UIKit
 
-// MARK: - Notification Names
-extension Notification.Name {
-    static let audioEngineDidStartPlaying = Notification.Name("audioEngineDidStartPlaying")
-    static let audioEngineDidPause = Notification.Name("audioEngineDidPause")
-    static let audioEngineDidFinishPlaying = Notification.Name("audioEngineDidFinishPlaying")
-}
-
-@MainActor
 final class AudioEngine: NSObject {
     static let shared = AudioEngine()
     
     private var player: AVPlayer?
-    private var timeObserver: Any?
-    private var statusObserver: NSKeyValueObservation?
     private let audioSession: AVAudioSession  // Strong reference
     private var isSeekInProgress: Bool = false
     private var currentPlayingSession: YogaNidraSession?
@@ -44,7 +34,6 @@ final class AudioEngine: NSObject {
         
         // Setup observers and controls
         setupRemoteCommandCenter()
-        setupNotifications()
         
         // Begin observing interruptions and route changes
         NotificationCenter.default.addObserver(
@@ -79,10 +68,6 @@ final class AudioEngine: NSObject {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
-        statusObserver?.invalidate()
-        if let timeObserver = timeObserver {
-            player?.removeTimeObserver(timeObserver)
-        }
     }
     
     private func setupAudioSession() {
@@ -113,51 +98,6 @@ final class AudioEngine: NSObject {
     
     @objc private func handleAppWillResignActive() {
         // Keep session active for background playback
-    }
-    
-    private func observePlayerStatus() {
-        guard let player = player else { return }
-        
-        // Observe time control status
-        statusObserver?.invalidate()
-        statusObserver = player.observe(\.timeControlStatus) { [weak self] player, _ in
-            guard let self = self else { return }
-            
-            DispatchQueue.main.async {
-                switch player.timeControlStatus {
-                case .playing:
-                    NotificationCenter.default.post(name: .audioEngineDidStartPlaying, object: nil)
-                case .paused:
-                    NotificationCenter.default.post(name: .audioEngineDidPause, object: nil)
-                case .waitingToPlayAtSpecifiedRate:
-                    break
-                @unknown default:
-                    break
-                }
-            }
-        }
-    }
-    
-    private func setupNotifications() {
-        // Observe player item status
-        statusObserver = player?.observe(\.currentItem?.status, options: [.new]) { [weak self] player, _ in
-            guard let self = self else { return }
-            if player.currentItem?.status == .failed {
-                print("❌ Audio Engine: Playback failed - \(player.currentItem?.error?.localizedDescription ?? "Unknown error")")
-            }
-        }
-        
-        // Add periodic time observer
-        let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-        timeObserver = player?.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-            guard let self = self else { return }
-            
-            // Check if we've reached the end
-            if let duration = player?.currentItem?.duration.seconds,
-               time.seconds >= duration {
-                NotificationCenter.default.post(name: .audioEngineDidFinishPlaying, object: self)
-            }
-        }
     }
     
     private func setupRemoteCommandCenter() {
@@ -246,12 +186,6 @@ final class AudioEngine: NSObject {
     
     func prepareForPlayback(url: URL, completion: @escaping (Result<Void, Error>) -> Void) {
         Task { @MainActor in
-            // Remove existing observers and player
-            if let timeObserver = timeObserver {
-                player?.removeTimeObserver(timeObserver)
-                self.timeObserver = nil
-            }
-            statusObserver?.invalidate()
             
             // Create asset with loading options
             let asset = AVURLAsset(url: url, options: [
@@ -290,15 +224,6 @@ final class AudioEngine: NSObject {
                 try AVAudioSession.sharedInstance().setActive(true)
             } catch {
                 print("❌ Audio Engine: Failed to activate session - \(error)")
-            }
-            
-            // Observe player status
-            observePlayerStatus()
-            
-            // Add periodic time observer
-            let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-            timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-                // Removed updateNowPlayingInfo call
             }
             
             // Start playback
@@ -344,12 +269,12 @@ final class AudioEngine: NSObject {
     
     func skipForward(by seconds: TimeInterval = 15) async {
         let newTime = min(currentTime + seconds, duration)
-        await seek(to: newTime)
+        seek(to: newTime)
     }
     
     func skipBackward(by seconds: TimeInterval = 15) async {
         let newTime = max(currentTime - seconds, 0)
-        await seek(to: newTime)
+        seek(to: newTime)
     }
     
     @objc private func handleInterruption(notification: Notification) {

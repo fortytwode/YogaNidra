@@ -1,7 +1,9 @@
 import SwiftUI
 
 struct StatsView: View {
-    @EnvironmentObject var progressManager: ProgressManager
+    @AppStorage(ProgressManager.shared.totalSessionListenTimeKey) var totalTimeListened = 0.0
+    @AppStorage(ProgressManager.shared.totalSessionsCompletedKey) var sessionsCompleted = 0
+    @AppStorage(ProgressManager.shared.streakCountKey) var currentStreak = 0
     
     var body: some View {
         VStack(spacing: 16) {
@@ -17,21 +19,21 @@ struct StatsView: View {
             ], spacing: 16) {
                 StatisticCard(
                     title: "Total Time",
-                    value: formatTime(progressManager.totalTimeListened),
+                    value: String(format: "%.2f", totalTimeListened / 60),
                     unit: "listened",
                     icon: "clock.fill"
                 )
                 
                 StatisticCard(
                     title: "Sessions",
-                    value: "\(progressManager.sessionsCompleted)",
+                    value: "\(sessionsCompleted)",
                     unit: "completed",
                     icon: "checkmark.circle.fill"
                 )
                 
                 StatisticCard(
                     title: "Streak",
-                    value: "\(progressManager.currentStreak)",
+                    value: "\(currentStreak)",
                     unit: "days",
                     icon: "flame.fill"
                 )
@@ -40,15 +42,6 @@ struct StatsView: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
-    }
-    
-    private func formatTime(_ timeInterval: TimeInterval) -> String {
-        let hours = Int(timeInterval / 3600)
-        if hours > 0 {
-            return "\(hours)"
-        }
-        let minutes = Int(timeInterval / 60)
-        return "\(minutes)"
     }
 }
 
@@ -83,10 +76,6 @@ struct StatisticCard: View {
 #Preview {
     StatsView()
         .environmentObject(Presenter())
-        #if DEBUG
-        .environmentObject(ProgressManager.preview)
-        #else
         .environmentObject(ProgressManager.shared)
-        #endif
         .preferredColorScheme(.dark)
 }

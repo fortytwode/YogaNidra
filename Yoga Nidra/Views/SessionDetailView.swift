@@ -167,39 +167,11 @@ struct SessionDetailView: View {
             timeControls
         }
         .padding(.horizontal)
-        .onChange(of: audioManager.currentTime) { _ in
-            // Check if session is complete (progress > 90%)
-            if audioManager.progress > 0.9 {
-                if progressManager.shouldShowRatingPrompt() {
-                    Task { @MainActor in
-                        // Small delay to ensure session completion is registered
-                        try? await Task.sleep(nanoseconds: 2 * 1_000_000_000)
-                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                            SKStoreReviewController.requestReview(in: windowScene)
-                            progressManager.recordRatingPrompt()
-                        }
-                    }
-                }
-            }
-        }
     }
     
     private var progressSlider: some View {
         VStack(spacing: 8) {
-            Slider(
-                value: .init(
-                    get: { audioManager.progress },
-                    set: { progress in
-                        let time = audioManager.duration * progress
-                        Task {
-                            await audioManager.seek(to: time)
-                        }
-                    }
-                ),
-                in: 0...1
-            )
-            .accentColor(.white)
-            
+            AudioSeeker()
             HStack {
                 Text(formatTime(audioManager.currentTime))
                     .font(.caption)

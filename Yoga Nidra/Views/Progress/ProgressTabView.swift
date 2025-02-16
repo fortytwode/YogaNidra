@@ -2,9 +2,10 @@ import SwiftUI
 
 struct ProgressTabView: View {
     @StateObject var router = Router<ProgressTabDestination>()
-    @EnvironmentObject var progressManager: ProgressManager
     @EnvironmentObject var audioManager: AudioManager
     @Environment(\.openURL) private var openURL
+    @AppStorage(ProgressManager.shared.streakCountKey) var currentStreak = 0
+    @AppStorage(ProgressManager.shared.totalSessionsCompletedKey) var sessionsCompleted = 0
     
     var body: some View {
         NavigationStack(path: $router.path) {
@@ -14,7 +15,7 @@ struct ProgressTabView: View {
                         StatsGridView()
                             .padding(.horizontal)
                         
-                        StreakCard(streakDays: progressManager.streakDays)
+                        StreakCard(streakDays: currentStreak)
                             .padding(.horizontal)
                         
                         FavoritesView()
@@ -26,7 +27,7 @@ struct ProgressTabView: View {
                                 .bold()
                                 .padding(.horizontal)
                             
-                            if progressManager.sessionsCompleted == 0 {
+                            if sessionsCompleted == 0 {
                                 Text("Complete your first session to see your progress")
                                     .foregroundColor(.secondary)
                                     .multilineTextAlignment(.center)
@@ -76,16 +77,10 @@ struct ProgressTabView: View {
 }
 
 // MARK: - Preview Provider
-#if DEBUG
 struct ProgressTabView_Previews: PreviewProvider {
     static var previews: some View {
         ProgressTabView()
             .environmentObject(Presenter())
-            #if DEBUG
-            .environmentObject(ProgressManager.preview)
-            #else
             .environmentObject(ProgressManager.shared)
-            #endif
     }
 }
-#endif

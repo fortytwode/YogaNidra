@@ -22,7 +22,6 @@
 		121A12272D5226D200E55E90 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 121A12262D5226D200E55E90 /* FirebaseAuth */; };
 		121A12292D5226D200E55E90 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 121A12282D5226D200E55E90 /* FirebaseFirestore */; };
 		121A122B2D5226D200E55E90 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 121A122A2D5226D200E55E90 /* FirebaseStorage */; };
-		129934FE2D58ECC600ED825B /* Yoga-Nidra-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 129934FD2D58ECC600ED825B /* Yoga-Nidra-Info.plist */; };
 		12A645242D520D850090714B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 12A645232D520D850090714B /* GoogleService-Info.plist */; };
 		12AED4142D5651AF006D4637 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 12AED4132D5651AF006D4637 /* FirebaseAnalytics */; };
 		12AED4162D5651AF006D4637 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 12AED4152D5651AF006D4637 /* FirebaseAppCheck */; };
@@ -189,7 +188,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				24ABFCAF2D319FAD00CBF892 /* Configuration.storekit in Resources */,
-				129934FE2D58ECC600ED825B /* Yoga-Nidra-Info.plist in Resources */,
 				12A645242D520D850090714B /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

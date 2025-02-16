@@ -3,6 +3,33 @@ import MediaPlayer
 import SwiftUI
 import FirebaseStorage
 
+final class Debouncer {
+    
+    typealias Handler = () async throws -> Void
+    
+    private let delay: Duration
+    private var task: Task<Void, Error>?
+    
+    init(delay: Duration) {
+        self.delay = delay
+    }
+    
+    func debounce(waitForDelay: Bool = true, _ handler: @escaping Handler) {
+        task?.cancel()
+        task = Task {
+            if waitForDelay {
+                try await Task.sleep(for: delay)
+            }
+            try await handler()
+        }
+    }
+    
+    func cancel() {
+        task?.cancel()
+        task = nil
+    }
+}
+
 @MainActor
 final class AudioManager: ObservableObject {
     static let shared = AudioManager()
@@ -29,39 +56,17 @@ final class AudioManager: ObservableObject {
     private var timeObserverToken: Any?
     private var preparedSession: YogaNidraSession?
     private var isPlayingOnboarding: Bool = false
+    private let seekDebouncer = Debouncer(delay: .seconds(1))
     
     // MARK: - Initialization
     private init() {
         setupRemoteCommandCenter()
         
-        // Observe audio engine state changes
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleAudioEngineDidStartPlaying),
-            name: .audioEngineDidStartPlaying,
-            object: nil
-        )
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleAudioEngineDidPause),
-            name: .audioEngineDidPause,
-            object: nil
-        )
-        
-        // Add completion observer
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleAudioEngineDidFinish),
-            name: .audioEngineDidFinishPlaying,
-            object: nil
-        )
-        
         // Add observer for playback completion
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handlePlaybackFinished),
-            name: .audioEngineDidFinishPlaying,
+            name: .AVPlayerItemDidPlayToEndTime,
             object: nil
         )
     }
@@ -70,35 +75,9 @@ final class AudioManager: ObservableObject {
         NotificationCenter.default.removeObserver(self)
     }
     
-    @objc private func handleAudioEngineDidStartPlaying() {
-        isPlaying = true
-        updateNowPlayingInfo()
-    }
-    
-    @objc private func handleAudioEngineDidPause() {
-        isPlaying = false
-        updateNowPlayingInfo()
-    }
-    
     @objc private func handlePlaybackFinished() {
-        Task { @MainActor in
-            if let _ = currentPlayingSession {
-                await ProgressManager.shared.audioSessionCompleted()
-            }
-        }
-    }
-    
-    @objc private func handleAudioEngineDidFinish() {
-        print("🎵 Audio finished playing")
-        guard let session = currentPlayingSession else {
-            print("❌ No current session")
-            return
-        }
-        print("✅ Completing session: \(session.title)")
-        
-        Task {
-            await ProgressManager.shared.audioSessionCompleted()
-        }
+        guard OnboardingManager.shared.isOnboardingCompleted else { return }
+        stop(mode: .clearSession)
     }
     
     // MARK: - Public API
@@ -114,18 +93,15 @@ final class AudioManager: ObservableObject {
     
     func stopOnboardingMusic() {
         guard isPlayingOnboarding else { return }
-        Task {
-            await stop()
-            isPlayingOnboarding = false
-        }
+        stop()
+        isPlayingOnboarding = false
     }
     
     /// Plays a meditation session
-    @MainActor
     func play(_ session: YogaNidraSession) async {
         do {
             // Stop any existing playback but don't clear session yet
-            await stop(mode: .switchSession)
+            stop(mode: .switchSession)
             
             isLoading = true
             errorMessage = nil
@@ -149,73 +125,69 @@ final class AudioManager: ObservableObject {
             isLoading = false
             
         } catch {
-            await MainActor.run {
-                isLoading = false
-                errorMessage = error.localizedDescription
-            }
+            isLoading = false
+            errorMessage = error.localizedDescription
         }
     }
     
     /// Pauses the current playback
     func pause() async {
-        await MainActor.run {
-            audioEngine.pause()
-            isPlaying = false
-            updateNowPlayingInfo()
-        }
+        ProgressManager.shared.audioSessionEnded()
+        audioEngine.pause()
+        isPlaying = false
+        updateNowPlayingInfo()
     }
     
     /// Resumes the current playback
     func resume() async {
-        await MainActor.run {
-            audioEngine.play()
-            isPlaying = true
-            updateNowPlayingInfo()
-        }
+        ProgressManager.shared.audioSessionStarted()
+        audioEngine.play()
+        isPlaying = true
+        updateNowPlayingInfo()
     }
     
     /// Stops playback and optionally resets state
-    func stop(mode: SessionClearMode = .keepSession) async {
-        await MainActor.run {
-            // Stop playback
-            audioEngine.pause()
-            
-            // Clean up time observer
-            if let token = timeObserverToken {
-                audioEngine.removeTimeObserver(token)
-                timeObserverToken = nil
-            }
-            
-            // Handle session state based on mode
-            switch mode {
-            case .keepSession:
-                // Just stop playback, keep session
-                isPlaying = false
-                
-            case .clearSession:
-                // Full reset (for onboarding)
-                currentPlayingSession = nil
-                preparedSession = nil
-                isPlaying = false
-                
-            case .switchSession:
-                // Keep prepared session if exists
-                if preparedSession == nil {
-                    currentPlayingSession = nil
-                }
-                isPlaying = false
-            }
-            
-            // Always reset these
-            currentTime = 0
-            duration = 0
-            progress = 0
-            isLoading = false
-            errorMessage = nil
-            
-            // Update now playing info
-            updateNowPlayingInfo()
+    func stop(mode: SessionClearMode = .keepSession) {
+        // Stop playback
+        audioEngine.pause()
+        
+        // Clean up time observer
+        if let token = timeObserverToken {
+            audioEngine.removeTimeObserver(token)
+            timeObserverToken = nil
         }
+        
+        // Handle session state based on mode
+        switch mode {
+        case .keepSession:
+            // Just stop playback, keep session
+            isPlaying = false
+            
+        case .clearSession:
+            // Full reset (for onboarding)
+            currentPlayingSession = nil
+            preparedSession = nil
+            isPlaying = false
+            
+        case .switchSession:
+            // Keep prepared session if exists
+            if preparedSession == nil {
+                currentPlayingSession = nil
+            }
+            isPlaying = false
+        }
+        
+        // Always reset these
+        currentTime = 0
+        duration = 0
+        progress = 0
+        isLoading = false
+        errorMessage = nil
+        
+        // Update now playing info
+        updateNowPlayingInfo()
+        
+        ProgressManager.shared.audioSessionStarted()
     }
     
     // MARK: - Session Management
@@ -225,7 +197,6 @@ final class AudioManager: ObservableObject {
         preparedSession = session
     }
     
-    @MainActor
     func startPreparedSession() async {
         guard let session = preparedSession,
               !isLoading else { return }
@@ -241,8 +212,15 @@ final class AudioManager: ObservableObject {
     
     // MARK: - Time Control
     
-    func seek(to time: TimeInterval) async {
-        audioEngine.seek(to: time)
+    func onScrubberSeek(progress: Double) {
+        let time = duration * progress
+        seek(to: time, immidiate: true)
+    }
+    
+    func seek(to time: TimeInterval, immidiate: Bool = true) {
+        seekDebouncer.debounce(waitForDelay: !immidiate) { [weak self] in
+            self?.audioEngine.seek(to: time)
+        }
         self.currentTime = time
         self.progress = time / duration
         updateNowPlayingInfo()
@@ -250,12 +228,12 @@ final class AudioManager: ObservableObject {
     
     func skipForward() async {
         let newTime = min(currentTime + 15, duration)  // 15 seconds forward
-        await seek(to: newTime)
+        seek(to: newTime)
     }
     
     func skipBackward() async {
         let newTime = max(currentTime - 15, 0)  // 15 seconds backward
-        await seek(to: newTime)
+        seek(to: newTime)
     }
     
     // MARK: - Private Methods
@@ -266,7 +244,7 @@ final class AudioManager: ObservableObject {
             timeObserverToken = nil
         }
         
-        let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        let interval = CMTime(seconds: 1, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         timeObserverToken = audioEngine.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
             guard let self = self else { return }
             self.currentTime = time.seconds
@@ -323,9 +301,7 @@ final class AudioManager: ObservableObject {
         
         commandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
             guard let event = event as? MPChangePlaybackPositionCommandEvent else { return .commandFailed }
-            Task {
-                await self?.seek(to: event.positionTime)
-            }
+            self?.seek(to: event.positionTime)
             return .success
         }
     }
@@ -418,7 +394,7 @@ final class AudioManager: ObservableObject {
                 switch result {
                 case .success:
                     self.setupTimeObserver()
-                    Task { @MainActor in
+                    Task {
                         await self.resume()
                     }
                     self.isLoading = false

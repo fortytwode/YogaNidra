@@ -27,9 +27,5 @@ struct ProgressView: View {
 #Preview {
     ProgressView()
         .environmentObject(Presenter())
-        #if DEBUG
-        .environmentObject(ProgressManager.preview)
-        #else
         .environmentObject(ProgressManager.shared)
-        #endif
 }

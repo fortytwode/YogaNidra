@@ -180,7 +180,7 @@ final class StoreManager: ObservableObject {
             
             if transaction.productType == .autoRenewable {
                 if let product = try? await Product.products(for: [transaction.productID]).first {
-                    await logPurchaseAnalytics(product, transaction: transaction)
+                    logPurchaseAnalytics(product, transaction: transaction)
                 }
             }
             
@@ -190,20 +190,16 @@ final class StoreManager: ObservableObject {
     }
     
     private func refreshPurchasedIdentifiers() async throws {
-        do {
-            for await result in StoreKit.Transaction.currentEntitlements {
-                if case .verified(let transaction) = result {
-                    if transaction.revocationDate == nil {
-                        purchasedIdentifiers.insert(transaction.productID)
-                    } else {
-                        purchasedIdentifiers.remove(transaction.productID)
-                    }
+        for await result in StoreKit.Transaction.currentEntitlements {
+            if case .verified(let transaction) = result {
+                if transaction.revocationDate == nil {
+                    purchasedIdentifiers.insert(transaction.productID)
+                } else {
+                    purchasedIdentifiers.remove(transaction.productID)
                 }
             }
-            await updateSubscriptionStatus()
-        } catch {
-            throw StoreError.failed(error)
         }
+        updateSubscriptionStatus()
     }
     
     @MainActor
@@ -230,7 +226,7 @@ final class StoreManager: ObservableObject {
             
             if let product = try? await Product.products(for: [transaction.productID]).first,
                product.type == .autoRenewable {
-                await logPurchaseAnalytics(product, transaction: transaction)
+                logPurchaseAnalytics(product, transaction: transaction)
             }
             
             onPuchaseCompleted.send(reason)

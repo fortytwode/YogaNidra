@@ -1,380 +1,131 @@
+
 import Foundation
 import Combine
 
+@MainActor
 final class ProgressManager: ObservableObject {
     static let shared = ProgressManager()
     
-    #if DEBUG
-    static var preview: ProgressManager {
-        let manager = ProgressManager()
-        manager.sessionsCompleted = 5
-        manager.streakDays = 3
-        manager.totalTimeListened = 3600 // 1 hour
-        return manager
-    }
-    #endif
-    
-    @Published var streakDays: Int = 0
-    @Published var totalMinutesListened: Int = 0
-    @Published var sessionsCompleted: Int = 0 {
-        didSet {
-            checkRatingDialog()
-        }
-    }
-    @Published var progress: Double = 0
-    @Published var sessionProgress: [UUID: SessionProgress] = [:]
-    
-    @Published private(set) var currentStreak: Int = 0
-    @Published private(set) var totalTimeListened: TimeInterval = 0
-    @Published private(set) var recentSessions: [(YogaNidraSession, SessionProgress)] = []
+    // Progress data keys
+    let appLaunchCountKey = "appLaunchCount"
+    let lastSessionDateKey = "lastSessionDateKey"
+    let streakCountKey = "streakCountKey"
+    let lastRatingDialogDateKey = "lastRatingDialogDate"
+    let totalSessionListenTimeKey = "totalSessionListenTimeKey"
+    let totalSessionsCompletedKey = "totalSessionsCompletedKey"
     
     // Rating Dialog
-    @Published var showRaitnsDialog = PassthroughSubject<Void, Never>()
+    private var showRaitnsDialog = PassthroughSubject<Void, Never>()
     var showRaitnsDialogPublisher: AnyPublisher<Void, Never> {
         showRaitnsDialog.eraseToAnyPublisher()
     }
     
-    @Published var audioStartTime: Date?
-    @Published var totalSessionListenTime: TimeInterval = 0
-    @Published var lastRatingDialogDate: Date?
-    @Published var lastRatingPrompt: Date?
-    
-    private let lastRatingDialogDateKey = "lastRatingDialogDate"
-    private let totalSessionListenTimeKey = "totalSessionListenTime"
-    private let ratingPromptsInYearKey = "ratingPromptsInYear"
-    private let ratingYearStartDateKey = "ratingYearStartDate"
-    private let lastRatingPromptKey = "lastRatingPrompt"
-    private let lastCompletedDateKey = "lastCompletedDate"
-    
-    // Made public for debug view
-    public private(set) var ratingPromptsInYear: Int = 0
-    private var ratingYearStartDate: Date?
-    
-    private let userDefaults = UserDefaults.standard
+    private var audioSessionStartTime: Date?
+    private var appLaunchCount: Int = 0
+    private var totalSessionListenTime: TimeInterval = 0
+    private var lastRatingDialogDate: Date?
     
     private init() {
-        // Load rating data
-        if let date = userDefaults.object(forKey: lastRatingPromptKey) as? Date {
-            lastRatingPrompt = date
-        }
+        loadDataOnAppLaunch()
+        setAppLaunchCount()
+        checkRatingDialog()
         
-        ratingPromptsInYear = userDefaults.integer(forKey: ratingPromptsInYearKey)
-        if let date = userDefaults.object(forKey: ratingYearStartDateKey) as? Date {
-            ratingYearStartDate = date
-        }
+        // Add observer for playback completion
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handlePlaybackFinished),
+            name: .AVPlayerItemDidPlayToEndTime,
+            object: nil
+        )
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func handlePlaybackFinished() {
+        guard OnboardingManager.shared.isOnboardingCompleted else { return }
+        let totalSessionsCompleted = UserDefaults.standard.integer(forKey: totalSessionsCompletedKey) + 1
+        UserDefaults.standard.set(totalSessionsCompleted, forKey: totalSessionsCompletedKey)
         
-        // Reset yearly count if it's been more than a year
-        if let startDate = ratingYearStartDate {
-            let daysSinceStart = Calendar.current.dateComponents([.day], from: startDate, to: Date()).day ?? 0
-            if daysSinceStart >= 365 {
-                ratingPromptsInYear = 0
-                ratingYearStartDate = Date()
-                userDefaults.set(0, forKey: ratingPromptsInYearKey)
-                userDefaults.set(Date(), forKey: ratingYearStartDateKey)
+        let today = Calendar.current.startOfDay(for: Date()) // Normalize to 00:00
+        let lastSessionDate = UserDefaults.standard.object(forKey: lastSessionDateKey) as? Date
+        
+        if let lastSessionDate = lastSessionDate {
+            let difference = Calendar.current.dateComponents([.day], from: lastSessionDate, to: today).day ?? 0
+            if difference == 0 {
+                // Already recorded today, do nothing
+                return
+            } else if difference == 1 {
+                // Continue streak
+                incrementStreak()
+            } else {
+                // Streak broken, reset
+                resetStreak()
             }
         } else {
-            ratingYearStartDate = Date()
-            userDefaults.set(Date(), forKey: ratingYearStartDateKey)
+            // First session ever
+            resetStreak()
         }
         
-        // Load data asynchronously
-        Task { @MainActor in
-            await loadDataOnAppLaunch()
-            checkRatingDialog()
-        }
+        // Save today's date as last session date
+        UserDefaults.standard.set(today, forKey: lastSessionDateKey)
     }
     
-    @MainActor
-    private func loadDataOnAppLaunch() async {
-        // Load Firebase data
-        if let userId = await AuthManager.shared.currentUserId {
-            do {
-                let progress = try await FirebaseManager.shared.fetchProgress(for: userId)
-                
-                // Update local state with Firebase data
-                if let sessions = progress["sessions"] as? [String: [String: Any]] {
-                    for (sessionId, sessionData) in sessions {
-                        guard let uuid = UUID(uuidString: sessionId) else { continue }
-                        
-                        let startTime = Date(timeIntervalSince1970: sessionData["startTime"] as? TimeInterval ?? 0)
-                        let duration = sessionData["duration"] as? TimeInterval ?? 0
-                        let completed = sessionData["completed"] as? Bool ?? false
-                        let lastCompletedTime = sessionData["lastCompleted"] as? TimeInterval
-                        
-                        sessionProgress[uuid] = SessionProgress(
-                            startTime: startTime,
-                            duration: duration,
-                            completed: completed,
-                            lastCompleted: lastCompletedTime.map { Date(timeIntervalSince1970: $0) }
-                        )
-                    }
-                }
-                
-                // Update metrics
-                if let metrics = progress["metrics"] as? [String: Any] {
-                    totalTimeListened = metrics["totalTimeListened"] as? TimeInterval ?? 0
-                    totalMinutesListened = Int(totalTimeListened / 60)
-                    sessionsCompleted = metrics["sessionsCompleted"] as? Int ?? 0
-                    streakDays = metrics["streakDays"] as? Int ?? 0
-                }
-                
-                // Validate streak on launch
-                await updateStreak()
-                
-                // Update UI
-                updateRecentSessions()
-            } catch {
-                print("❌ Failed to load progress: \(error)")
-            }
-        }
+    private func incrementStreak() {
+        let newStreak = UserDefaults.standard.integer(forKey: streakCountKey) + 1
+        UserDefaults.standard.set(newStreak, forKey: streakCountKey)
     }
     
-    @MainActor
-    private func syncProgress() async {
-        guard let userId = await AuthManager.shared.currentUserId else { return }
-        
-        do {
-            // Build progress data
-            var progressData: [String: Any] = [:]
-            
-            // Sessions progress
-            var sessions: [String: [String: Any]] = [:]
-            for (uuid, progress) in sessionProgress {
-                sessions[uuid.uuidString] = [
-                    "startTime": progress.startTime.timeIntervalSince1970,
-                    "duration": progress.duration,
-                    "completed": progress.completed,
-                    "lastCompleted": progress.lastCompleted?.timeIntervalSince1970 as Any
-                ]
-            }
-            progressData["sessions"] = sessions
-            
-            // Metrics
-            progressData["metrics"] = [
-                "totalTimeListened": totalTimeListened,
-                "sessionsCompleted": sessionsCompleted,
-                "streakDays": streakDays
-            ]
-            
-            // Sync to Firebase using the correct method
-            try await FirebaseManager.shared.syncProgress(for: userId, progress: progressData)
-        } catch {
-            print("❌ Failed to sync progress: \(error)")
-        }
+    private func resetStreak() {
+        UserDefaults.standard.set(1, forKey: streakCountKey) // Start fresh from 1
     }
     
-    @MainActor
     func audioSessionStarted() {
-        guard let currentSession = AudioManager.shared.currentPlayingSession else { return }
-        
-        // Log analytics
-        FirebaseManager.shared.logMeditationStarted(
-            sessionId: currentSession.id.uuidString,
-            duration: TimeInterval(currentSession.duration),
-            category: String(describing: currentSession.category)
-        )
-        
-        // Update local progress
-        sessionProgress[currentSession.id] = SessionProgress(
-            startTime: Date(),
-            duration: 0,
-            completed: false
-        )
-        
-        Task {
-            await syncProgress()
-        }
+        audioSessionStartTime = Date()
     }
     
-    @MainActor
-    func audioSessionCompleted() async {
-        print("📊 Progress Manager: Completing session")
-        guard let currentSession = AudioManager.shared.currentPlayingSession,
-              var progress = sessionProgress[currentSession.id] else {
-            print("❌ Progress Manager: No current session or progress")
-            return
-        }
-        
-        let duration = Date().timeIntervalSince(progress.startTime)
-        print("⏱️ Session duration: \(Int(duration))s vs required: \(Int(Double(currentSession.duration) * 0.9))s")
-        
-        if duration >= Double(currentSession.duration) * 0.9 {
-            print("✨ Session completed! Count before: \(sessionsCompleted)")
-            progress.completed = true
-            progress.lastCompleted = Date()
-            progress.duration = duration
-            sessionProgress[currentSession.id] = progress
-            
-            sessionsCompleted += 1
-            print("🎯 Sessions completed after: \(sessionsCompleted)")
-            await updateStreak()
-            
-            // Update UI
-            updateRecentSessions()
-            print("🔄 Recent sessions updated")
-            
-            // Sync to Firebase
-            await syncProgress()
-            print("☁️ Progress synced to Firebase")
-        } else {
-            print("⚠️ Session not long enough to count as complete")
-        }
-        
-        // Update total time
-        totalTimeListened += duration
-        totalMinutesListened = Int(totalTimeListened / 60)
-    }
-    
-    private func updateStreak() async {
-        let calendar = Calendar.current
-        let lastCompletedDate = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: lastCompletedDateKey))
-        let today = Date()
-        
-        // If this is the first completion
-        if lastCompletedDate.timeIntervalSince1970 == 0 {
-            streakDays = 1
-            UserDefaults.standard.set(today.timeIntervalSince1970, forKey: lastCompletedDateKey)
-            return
-        }
-        
-        guard let daysBetween = calendar.dateComponents([.day], from: lastCompletedDate, to: today).day else {
-            return
-        }
-        
-        if daysBetween == 0 {
-            // Same day, keep current streak
-            return
-        } else if daysBetween == 1 {
-            // Yesterday - increment streak
-            streakDays += 1
-        } else {
-            // More than one day - reset streak
-            streakDays = 1
-        }
-        
-        // Save new completion date
-        UserDefaults.standard.set(today.timeIntervalSince1970, forKey: lastCompletedDateKey)
-    }
-    
-    private func updateRecentSessions() {
-        // First, filter and map sessions
-        let sessionsWithProgress = sessionProgress.compactMap { id, progress -> (YogaNidraSession, SessionProgress)? in
-            guard let session = YogaNidraSession.allSessions.first(where: { $0.id == id }) else {
-                return nil
-            }
-            return (session, progress)
-        }
-        
-        // Then sort by completion date
-        let sortedSessions = sessionsWithProgress.sorted { 
-            $0.1.lastCompleted ?? .distantPast > $1.1.lastCompleted ?? .distantPast 
-        }
-        
-        // Finally, take the first 5 sessions
-        recentSessions = sortedSessions.prefix(5).map { ($0.0, $0.1) }
-    }
-    
-    private func updateTotalTimeListened() {
-        totalTimeListened = sessionProgress.values
-            .map { $0.duration }
-            .reduce(0, +)
-        totalMinutesListened = Int(totalTimeListened / 60.0)
-    }
-    
-    private func getCooldownDays() -> Int {
-        switch ratingPromptsInYear {
-            case 0: return 0     // First prompt: immediately after first session
-            case 1: return 30    // Second prompt: 30 days
-            default: return 365  // Third prompt: 1 year
-        }
+    func audioSessionEnded() {
+        guard let startTime = audioSessionStartTime else { return }
+        audioSessionStartTime = nil
+        let endTime = Date()
+        let totalListenTime = endTime.timeIntervalSince(startTime) + totalSessionListenTime
+        setTotalSessionListenTime(totalListenTime)
+        checkRatingDialog()
     }
     
     private func checkRatingDialog() {
-        // Only proceed if we haven't hit the yearly limit
-        guard ratingPromptsInYear < 3 else { return }
-        
-        let hasCompletedSession = sessionsCompleted > 0
-        let cooldownDays = getCooldownDays()
-        let isRatingDialogCoolDownPassed = cooldownDays == 0 ? true : 
-            lastRatingDialogDate?.isAtLeastDaysApart(from: .now, days: cooldownDays) ?? true
-        
-        if hasCompletedSession, isRatingDialogCoolDownPassed {
-            showRaitnsDialog.send()  // Trigger the rating dialog
+        let isEngoughListenTime = totalSessionListenTime >= 10 * 60
+        let isAppLaunchCountSufficient = appLaunchCount >= 3
+        let isRatingDialogCoolDownPassed = lastRatingDialogDate?.isAtLeastDaysApart(from: .now, days: 3) ?? true
+        if isEngoughListenTime, isAppLaunchCountSufficient, isRatingDialogCoolDownPassed {
             setRatingDialogShown()
         }
-        
-        if shouldShowRatingPrompt() {
-            recordRatingPrompt()
-        }
     }
     
-    private func setRatingDialogShown() {
-        lastRatingDialogDate = .now
-        UserDefaults.standard.set(Date(), forKey: lastRatingDialogDateKey)
-    }
-    
-    func shouldShowRatingPrompt() -> Bool {
-        // Don't show more than 3 times in a year
-        if ratingPromptsInYear >= 3 {
-            return false
-        }
-        
-        // Don't show more than once every 30 days
-        if let lastPrompt = lastRatingPrompt {
-            let daysSinceLastPrompt = Calendar.current.dateComponents([.day], from: lastPrompt, to: Date()).day ?? 0
-            if daysSinceLastPrompt < 30 {
-                return false
-            }
-        }
-        
-        // First rating prompt after completing first session
-        if lastRatingPrompt == nil && sessionsCompleted == 1 {
-            return true
-        }
-        
-        // Subsequent prompts when user:
-        // 1. Has completed 5 or more sessions
-        // 2. Hasn't been prompted in the last 30 days
-        // 3. Hasn't exceeded 3 prompts in the last 365 days
-        return sessionsCompleted >= 5
-    }
-    
-    func recordRatingPrompt() {
-        lastRatingPrompt = Date()
-        userDefaults.set(lastRatingPrompt, forKey: lastRatingPromptKey)
-        
-        // Update yearly count
-        ratingPromptsInYear += 1
-        userDefaults.set(ratingPromptsInYear, forKey: ratingPromptsInYearKey)
-        
-        // Set start date for yearly tracking if not set
-        if ratingYearStartDate == nil {
-            ratingYearStartDate = Date()
-            userDefaults.set(Date(), forKey: ratingYearStartDateKey)
-        }
-    }
-    
-    public func setTotalSessionListenTime(_ time: TimeInterval) {
+    private func setTotalSessionListenTime(_ time: TimeInterval) {
         totalSessionListenTime = time
         UserDefaults.standard.set(time, forKey: totalSessionListenTimeKey)
     }
     
-    public func setLastRatingDialogDate(_ date: Date) {
-        lastRatingDialogDate = date
-        UserDefaults.standard.set(date, forKey: lastRatingDialogDateKey)
+    private func setAppLaunchCount() {
+        appLaunchCount += 1
+        UserDefaults.standard.set(appLaunchCount, forKey: appLaunchCountKey)
     }
     
-    public func resetRatingState() {
-        setTotalSessionListenTime(0)
-        lastRatingDialogDate = nil
-        ratingPromptsInYear = 0
-        ratingYearStartDate = nil
-        UserDefaults.standard.removeObject(forKey: lastRatingDialogDateKey)
-        UserDefaults.standard.removeObject(forKey: ratingPromptsInYearKey)
-        UserDefaults.standard.removeObject(forKey: ratingYearStartDateKey)
+    private func setRatingDialogShown() {
+        showRaitnsDialog.send()
+        lastRatingDialogDate = Date()
+        UserDefaults.standard.set(lastRatingDialogDate, forKey: lastRatingDialogDateKey)
     }
     
-    // MARK: - Debug Methods
-    
-    // Removed debug methods
+    private func loadDataOnAppLaunch() {
+        appLaunchCount = UserDefaults.standard.integer(forKey: appLaunchCountKey)
+        if let date = UserDefaults.standard.object(forKey: lastRatingDialogDateKey) as? Date {
+            lastRatingDialogDate = date
+        }
+        if let listeningTime = UserDefaults.standard.object(forKey: totalSessionListenTimeKey) as? TimeInterval {
+            totalSessionListenTime = listeningTime
+        }
+    }
 }

@@ -11,7 +11,7 @@ class FavoritesManager: ObservableObject {
         // Start with empty state
         Task { @MainActor in
             // First load from Firebase
-            await loadFavoritesFromFirebase()
+            loadFavoritesFromFirebase()
             // Then merge with local
             loadFavorites()
         }
@@ -72,7 +72,7 @@ class FavoritesManager: ObservableObject {
     private func loadFavoritesFromFirebase() {
         Task { @MainActor in
             do {
-                if let userId = await AuthManager.shared.currentUserId {
+                if let userId = AuthManager.shared.currentUserId {
                     let userData = try await FirebaseManager.shared.fetchUserData(userId: userId)
                     if let favoriteIds = userData["favorites"] as? [String] {
                         let firebaseFavorites = YogaNidraSession.allSessions.filter { session in
