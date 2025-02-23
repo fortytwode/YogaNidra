@@ -6,6 +6,8 @@ import Combine
 final class ProgressManager: ObservableObject {
     static let shared = ProgressManager()
     
+    @Published var recentSessions: [RecentSessionItem] = []
+    
     // Rating Dialog
     private var showRaitnsDialog = PassthroughSubject<Void, Never>()
     var showRaitnsDialogPublisher: AnyPublisher<Void, Never> {
@@ -24,7 +26,11 @@ final class ProgressManager: ObservableObject {
     }
     
     private init() {
-        FirebaseManager.shared.syncProgress()
+        Task {
+            await FirebaseManager.shared.syncProgress()
+            recentSessions = await FirebaseManager.shared.getRecentSessions()
+            print("DEBUG:- Session \(recentSessions)")
+        }
         setAppLaunchCount()
         checkRatingDialog()
         
@@ -45,7 +51,9 @@ final class ProgressManager: ObservableObject {
         guard OnboardingManager.shared.isOnboardingCompleted else { return }
         let totalSessionsCompleted = Defaults.integer(forKey: StroageKeys.totalSessionsCompletedKey) + 1
         Defaults.set(totalSessionsCompleted, forKey: StroageKeys.totalSessionsCompletedKey)
-        FirebaseManager.shared.setCompletedSessionsCount(count: totalSessionsCompleted)
+        Task {
+            await FirebaseManager.shared.setCompletedSessionsCount(count: totalSessionsCompleted)
+        }
         
         let today = Calendar.current.startOfDay(for: Date()) // Normalize to 00:00
         let lastSessionDate = Defaults.object(forKey: StroageKeys.lastSessionDateKey) as? Date
@@ -74,16 +82,21 @@ final class ProgressManager: ObservableObject {
     private func incrementStreak() {
         let newStreak = Defaults.integer(forKey: StroageKeys.streakCountKey) + 1
         Defaults.set(newStreak, forKey: StroageKeys.streakCountKey)
-        FirebaseManager.shared.setUserStreaks(count: newStreak)
+        Task {
+            await FirebaseManager.shared.setUserStreaks(count: newStreak)
+        }
     }
     
     private func resetStreak() {
         Defaults.set(1, forKey: StroageKeys.streakCountKey) // Start fresh from 1
-        FirebaseManager.shared.setUserStreaks(count: 1)
+        Task {
+            await FirebaseManager.shared.setUserStreaks(count: 1)
+        }
     }
     
-    func audioSessionStarted() {
-        guard OnboardingManager.shared.isOnboardingCompleted else { return }
+    func audioSessionStarted(session: YogaNidraSession?) {
+        guard OnboardingManager.shared.isOnboardingCompleted, let session else { return }
+        addRecentSession(session: session)
         audioSessionStartTime = Date()
     }
     
@@ -108,7 +121,9 @@ final class ProgressManager: ObservableObject {
     
     private func setTotalSessionListenTime(_ time: TimeInterval) {
         Defaults.set(time, forKey: StroageKeys.totalSessionListenTimeKey)
-        FirebaseManager.shared.setTotalListenedTime(time: time)
+        Task {
+            await FirebaseManager.shared.setTotalListenedTime(time: time)
+        }
     }
     
     private func setAppLaunchCount() {
@@ -118,5 +133,14 @@ final class ProgressManager: ObservableObject {
     private func setRatingDialogShown() {
         showRaitnsDialog.send()
         Defaults.set(Date(), forKey: StroageKeys.lastRatingDialogDateKey)
+    }
+    
+    private func addRecentSession(session: YogaNidraSession) {
+        Task {
+            recentSessions = await FirebaseManager.shared.setRecentSessions(
+                withNew: session,
+                recentSessions: recentSessions
+            )
+        }
     }
 }

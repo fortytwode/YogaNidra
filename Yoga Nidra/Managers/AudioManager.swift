@@ -111,7 +111,7 @@ final class AudioManager: ObservableObject {
             updateNowPlayingInfo()
             
             // Start progress tracking
-            ProgressManager.shared.audioSessionStarted()
+            ProgressManager.shared.audioSessionStarted(session: session)
             
             // Try to get local URL first
             if let localURL = session.localURL, FileManager.default.fileExists(atPath: localURL.path) {
@@ -140,7 +140,7 @@ final class AudioManager: ObservableObject {
     
     /// Resumes the current playback
     func resume() async {
-        ProgressManager.shared.audioSessionStarted()
+        ProgressManager.shared.audioSessionStarted(session: currentPlayingSession)
         audioEngine.play()
         isPlaying = true
         updateNowPlayingInfo()

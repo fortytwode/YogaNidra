@@ -28,7 +28,7 @@ final class DownloadManager: ObservableObject {
     private let firebaseManager = FirebaseManager.shared
     
     // Active downloads tracking
-    @Published private(set) var downloadingSessionIds: Set<UUID> = []
+    @Published private(set) var downloadingSessionIds: Set<String> = []
     
     private init() {}
     

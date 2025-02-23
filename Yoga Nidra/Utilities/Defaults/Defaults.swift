@@ -10,6 +10,8 @@ enum StroageKeys {
     static let lastRatingDialogDateKey = "lastRatingDialogDate"
     static let totalSessionListenTimeKey = "totalSessionListenTimeKey"
     static let totalSessionsCompletedKey = "totalSessionsCompletedKey"
+    static let recentsSessionsKey = "recentsSessionsKey"
+    static let favoriteSessionsKey = "favoriteSessionsKey"
 }
 
 var Defaults: UserDefaults {

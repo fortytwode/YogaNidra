@@ -1,47 +1,71 @@
 import Foundation
 
-class FavoritesManager: ObservableObject {
+@MainActor
+final class FavoritesManager: ObservableObject {
     static let shared = FavoritesManager()
     
     @Published var favoriteSessions: [YogaNidraSession] = []
-    private let favoritesKey = "favoriteSessions"
-    private var pendingSync = false
     
     private init() {
-        // Start with empty state
-        Task { @MainActor in
-            // First load from Firebase
-            // loadFavoritesFromFirebase()
-            // Then merge with local
-            loadFavorites()
+        Task {
+            await loadFavoritesFromFirebase()
         }
     }
     
-    func toggleFavorite(_ session: YogaNidraSession) {
+    func toggleFavorite(_ session: YogaNidraSession) async {
         if isFavorite(session) {
-            favoriteSessions.removeAll { $0.id == session.id }
+            await removeFavorite(session)
         } else {
-            favoriteSessions.append(session)
+            await addFavorite(session)
         }
-        saveFavorites()
     }
     
     func isFavorite(_ session: YogaNidraSession) -> Bool {
-        favoriteSessions.contains(where: { $0.id == session.id })
+        favoriteSessions.contains { $0.id == session.id }
     }
     
-    private func saveFavorites() {
-        let favoriteIds = favoriteSessions.map { $0.id.uuidString }
-        UserDefaults.standard.set(favoriteIds, forKey: favoritesKey)
-    }
-    
-    private func loadFavorites() {
-        guard let favoriteIds = UserDefaults.standard.stringArray(forKey: favoritesKey) else {
-            return
-        }
+    private func addFavorite(_ session: YogaNidraSession) async {
+        guard let userCollection = await FirebaseManager.shared.getUserDocument() else { return }
         
-        favoriteSessions = YogaNidraSession.allSessions.filter { session in
-            favoriteIds.contains(session.id.uuidString)
+        let favDocument = userCollection.collection(StroageKeys.favoriteSessionsKey).document(session.id)
+        do {
+            try await favDocument.setData(["isFavoutite": true])
+            favoriteSessions.append(session)
+        } catch {
+            print("Error adding favorite: \(error.localizedDescription)")
+        }
+    }
+    
+    private func removeFavorite(_ session: YogaNidraSession) async {
+        guard let userCollection = await FirebaseManager.shared.getUserDocument() else { return }
+        
+        let favDocument = userCollection.collection(StroageKeys.favoriteSessionsKey).document(session.id)
+        do {
+            try await favDocument.delete()
+            favoriteSessions.removeAll { $0.id == session.id }
+        } catch {
+            print("Error adding favorite: \(error.localizedDescription)")
+        }
+    }
+    
+    private func loadFavoritesFromFirebase() async {
+        guard let userCollection = await FirebaseManager.shared.getUserDocument() else { return }
+        
+        let allSessions = YogaNidraSession.allSessions + YogaNidraSession.specialEventSessions
+        let favCollection = userCollection.collection(StroageKeys.favoriteSessionsKey)
+        do {
+            let snapshot = try await favCollection.getDocuments()
+            let favSessions = snapshot.documents.compactMap {
+                let id = $0.documentID
+                if let session = allSessions.first(where: { $0.id == id }) {
+                    return session
+                } else {
+                    return nil
+                }
+            }
+            favoriteSessions = favSessions
+        } catch {
+            print("Error loading favorites: \(error.localizedDescription)")
         }
     }
 }

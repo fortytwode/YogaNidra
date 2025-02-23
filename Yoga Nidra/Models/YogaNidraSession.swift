@@ -1,7 +1,7 @@
 import Foundation
 
 struct YogaNidraSession: Identifiable, Codable, Equatable, Hashable {
-    let id: UUID
+    let id: String
     let title: String
     let description: String
     let duration: Int
@@ -60,7 +60,7 @@ struct YogaNidraSession: Identifiable, Codable, Equatable, Hashable {
     }()
     
     static let preview = YogaNidraSession(
-        id: UUID(),
+        id: "0",
         title: "Preview Session",
         description: "This is a preview session for development",
         duration: 10,

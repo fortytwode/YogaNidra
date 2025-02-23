@@ -125,7 +125,9 @@ struct SessionDetailView: View {
     
     private var favoriteButton: some View {
         Button(action: {
-            favoritesManager.toggleFavorite(session)
+            Task {
+                await favoritesManager.toggleFavorite(session)
+            }
         }) {
             VStack(spacing: 4) {
                 Image(systemName: favoritesManager.isFavorite(session) ? "heart.fill" : "heart")

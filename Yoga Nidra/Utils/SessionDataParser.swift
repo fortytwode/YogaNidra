@@ -18,7 +18,7 @@ class SessionDataParser {
                 $0.order < $1.order
             }.compactMap { item in
                 YogaNidraSession(
-                    id: UUID(),
+                    id: String(item.order),
                     title: item.title,
                     description: item.description,
                     duration: item.duration,
@@ -51,7 +51,7 @@ class SessionDataParser {
                 $0.order < $1.order
             }.compactMap { item in
                 YogaNidraSession(
-                    id: UUID(),
+                    id: String(item.order),
                     title: item.title,
                     description: item.description,
                     duration: item.duration,

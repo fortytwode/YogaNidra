@@ -201,9 +201,19 @@ final class FirebaseManager {
 // MARK: User progress tracking
 extension FirebaseManager {
     
-    func getUserDocument() -> DocumentReference? {
+    func getUserDocument() async -> DocumentReference? {
         guard let userId = AuthManager.shared.currentUserId else { return nil }
-        return firestore.collection(StroageKeys.usersCollectionKey).document("\(userId)")
+        let userRef = firestore.collection(StroageKeys.usersCollectionKey).document(userId)
+        do {
+            let document = try await userRef.getDocument()
+            if !document.exists {
+                try await userRef.setData([:])
+                print("User document created.")
+            }
+        } catch {
+            print("Error checking/creating document: \(error.localizedDescription)")
+        }
+        return userRef
     }
     
     func getUserStreaks() async -> Int {
@@ -221,28 +231,86 @@ extension FirebaseManager {
         return document?.data()?[StroageKeys.totalSessionsCompletedKey] as? Int ?? 0
     }
     
-    func setTotalListenedTime(time: TimeInterval) {
-        getUserDocument()?.updateData([
+    func setTotalListenedTime(time: TimeInterval) async {
+        let data = [
             StroageKeys.totalSessionListenTimeKey: time
-        ])
+        ]
+        try? await getUserDocument()?.updateData(data)
     }
     
-    func setUserStreaks(count: Int) {
-        getUserDocument()?.updateData([
+    func setUserStreaks(count: Int) async {
+        let data = [
             StroageKeys.streakCountKey: count
-        ])
+        ]
+        try? await getUserDocument()?.updateData(data)
     }
     
-    func setCompletedSessionsCount(count: Int) {
-        getUserDocument()?.updateData([
+    func setCompletedSessionsCount(count: Int) async {
+        let data = [
             StroageKeys.totalSessionsCompletedKey: count
-        ])
+        ]
+        try? await getUserDocument()?.updateData(data)
     }
     
-    func syncProgress() {
+    func getRecentSessions() async -> [RecentSessionItem] {
+        guard let userDocument = await getUserDocument() else { return [] }
+        let sessions = YogaNidraSession.allSessions + YogaNidraSession.specialEventSessions
+        do {
+            let sessionsSnapshot = try await userDocument.collection(StroageKeys.recentsSessionsKey).getDocuments()
+            let recentSessionsArray: [RecentSessionItem] = sessionsSnapshot.documents.compactMap { document in
+                guard let sessionId = document["sessionId"] as? String,
+                      let lastCompleted = document["lastCompleted"] as? Timestamp else {
+                    return nil
+                }
+                guard let session = sessions.first(where: { $0.id == sessionId }) else {
+                    return nil
+                }
+                return RecentSessionItem(session: session, lastCompleted: lastCompleted.dateValue())
+            }
+            return recentSessionsArray.sorted(by: { $0.lastCompleted > $1.lastCompleted })
+        } catch {
+            print("Error fetching recent sessions: \(error.localizedDescription)")
+            return []
+        }
+    }
+    
+    func setRecentSessions(withNew session: YogaNidraSession, recentSessions: [RecentSessionItem]) async -> [RecentSessionItem] {
+        guard let userDocument = await getUserDocument() else { return [] }
+        let sessionCollection = userDocument.collection(StroageKeys.recentsSessionsKey)
+        
+        var recentSessions = recentSessions
+        do {
+            let existingDocuments = try await sessionCollection.getDocuments()
+            for document in existingDocuments.documents {
+                try await sessionCollection.document(document.documentID).delete()
+            }
+            
+            // Ensure we only store the latest 2 sessions
+            recentSessions.insert(RecentSessionItem(session: session, lastCompleted: Date()), at: 0)
+            if recentSessions.count > 3 {
+                recentSessions.removeLast() // Remove the oldest session
+            }
+            // Store all recent sessions as separate documents
+            for recentSession in recentSessions {
+                let sessionData: [String: Any] = [
+                    "sessionId": recentSession.session.id,
+                    "lastCompleted": Timestamp(date: recentSession.lastCompleted)
+                ]
+                
+                let documentRef = sessionCollection.document(recentSession.session.id)
+                try await documentRef.setData(sessionData) // Overwrites if exists
+            }
+            return recentSessions
+        } catch {
+            print("Error storing recent sessions: \(error.localizedDescription)")
+            return []
+        }
+    }
+    
+    func syncProgress() async {
         Task {
             if !Defaults.bool(forKey: StroageKeys.isLaunchedBefore) {
-                setUserStreaks(count: 0)
+                await setUserStreaks(count: 0)
                 UserDefaults.standard.set(true, forKey: StroageKeys.isLaunchedBefore)
             }
             await Defaults.set(getUserStreaks(), forKey: StroageKeys.streakCountKey)
