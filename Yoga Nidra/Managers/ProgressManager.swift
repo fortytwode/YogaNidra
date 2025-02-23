@@ -1,4 +1,3 @@
-
 import Foundation
 import Combine
 
@@ -112,7 +111,7 @@ final class ProgressManager: ObservableObject {
     
     private func checkRatingDialog() {
         let isEngoughListenTime = totalSessionListenTime >= 10 * 60
-        let isAppLaunchCountSufficient = appLaunchCount >= 3
+        let isAppLaunchCountSufficient = appLaunchCount >= 1
         let isRatingDialogCoolDownPassed = lastRatingDialogDate?.isAtLeastDaysApart(from: .now, days: 3) ?? true
         if isEngoughListenTime, isAppLaunchCountSufficient, isRatingDialogCoolDownPassed {
             setRatingDialogShown()

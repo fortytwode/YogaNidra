@@ -6,6 +6,17 @@ progress tab
   Streak card
   session times
 
+Onboarding with sass	1.2	done
+Firebase to track progress	1.2	done
+Firebase basic analytics	1.2	done
+rating prompt	1.2	done
+download for offline use	1.4	done
+add background play, lock screen	1.4	done
+Screenshots with sass	1.4	done
+separate download section	1.4	done
+Deep linking	1.8	done
+Valentine's day event	1.8	done
+
 
 1.2 Feb 9th
 
