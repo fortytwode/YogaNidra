@@ -7,3 +7,11 @@ public extension View {
         transform(self)
     }
 }
+
+extension View {
+    
+    var uiView: UIView {
+        let hostingController = UIHostingController(rootView: self)
+        return hostingController.view
+    }
+}

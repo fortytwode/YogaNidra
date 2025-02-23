@@ -256,6 +256,16 @@ final class AudioEngine: NSObject {
         }
     }
     
+    func stop() {
+        player?.pause()
+        do {
+            // Ensure audio session is active before playing
+            try audioSession.setActive(false, options: [.notifyOthersOnDeactivation])
+        } catch {
+            print("❌ Audio Engine: Failed to activate session for playback - \(error)")
+        }
+    }
+    
     func pause() {
         player?.pause()
     }

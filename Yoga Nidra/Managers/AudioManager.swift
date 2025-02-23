@@ -147,7 +147,7 @@ final class AudioManager: ObservableObject {
     }
     
     /// Stops playback and optionally resets state
-    func stop(mode: SessionClearMode = .keepSession) {
+    func stop(mode: SessionClearMode = .clearSession) {
         // Stop playback
         audioEngine.pause()
         
@@ -168,6 +168,7 @@ final class AudioManager: ObservableObject {
             currentPlayingSession = nil
             preparedSession = nil
             isPlaying = false
+            audioEngine.stop()
             
         case .switchSession:
             // Keep prepared session if exists

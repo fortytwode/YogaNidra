@@ -29,7 +29,6 @@ final class ProgressManager: ObservableObject {
         Task {
             await FirebaseManager.shared.syncProgress()
             recentSessions = await FirebaseManager.shared.getRecentSessions()
-            print("DEBUG:- Session \(recentSessions)")
         }
         setAppLaunchCount()
         checkRatingDialog()
@@ -49,6 +48,7 @@ final class ProgressManager: ObservableObject {
 
     @objc private func handlePlaybackFinished() {
         guard OnboardingManager.shared.isOnboardingCompleted else { return }
+        audioSessionEnded()
         let totalSessionsCompleted = Defaults.integer(forKey: StroageKeys.totalSessionsCompletedKey) + 1
         Defaults.set(totalSessionsCompleted, forKey: StroageKeys.totalSessionsCompletedKey)
         Task {

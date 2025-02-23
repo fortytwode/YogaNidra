@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftMessages
 import StoreKit
 import FirebaseCore
 import FirebaseAnalytics
@@ -14,6 +15,7 @@ class AppState: ObservableObject {
 
 @main
 struct YogaNidraApp: App {
+    @StateObject private var rechabilityManager = RechabilityManager.shared
     @StateObject private var progressManager = ProgressManager.shared
     @StateObject private var playerState = PlayerState()
     @StateObject private var storeManager = StoreManager.shared
@@ -104,6 +106,14 @@ struct YogaNidraApp: App {
             .onReceive(progressManager.showRaitnsDialogPublisher) {
                 overlayManager.showOverlay(RatingPromptView())
             }
+            .onReceive(rechabilityManager.rechabilityChangedPublisher) {
+                guard !rechabilityManager.isNetworkRechable else { return }
+                SwiftMessages.show(
+                    view: ToastView(
+                        message: "Network unrecaheable, please check your internet connection."
+                    ).uiView
+                )
+            }
             .overlayContent(overlayManager)
             .sheet(item: $sheetPresenter.presenation) {
                 sheetPresenter.dismiss()
@@ -146,6 +156,7 @@ struct YogaNidraApp: App {
             .environmentObject(sheetPresenter)
             .environmentObject(overlayManager)
             .environmentObject(appState)
+            .environmentObject(rechabilityManager)
         }
     }
     

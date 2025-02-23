@@ -36,7 +36,9 @@
 		247FD2C62D529FA0009F6F69 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 247FD2C52D529FA0009F6F69 /* FirebaseDatabase */; };
 		247FD2C82D529FA0009F6F69 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 247FD2C72D529FA0009F6F69 /* FirebaseFirestore */; };
 		247FD2CA2D529FA0009F6F69 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 247FD2C92D529FA0009F6F69 /* FirebaseStorage */; };
+		24A379E32D6B68CB00217CC5 /* Connectivity in Frameworks */ = {isa = PBXBuildFile; productRef = 24A379E22D6B68CB00217CC5 /* Connectivity */; };
 		24ABFCAF2D319FAD00CBF892 /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 24ABFCAE2D319FAD00CBF892 /* Configuration.storekit */; };
+		24CEDFE92D6B64DF00CE9964 /* SwiftMessages in Frameworks */ = {isa = PBXBuildFile; productRef = 24CEDFE82D6B64DF00CE9964 /* SwiftMessages */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,9 +63,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				121A12182D521A9E00E55E90 /* FirebaseAnalytics in Frameworks */,
+				24A379E32D6B68CB00217CC5 /* Connectivity in Frameworks */,
 				121A120E2D521A4800E55E90 /* FirebaseAnalytics in Frameworks */,
 				121A121C2D521A9E00E55E90 /* FirebaseStorage in Frameworks */,
 				121A12102D521A4800E55E90 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */,
+				24CEDFE92D6B64DF00CE9964 /* SwiftMessages in Frameworks */,
 				121A12252D5226D200E55E90 /* FirebaseAnalytics in Frameworks */,
 				121A122B2D5226D200E55E90 /* FirebaseStorage in Frameworks */,
 				247FD2C02D529FA0009F6F69 /* FirebaseAnalytics in Frameworks */,
@@ -171,6 +175,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				247FD2BE2D529FA0009F6F69 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				24CEDFE72D6B64DF00CE9964 /* XCRemoteSwiftPackageReference "SwiftMessages" */,
+				24A379E12D6B68CB00217CC5 /* XCRemoteSwiftPackageReference "Connectivity" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 24BD50232D263F7300159E70 /* Products */;
@@ -450,6 +456,22 @@
 				version = 11.8.0;
 			};
 		};
+		24A379E12D6B68CB00217CC5 /* XCRemoteSwiftPackageReference "Connectivity" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/rwbutler/Connectivity";
+			requirement = {
+				kind = exactVersion;
+				version = 8.0.1;
+			};
+		};
+		24CEDFE72D6B64DF00CE9964 /* XCRemoteSwiftPackageReference "SwiftMessages" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftKickMobile/SwiftMessages.git";
+			requirement = {
+				kind = exactVersion;
+				version = 10.0.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -587,6 +609,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 247FD2BE2D529FA0009F6F69 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		24A379E22D6B68CB00217CC5 /* Connectivity */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 24A379E12D6B68CB00217CC5 /* XCRemoteSwiftPackageReference "Connectivity" */;
+			productName = Connectivity;
+		};
+		24CEDFE82D6B64DF00CE9964 /* SwiftMessages */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 24CEDFE72D6B64DF00CE9964 /* XCRemoteSwiftPackageReference "SwiftMessages" */;
+			productName = SwiftMessages;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
