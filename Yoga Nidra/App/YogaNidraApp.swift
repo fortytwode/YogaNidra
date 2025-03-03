@@ -107,12 +107,23 @@ struct YogaNidraApp: App {
                 overlayManager.showOverlay(RatingPromptView())
             }
             .onReceive(rechabilityManager.rechabilityChangedPublisher) {
-                guard !rechabilityManager.isNetworkRechable else { return }
-                SwiftMessages.show(
-                    view: ToastView(
-                        message: "Network unrecaheable, please check your internet connection."
-                    ).uiView
-                )
+                if !rechabilityManager.isNetworkRechable {
+                    SwiftMessages.hideAll()
+                    SwiftMessages.show(
+                        view: ToastView(
+                            message: "You are currently offline. Please connect to the internet to play this meditation. 📶",
+                            backgroundColor: Color.red.opacity(0.9)
+                        ).uiView
+                    )
+                } else {
+                    SwiftMessages.hideAll()
+                    SwiftMessages.show(
+                        view: ToastView(
+                            message: "Back online 📶",
+                            backgroundColor: Color.green.opacity(0.8)
+                        ).uiView
+                    )
+                }
             }
             .overlayContent(overlayManager)
             .sheet(item: $sheetPresenter.presenation) {

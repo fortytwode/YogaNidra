@@ -130,6 +130,7 @@ final class ProgressManager: ObservableObject {
     }
     
     private func setRatingDialogShown() {
+        guard !Defaults.bool(forKey: StroageKeys.isAppRated) else { return }
         showRaitnsDialog.send()
         Defaults.set(Date(), forKey: StroageKeys.lastRatingDialogDateKey)
     }

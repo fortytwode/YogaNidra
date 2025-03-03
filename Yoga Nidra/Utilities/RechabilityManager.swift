@@ -27,13 +27,19 @@ final class RechabilityManager: ObservableObject {
             switch connectivity.status {
             case .connected, .connectedViaCellular, .connectedViaEthernet, .connectedViaWiFi:
                 Task { @MainActor in
+                    let oldValue = self?.isNetworkRechable
                     self?.isNetworkRechable = true
-                    self?.rechabilityChanged.send()
+                    if oldValue != true {
+                        self?.rechabilityChanged.send()
+                    }
                 }
             default:
                 Task { @MainActor in
+                    let oldValue = self?.isNetworkRechable
                     self?.isNetworkRechable = false
-                    self?.rechabilityChanged.send()
+                    if oldValue != false {
+                        self?.rechabilityChanged.send()
+                    }
                 }
             }
         }
