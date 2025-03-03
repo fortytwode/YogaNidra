@@ -58,6 +58,13 @@ struct SessionDetailView: View {
         VStack(spacing: 16) {
             sessionImage
             sessionInfo
+            if !RechabilityManager.shared.isNetworkRechable {
+                Text("You are cuurently offline, please connect to internet")
+                    .font(.subheadline)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+            }
             actionButtons
             playerControls
         }

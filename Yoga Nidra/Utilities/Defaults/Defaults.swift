@@ -8,6 +8,7 @@ enum StroageKeys {
     static let lastSessionDateKey = "lastSessionDateKey"
     static let streakCountKey = "streakCountKey"
     static let lastRatingDialogDateKey = "lastRatingDialogDate"
+    static let isAppRated = "isAppRated"
     static let totalSessionListenTimeKey = "totalSessionListenTimeKey"
     static let totalSessionsCompletedKey = "totalSessionsCompletedKey"
     static let recentsSessionsKey = "recentsSessionsKey"
