@@ -1,9 +1,9 @@
 import SwiftUI
 
-@available(iOS 15.0, *)
 struct ProfileTabView: View {
     @EnvironmentObject private var storeManager: StoreManager
     @Environment(\.openURL) private var openURL
+    @EnvironmentObject private var sheetPresenter: Presenter
     
     var body: some View {
         NavigationView {
@@ -11,7 +11,7 @@ struct ProfileTabView: View {
                 Section {
                     // Subscription Status
                     HStack {
-                        Image(systemName: "lock.fill")
+                        Image(systemName: storeManager.isSubscribed ? "lock.open" : "lock.fill")
                             .foregroundColor(.yellow)
                         Text(storeManager.isSubscribed ? "Premium Member" : "Free Member")
                             .font(.headline)
@@ -55,12 +55,10 @@ struct ProfileTabView: View {
                 }
                 
                 if !storeManager.isSubscribed {
-                    Section {
-                        NavigationLink {
-                            SubscriptionView()
-                        } label: {
-                            Label("Upgrade to Premium", systemImage: "crown")
-                        }
+                    Button {
+                        sheetPresenter.present(.subscriptionPaywall)
+                    } label: {
+                        Label("Upgrade to Premium", systemImage: "crown")
                     }
                 }
             }

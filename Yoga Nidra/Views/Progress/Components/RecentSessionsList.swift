@@ -3,7 +3,7 @@ import Foundation
 
 // MARK: - Helper Types
 
-struct RecentSessionItem: Identifiable {
+struct RecentSessionItem: Identifiable, Hashable {
     let session: YogaNidraSession
     let lastCompleted: Date
     
@@ -59,6 +59,14 @@ struct RecentSessionsList: View {
                 .font(.title3)
                 .fontWeight(.bold)
             Spacer()
+            
+            if !progressManager.recentSessions.isEmpty {
+                NavigationLink(destination: AllRecentSessionView()) {
+                    Text("See All")
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                }
+            }
         }
     }
     
@@ -73,6 +81,40 @@ struct RecentSessionsList: View {
                 sheetPresenter.present(.sessionDetials(session.session))
             } label: {
                 SessionCard(session: session.session)
+            }
+        }
+    }
+}
+
+struct AllRecentSessionView: View {
+    @EnvironmentObject var progressManager: ProgressManager
+    @EnvironmentObject var sheetPresenter: Presenter
+    @StateObject private var audioManager = AudioManager.shared
+    
+    var body: some View {
+        ScrollView {
+            let columns = [
+                GridItem(.flexible(), spacing: 16),
+                GridItem(.flexible(), spacing: 16)
+            ]
+            
+            LazyVGrid(columns: columns, spacing: 16) {
+                ForEach(progressManager.recentSessions) { session in
+                    SessionCardButton(session: session.session)
+                }
+            }
+            .padding(16)
+        }
+        .navigationTitle("All Recent Sessions")
+        .background(Color.black)
+        .alert("Playback Error", isPresented: .init(
+            get: { audioManager.errorMessage != nil },
+            set: { if !$0 { audioManager.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            if let error = audioManager.errorMessage {
+                Text(error)
             }
         }
     }

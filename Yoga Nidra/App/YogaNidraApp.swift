@@ -15,6 +15,9 @@ class AppState: ObservableObject {
 
 @main
 struct YogaNidraApp: App {
+    
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     @StateObject private var rechabilityManager = RechabilityManager.shared
     @StateObject private var progressManager = ProgressManager.shared
     @StateObject private var playerState = PlayerState()
@@ -24,10 +27,6 @@ struct YogaNidraApp: App {
     @StateObject private var sheetPresenter = Presenter()
     @StateObject private var overlayManager = OverlayManager.shared
     @StateObject private var appState = AppState.shared
-    
-    init() {
-        FirebaseApp.configure()
-    }
     
     var body: some Scene {
         WindowGroup {

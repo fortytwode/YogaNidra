@@ -52,6 +52,16 @@ struct ContentView: View {
                         .tag(3)
                         .badge("New")
                 }
+                
+                ProfileTabView()
+                    .tabItem {
+                        ZStack {
+                            Image(systemName: "gearshape.fill")
+                            Text("Profile")
+                        }
+                        Text("Self-Love")
+                    }
+                    .tag(4)
             }
             
             // Middle layer: Mini Player - show when there's a current session

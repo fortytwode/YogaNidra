@@ -278,7 +278,7 @@ extension FirebaseManager {
         guard let userDocument = await getUserDocument() else { return [] }
         let sessionCollection = userDocument.collection(StroageKeys.recentsSessionsKey)
         
-        var recentSessions = recentSessions
+        var recentSessions = Array(Set(recentSessions))
         do {
             let existingDocuments = try await sessionCollection.getDocuments()
             for document in existingDocuments.documents {
@@ -287,7 +287,7 @@ extension FirebaseManager {
             
             // Ensure we only store the latest 2 sessions
             recentSessions.insert(RecentSessionItem(session: session, lastCompleted: Date()), at: 0)
-            if recentSessions.count > 3 {
+            if recentSessions.count > 5 {
                 recentSessions.removeLast() // Remove the oldest session
             }
             // Store all recent sessions as separate documents
