@@ -94,6 +94,7 @@ struct RatingPromptView: View {
     private func showRatingPrompt() {
         guard let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene else { return }
         SKStoreReviewController.requestReview(in: scene)
+        Defaults.setValue(true, forKey: StroageKeys.isAppRated)
     }
 }
 

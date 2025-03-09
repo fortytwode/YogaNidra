@@ -10,6 +10,7 @@ import SwiftUI
 struct ToastView: View {
     
     let message: String
+    let backgroundColor: Color
     
     var body: some View {
         Text(message)
@@ -17,7 +18,7 @@ struct ToastView: View {
             .foregroundColor(.white)
             .padding()
             .frame(maxWidth: .infinity)
-            .background(Color.red.opacity(0.9))
+            .background(backgroundColor)
             .cornerRadius(10)
             .shadow(radius: 10)
             .padding(.top, 10)
@@ -26,5 +27,5 @@ struct ToastView: View {
 }
 
 #Preview {
-    ToastView(message: "Hello")
+    ToastView(message: "Hello", backgroundColor: Color.red.opacity(0.9))
 }
