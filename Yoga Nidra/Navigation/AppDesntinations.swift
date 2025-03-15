@@ -24,6 +24,6 @@ enum LibraryTabDestination: Hashable {
     case none
 }
 
-enum ProgressTabDestination: Hashable {
-    case none
+enum DashboardTabDestination: Hashable {
+    case selfLove14Days
 }

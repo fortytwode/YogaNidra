@@ -56,8 +56,6 @@ struct HomeView: View {
                         .padding(.bottom, 16)
                     }
                     
-                    valentinesBanner
-                    
                     // Popular section
                     popularSection
                     
@@ -75,46 +73,6 @@ struct HomeView: View {
                     Text("No view for HomeTabDestination")
                 }
             }
-            .onAppear {
-                AppState.shared.shouldShowValentrineDayTab = true
-            }
-        }
-    }
-    
-    var valentinesBanner: some View {
-        ZStack {
-            Image("Unfamiliar_Place")
-                .resizable()
-                .aspectRatio(1, contentMode: .fill)
-                .frame(height: 160)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .overlay(
-                    LinearGradient(
-                        gradient: Gradient(colors: [.pink.opacity(0.5), .purple.opacity(0.7)]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-            VStack {
-                Text("Special Event: 14 Days of Self-Love 💝")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .padding()
-                Spacer()
-                VStack(spacing: 4) {
-                    Text("A love letter to your wellbeing... tap to unwrap ✨")
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                    HeartAnimation()
-                }
-                .padding()
-            }
-        }
-        .padding()
-        .onTapGesture {
-            AppState.shared.shouldShowValentrineDayTab = true
-            AppState.shared.selectedTab = 3
         }
     }
     

@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct SessionListView_v2: View {
+struct LibraryTab: View {
     let sessions = YogaNidraSession.allSessions
     @State private var selectedCategory: SessionCategory? = nil
     @StateObject var router = Router<LibraryTabDestination>()
@@ -53,12 +53,12 @@ struct SessionListView_v2: View {
     private var categoryFiltersSection: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                CategoryFilterButton(title: "All", isSelected: selectedCategory == nil) {
+                ChipButton(title: "All", isSelected: selectedCategory == nil) {
                     selectedCategory = nil
                 }
                 
                 ForEach(CategoryManager.shared.categories) { category in
-                    CategoryFilterButton(
+                    ChipButton(
                         title: category.id,
                         isSelected: selectedCategory?.id == category.id
                     ) {
@@ -96,27 +96,5 @@ struct SessionCardButton: View {
             SessionCard(session: session)
         }
         .frame(maxWidth: .infinity)
-    }
-}
-
-struct CategoryFilterButton: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.subheadline)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(isSelected ? Color.white : Color.clear)
-                .foregroundColor(isSelected ? .black : .white)
-                .cornerRadius(16)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.white, lineWidth: 1)
-                )
-        }
     }
 }

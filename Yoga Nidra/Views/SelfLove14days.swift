@@ -2,86 +2,43 @@ import SwiftUI
 
 struct SelfLove14days: View {
     @State var sessions = YogaNidraSession.specialEventSessions
-    @StateObject var router = Router<LibraryTabDestination>()
     @EnvironmentObject var sheetPresenter: Presenter
     @EnvironmentObject private var audioManager: AudioManager
-    @State private var searchText = ""
     @State private var selectedSession: YogaNidraSession?
-    @State private var showHeartAnimation = false
-    
-    private var daysUntilValentines: Int {
-        let calendar = Calendar.current
-        let valentinesDay = calendar.date(from: DateComponents(year: 2025, month: 2, day: 14))!
-        let days = calendar.dateComponents([.day], from: Date(), to: valentinesDay).day ?? 0
-        return max(0, days)
-    }
     
     var body: some View {
-        NavigationStack(path: $router.path) {
-            ZStack {
-                // Background hearts
-                FloatingHeartsView()
-                    .allowsHitTesting(false)
-                
-                ScrollView {
-                    VStack(spacing: 20) {
-                        // Valentine's themed header
-                        VStack(spacing: 8) {
-                            Text("✨ Your journey to self-love ✨")
-                                .font(.headline)
-                                .foregroundColor(.pink)
-                                .overlay(
-                                    Image(systemName: "heart.fill")
-                                        .foregroundColor(.pink.opacity(0.2))
-                                        .scaleEffect(1.5)
-                                        .blur(radius: 2)
-                                )
-                            if daysUntilValentines > 0 {
-                                Text("\(daysUntilValentines) days until Valentine's Day 💝")
-                                    .font(.caption)
-                                    .foregroundColor(.pink.opacity(0.6))
-                            }
-                        }
-                        .padding(.top)
-                        
-                        sessionGridSection
-                    }
-                    .padding(.vertical)
+        ScrollView {
+            VStack(spacing: 20) {
+                // Valentine's themed header
+                VStack(spacing: 8) {
+                    Text("✨ Your journey to self-love ✨")
+                        .font(.headline)
+                        .foregroundColor(.pink)
+                        .padding()
+                        .overlay(
+                            Image(systemName: "heart.fill")
+                                .foregroundColor(.pink.opacity(0.2))
+                                .scaleEffect(1.5)
+                                .blur(radius: 2)
+                        )
                 }
-                .contentMargins(.bottom, audioManager.currentPlayingSession != nil ? 52 : 0, for: .scrollContent)
-            }
-            .navigationTitle("14 Days of Self-Love")
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarBackground(
-                LinearGradient(
-                    gradient: Gradient(colors: [.pink.opacity(0.1), .purple.opacity(0.1)]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                for: .navigationBar
-            )
-            .background(Color.black)
-            .environmentObject(router)
-            .navigationDestination(for: LibraryTabDestination.self) { destination in
-                switch destination {
-                case .none:
-                    Text("No view for LibraryTabDestination")
-                }
+                sessionGridSection
             }
         }
-        .preferredColorScheme(.dark)
-        .alert("Playback Error", isPresented: .init(
-            get: { audioManager.errorMessage != nil },
-            set: { if !$0 { audioManager.errorMessage = nil } }
-        )) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            if let error = audioManager.errorMessage {
-                Text(error)
-            }
-        }
-        .onAppear {
-            AppState.shared.shouldShowValentrineDayTab = true
+        .contentMargins(.bottom, audioManager.currentPlayingSession != nil ? 52 : 0, for: .scrollContent)
+        .navigationTitle("14 Days of Self-Love")
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(
+            LinearGradient(
+                gradient: Gradient(colors: [.pink.opacity(0.1), .purple.opacity(0.1)]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            for: .navigationBar
+        )
+        .overlay {
+            FloatingHeartsView()
+                .allowsHitTesting(false)
         }
     }
     
@@ -91,16 +48,8 @@ struct SelfLove14days: View {
         return LazyVGrid(columns: columns, alignment: .center, spacing: 16) {
             ForEach(sessions) { session in
                 Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        showHeartAnimation = true
-                        selectedSession = session
-                    }
-                    
-                    // Reset animation and show session after brief delay
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        showHeartAnimation = false
-                        sheetPresenter.present(.sessionDetials(session))
-                    }
+                    selectedSession = session
+                    sheetPresenter.present(.sessionDetials(session))
                 } label: {
                     ZStack {
                         SessionCard(session: session)
@@ -111,15 +60,6 @@ struct SelfLove14days: View {
                                     endPoint: .bottomTrailing
                                 )
                             )
-                        
-                        if showHeartAnimation && selectedSession?.id == session.id {
-                            Image(systemName: "heart.fill")
-                                .font(.system(size: 50))
-                                .foregroundColor(.pink)
-                                .opacity(showHeartAnimation ? 0 : 1)
-                                .scaleEffect(showHeartAnimation ? 2 : 1)
-                                .animation(.easeOut(duration: 0.5), value: showHeartAnimation)
-                        }
                     }
                 }
             }

@@ -55,7 +55,7 @@ struct RecentSessionsList: View {
     
     private var headerSection: some View {
         HStack {
-            Text("Recent Sessions")
+            Text("Yout recent Sessions")
                 .font(.title3)
                 .fontWeight(.bold)
             Spacer()
@@ -102,8 +102,9 @@ struct AllRecentSessionView: View {
                 ForEach(progressManager.recentSessions) { session in
                     SessionCardButton(session: session.session)
                 }
+                Spacer(minLength: 48)
             }
-            .padding(16)
+            .padding([.horizontal, .top], 16)
         }
         .navigationTitle("All Recent Sessions")
         .background(Color.black)

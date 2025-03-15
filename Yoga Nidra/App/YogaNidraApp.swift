@@ -9,7 +9,6 @@ import FirebaseCrashlytics
 class AppState: ObservableObject {
     static let shared = AppState()
     @Published var selectedTab: Int = 0
-    @Published var shouldShowValentrineDayTab: Bool = false
     @Published var isNewFeature: Bool = true  // Will show highlight on the tab
 }
 
@@ -76,19 +75,7 @@ struct YogaNidraApp: App {
                 // Normalize path by removing trailing slash if present
                 let normalizedPath = url.path.hasSuffix("/") ? String(url.path.dropLast()) : url.path
                 
-                if normalizedPath == "/selflove14days" {
-                    print("📱 Self Love program link detected")
-                    // Skip onboarding for universal links
-                    // Navigate to home tab
-                    DispatchQueue.main.async {
-                        appState.shouldShowValentrineDayTab = true
-                        appState.selectedTab = 3
-                        if !onboardingManager.isOnboardingCompleted {
-                            print("📱 Skipping onboarding for universal link")
-                            onboardingManager.isOnboardingCompleted = true
-                        }
-                    }
-                } else if normalizedPath == "/tab1" {
+                if normalizedPath == "/tab1" {
                     print("📱 Tab 1 link detected")
                     DispatchQueue.main.async {
                         appState.selectedTab = 1

@@ -21,6 +21,7 @@ struct FloatingHeartsView: View {
                     .position(heart.position)
             }
         }
+        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
         .onReceive(timer) { _ in
             addHeart()
         }

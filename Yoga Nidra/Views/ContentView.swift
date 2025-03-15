@@ -21,64 +21,45 @@ struct ContentView: View {
                     }
                     .tag(0)
                 
-                SessionListView_v2()
+                DashboardTab()
+                    .environmentObject(progressManager)
+                    .tabItem {
+                        Image(systemName: "magnifyingglass.circle.fill")
+                        Text("Discover")
+                    }
+                    .tag(2)
+                
+                LibraryTab()
                     .tabItem {
                         Image(systemName: "book.fill")
                         Text("Library")
                     }
                     .tag(1)
                 
-                ProgressTabView()
-                    .environmentObject(progressManager)
-                    .tabItem {
-                        Image(systemName: "chart.bar.fill")
-                        Text("Progress")
-                    }
-                    .tag(2)
-                
-                if appState.shouldShowValentrineDayTab {
-                    SelfLove14days()
-                        .tabItem {
-                            ZStack {
-                                Image(systemName: "heart.fill")
-                                if appState.isNewFeature {
-                                    Circle()
-                                        .fill(.pink.opacity(0.2))
-                                        .frame(width: 40, height: 40)
-                                }
-                            }
-                            Text("Self-Love")
-                        }
-                        .tag(3)
-                        .badge("New")
-                }
-                
-                ProfileTabView()
-                    .tabItem {
-                        ZStack {
-                            Image(systemName: "gearshape.fill")
-                            Text("Profile")
-                        }
-                        Text("Self-Love")
-                    }
-                    .tag(4)
+//                ProfileTabView()
+//                    .tabItem {
+//                        ZStack {
+//                            Image(systemName: "gearshape.fill")
+//                            Text("Profile")
+//                        }
+//                    }
+//                    .tag(3)
             }
             
             // Middle layer: Mini Player - show when there's a current session
-            if let _ = audioManager.currentPlayingSession {
+            if let session = audioManager.currentPlayingSession {
                 VStack(spacing: 0) {
                     MiniPlayerView()
                         .transition(.move(edge: .bottom))
                         .onTapGesture {
-                            if let session = audioManager.currentPlayingSession {
-                                sheetPresenter.present(.sessionDetials(session))
-                            }
+                            sheetPresenter.present(.sessionDetials(session))
                         }
                     Spacer().frame(height: 49)
                 }
             }
         }
         .preferredColorScheme(.dark)
+        .scrollIndicators(.hidden)
         .task {
             // Load products when view appears
             do {
