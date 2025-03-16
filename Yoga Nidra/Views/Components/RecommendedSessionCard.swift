@@ -11,8 +11,7 @@ struct RecommendedSessionCard: View {
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             // Thumbnail
-            Image(session.thumbnailUrl)
-                .resizable()
+            SessionThumbnailImage(session: session)
                 .aspectRatio(contentMode: .fill)
                 .frame(width: 80, height: 80)
                 .clipShape(RoundedRectangle(cornerRadius: 12))

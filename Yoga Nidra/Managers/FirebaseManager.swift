@@ -67,12 +67,21 @@ final class FirebaseManager {
     /// Downloads the URL for a meditation file
     /// - Parameter fileName: Name of the meditation file in Firebase Storage
     /// - Returns: A downloadable URL for the meditation file
-    func getMeditationURL(fileName: String) async throws -> URL {
+    func getMeditationURL(fileFolder: String?, fileName: String) async throws -> URL {
         guard !fileName.isEmpty else {
             throw FirebaseError.fileNotFound
         }
         
-        let fileRef = meditationsRef.child(fileName)
+        var rootRef = meditationsRef
+        if let fileFolder {
+            let parts = fileFolder.split(separator: "/")
+            parts.forEach { path in
+                if !path.isEmpty {
+                    rootRef = rootRef.child(String(path))
+                }
+            }
+        }
+        let fileRef = rootRef.child(fileName)
         
         // Implement retry logic
         var lastError: Error?
@@ -193,6 +202,12 @@ final class FirebaseManager {
     func logPaywallImpression(source: String) {
         Analytics.logEvent("paywall_viewed", parameters: [
             "source": source,
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    func logRatingPromtShown() {
+        Analytics.logEvent("rating_prompt_shown", parameters: [
             "timestamp": Date().timeIntervalSince1970
         ])
     }

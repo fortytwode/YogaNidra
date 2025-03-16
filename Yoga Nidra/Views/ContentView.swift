@@ -19,31 +19,31 @@ struct ContentView: View {
                         Image(systemName: "house.fill")
                         Text("Home")
                     }
-                    .tag(0)
+                    .tag(AppTab.home)
                 
-                DashboardTab()
+                DiscoverTab()
                     .environmentObject(progressManager)
                     .tabItem {
                         Image(systemName: "magnifyingglass.circle.fill")
                         Text("Discover")
                     }
-                    .tag(2)
+                    .tag(AppTab.discover)
+                
+                ProfileTabView()
+                    .tabItem {
+                        ZStack {
+                            Image(systemName: "person.crop.circle.fill")
+                            Text("Profile")
+                        }
+                    }
+                    .tag(AppTab.profile)
                 
                 LibraryTab()
                     .tabItem {
                         Image(systemName: "book.fill")
                         Text("Library")
                     }
-                    .tag(1)
-                
-//                ProfileTabView()
-//                    .tabItem {
-//                        ZStack {
-//                            Image(systemName: "gearshape.fill")
-//                            Text("Profile")
-//                        }
-//                    }
-//                    .tag(3)
+                    .tag(AppTab.lirbrary)
             }
             
             // Middle layer: Mini Player - show when there's a current session

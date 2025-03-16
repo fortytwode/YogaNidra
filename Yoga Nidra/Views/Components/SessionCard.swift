@@ -15,8 +15,7 @@ struct SessionCard: View {
         VStack(alignment: .leading, spacing: 8) {
             // Thumbnail with overlays
             ZStack(alignment: .bottomLeading) {
-                Image(session.thumbnailUrl)
-                    .resizable()
+                SessionThumbnailImage(session: session)
                     .aspectRatio(1, contentMode: .fill)
                     .frame(height: 160)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -71,6 +70,7 @@ struct SessionCard: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 12)
+            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

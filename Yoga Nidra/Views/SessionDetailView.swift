@@ -20,18 +20,21 @@ struct SessionDetailView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             ZStack(alignment: .topLeading) {
+                mainContent
                 Button(action: {
                     sheetPresenter.dismiss()
                 }) {
-                    Image(systemName: "chevron.down")
-                        .font(.title2)
-                        .foregroundColor(.white)
+                    Circle()
+                        .fill(.black)
+                        .stroke(Color.white, lineWidth: 1)
                         .frame(width: 44, height: 44)
-                        .background(Color.white.opacity(0.2))
-                        .clipShape(Circle())
+                        .overlay {
+                            Image(systemName: "chevron.down")
+                                .foregroundColor(.white)
+                                .frame(width: 44, height: 44)
+                        }
                 }
                 .padding([.top, .leading], 20)
-                mainContent
             }
         }
         .background(Color.black.edgesIgnoringSafeArea(.all))
@@ -72,11 +75,11 @@ struct SessionDetailView: View {
     }
     
     private var sessionImage: some View {
-        Image(session.thumbnailUrl)
-            .resizable()
-            .scaledToFit()
+        SessionThumbnailImage(session: session)
+            .scaledToFill()
             .frame(maxHeight: 200)
             .cornerRadius(20)
+            .padding(.horizontal)
     }
     
     private var sessionInfo: some View {

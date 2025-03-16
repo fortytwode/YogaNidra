@@ -6,9 +6,16 @@ import FirebaseAnalytics
 import FirebaseAuth
 import FirebaseCrashlytics
 
+enum AppTab {
+    case home
+    case discover
+    case lirbrary
+    case profile
+}
+
 class AppState: ObservableObject {
     static let shared = AppState()
-    @Published var selectedTab: Int = 0
+    @Published var selectedTab: AppTab = .home
     @Published var isNewFeature: Bool = true  // Will show highlight on the tab
 }
 
@@ -78,12 +85,12 @@ struct YogaNidraApp: App {
                 if normalizedPath == "/tab1" {
                     print("📱 Tab 1 link detected")
                     DispatchQueue.main.async {
-                        appState.selectedTab = 1
+                        appState.selectedTab = .home
                     }
                 } else if normalizedPath == "/tab2" {
                     print("📱 Tab 2 link detected")
                     DispatchQueue.main.async {
-                        appState.selectedTab = 2
+                        appState.selectedTab = .discover
                     }
                 } else {
                     print("❌ Unknown deep link path: \(normalizedPath)")
