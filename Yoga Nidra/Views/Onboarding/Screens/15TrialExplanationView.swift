@@ -51,7 +51,7 @@ struct TrialExplanationView: View {
             .padding(.horizontal, 24)
             
             // Timeline Items
-            VStack(spacing: 10) {
+            VStack(spacing: 24) {
                 TimelineItem(
                     icon: "sparkles",
                     title: "Tonight's treats 🌟",
@@ -62,6 +62,10 @@ struct TrialExplanationView: View {
                     ]
                 )
                 
+                Divider()
+                    .background(Color.white.opacity(0.2))
+                    .padding(.horizontal, 24)
+                
                 TimelineItem(
                     icon: "moon.stars",
                     title: "3 sleeps later 💫",
@@ -71,6 +75,10 @@ struct TrialExplanationView: View {
                         "Drift into deeper dreams 💭"
                     ]
                 )
+                
+                Divider()
+                    .background(Color.white.opacity(0.2))
+                    .padding(.horizontal, 24)
                 
                 TimelineItem(
                     icon: "sparkles.rectangle.stack",
@@ -127,12 +135,13 @@ struct TimelineItem: View {
                     .foregroundColor(.white)
             }
             
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 10) {
                 Text(title)
                     .font(.headline)
                     .foregroundColor(.white)
+                    .padding(.bottom, 2)
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 6) {
                     ForEach(descriptions, id: \.self) { description in
                         Text(description)
                             .font(.subheadline)
@@ -145,6 +154,7 @@ struct TimelineItem: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 24)
+        .padding(.vertical, 6)
     }
 }
 
@@ -153,16 +163,21 @@ struct TimelineItem: View {
 struct TrialExplanationView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            OnboardingQuestionWrapper(currentStep: 15) {
-                TrialExplanationView(currentPage: .constant(0))
-                    .environmentObject(StoreManager.preview)
+            // Primary preview with iPhone 16 Pro
+            TrialExplanationView(currentPage: .constant(0))
+                .environmentObject(StoreManager.preview)
+                .previewDevice("iPhone 16 Pro")
+                
+            // Fallback simplified preview with minimal dependencies
+            VStack {
+                Text("Trial Explanation Preview")
+                    .font(.headline)
+                Text("Preview Mode")
+                    .font(.subheadline)
             }
-            
-            OnboardingQuestionWrapper(currentStep: 15) {
-                TrialExplanationView(currentPage: .constant(0))
-                    .environmentObject(StoreManager.preview)
-                    .previewDevice("iPhone SE (3rd generation)")
-            }
+            .frame(maxWidth: .infinity, maxHeight: 200)
+            .background(Color.gray.opacity(0.2))
+            .previewLayout(.sizeThatFits)
         }
     }
 }

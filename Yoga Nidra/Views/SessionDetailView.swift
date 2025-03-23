@@ -184,6 +184,8 @@ struct SessionDetailView: View {
     private var progressSlider: some View {
         VStack(spacing: 8) {
             AudioSeeker()
+                .disabled(audioManager.isLoading)
+                .opacity(audioManager.isLoading ? 0.3 : 1.0)
             HStack {
                 Text(formatTime(audioManager.currentTime))
                     .font(.caption)
@@ -210,22 +212,27 @@ struct SessionDetailView: View {
                     .font(.title)
                     .foregroundColor(.white)
             }
+            .disabled(audioManager.isLoading)
+            .opacity(audioManager.isLoading ? 0.3 : 1.0)
             
             // Play/Pause
-            Button(action: {
-                Task {
-                    if audioManager.isPlaying {
-                        await audioManager.pause()
-                    } else {
-                        await audioManager.play(session)
+            if audioManager.isLoading {
+                SwiftUI.ProgressView()
+            } else {
+                Button(action: {
+                    Task {
+                        if audioManager.isPlaying {
+                            await audioManager.pause()
+                        } else {
+                            await audioManager.play(session)
+                        }
                     }
+                }) {
+                    Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
+                        .font(.title)
+                        .foregroundColor(.white)
                 }
-            }) {
-                Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.title)
-                    .foregroundColor(.white)
             }
-            .disabled(audioManager.isLoading)
             
             // Skip Forward
             Button(action: {
@@ -237,6 +244,8 @@ struct SessionDetailView: View {
                     .font(.title)
                     .foregroundColor(.white)
             }
+            .disabled(audioManager.isLoading)
+            .opacity(audioManager.isLoading ? 0.3 : 1.0)
         }
     }
     

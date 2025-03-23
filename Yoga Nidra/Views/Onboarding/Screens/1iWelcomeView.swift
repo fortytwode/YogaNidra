@@ -8,7 +8,7 @@ struct IWelcomeView: View {
             // Content
             VStack {
                 ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 40) {
+                    VStack(alignment: .leading, spacing: 20) {
                         // Title
                         VStack(spacing: 4) {
                             Text("Welcome to")
@@ -24,14 +24,14 @@ struct IWelcomeView: View {
                         
                         // Value Proposition
                         VStack(spacing: 8) {
-                            Text("Where ancient wisdom meets...")
-                                .font(.system(size: 18, weight: .medium))
+                            Text("Where ancient wisdom meets..")
+                                .font(.system(size: 24, weight: .medium))
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.8)
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: .infinity)
                             Text("...your comfiest pajamas.")
-                                .font(.system(size: 18, weight: .medium))
+                                .font(.system(size: 24, weight: .medium))
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.8)
                                 .multilineTextAlignment(.center)
@@ -42,12 +42,12 @@ struct IWelcomeView: View {
                         .padding(.horizontal, 20)
                         
                         Spacer()
-                            .frame(height: 20)
+                            .frame(height: 10)
                         
                         // Benefits and Challenges
-                        VStack(alignment: .leading, spacing: 32) {
+                        VStack(alignment: .leading, spacing: 30) {
                             // Benefits Section
-                            VStack(alignment: .leading, spacing: 16) {
+                            VStack(alignment: .leading, spacing: 10) {
                                 Text("Here's the goodness:")
                                     .font(.title3)
                                     .foregroundColor(.white)

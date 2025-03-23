@@ -76,7 +76,7 @@ struct RecentSessionsList: View {
     }
     
     private var recentSessionsSection: some View {
-        ForEach(progressManager.recentSessions) { session in
+        ForEach(progressManager.recentSessions.prefix(5)) { session in
             Button {
                 sheetPresenter.present(.sessionDetials(session.session))
             } label: {
@@ -102,10 +102,10 @@ struct AllRecentSessionView: View {
                 ForEach(progressManager.recentSessions) { session in
                     SessionCardButton(session: session.session)
                 }
-                Spacer(minLength: 48)
             }
             .padding([.horizontal, .top], 16)
         }
+        .contentMargins(.bottom, audioManager.currentPlayingSession != nil ? 52 : 0, for: .scrollContent)
         .navigationTitle("All Recent Sessions")
         .background(Color.black)
         .alert("Playback Error", isPresented: .init(

@@ -38,10 +38,25 @@ struct ExplanationView: View {
                         ]
                     )
                     
-                    // Bottom Equation
-                    let bottomFormula = ["🧘‍♀️ Ancient wisdom", "+", "🔬 Modern science", "=", "💫 Sweet dreams"]
-                    formulaView(parts: bottomFormula)
-                        .font(.system(size: 17))
+                    // Bottom Equation - Vertical layout to ensure visibility
+                    VStack(spacing: 8) {
+                        HStack(spacing: 8) {
+                            Text("🧘‍♀️ Ancient wisdom")
+                                .lineLimit(1)
+                            Text("+")
+                            Text("🔬 Modern science")
+                                .lineLimit(1)
+                        }
+                        
+                        HStack {
+                            Text("= 💫 Sweet dreams")
+                        }
+                        
+                    }
+                    .font(.system(size: 16))
+                    .foregroundColor(.white)
+                    .padding(.vertical, 0)
+                    .padding(.horizontal)
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 32)
@@ -79,16 +94,18 @@ struct ExplanationView: View {
     }
     
     private func formulaView(parts: [String]) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             ForEach(parts, id: \.self) { part in
                 Text(part)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .font(.system(size: 20))
         .foregroundColor(.white)
         .padding(.vertical, 8)
         .multilineTextAlignment(.center)
-        .fixedSize(horizontal: false, vertical: true)
     }
     
     private func sectionView(title: String, items: [(emoji: String, text: String)]) -> some View {
