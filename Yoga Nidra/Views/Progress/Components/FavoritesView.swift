@@ -89,8 +89,7 @@ struct FavoriteSessionRow: View {
         } label: {
             HStack(spacing: 16) {
                 // Thumbnail
-                Image(session.thumbnailUrl)
-                    .resizable()
+                SessionThumbnailImage(session: session)
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 60, height: 60)
                     .clipShape(RoundedRectangle(cornerRadius: 12))

@@ -7,6 +7,7 @@ struct YogaNidraSession: Identifiable, Codable, Equatable, Hashable {
     let duration: Int
     let thumbnailUrl: String
     let audioFileName: String
+    let audioFileFolder: String?
     let isPremium: Bool
     let category: SessionCategory
     let instructor: String
@@ -59,6 +60,10 @@ struct YogaNidraSession: Identifiable, Codable, Equatable, Hashable {
         }
     }()
     
+    static var springResetSessions: [YogaNidraSession] = {
+        SessionDataParser.loadSpringResetSessions()
+    }()
+    
     static let preview = YogaNidraSession(
         id: "0",
         title: "Preview Session",
@@ -66,6 +71,7 @@ struct YogaNidraSession: Identifiable, Codable, Equatable, Hashable {
         duration: 10,
         thumbnailUrl: "preview-thumbnail",
         audioFileName: "preview-audio.m4a",
+        audioFileFolder: "none",
         isPremium: false,
         category: SessionCategory(id: "Deep Sleep"),
         instructor: "Preview Instructor"

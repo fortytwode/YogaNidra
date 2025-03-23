@@ -7,7 +7,7 @@ struct HomeView: View {
     @EnvironmentObject var progressManager: ProgressManager
     @EnvironmentObject private var audioManager: AudioManager
     let sessions = YogaNidraSession.allSessions
-    @Binding var selectedTab: Int
+    @Binding var selectedTab: AppTab
     
     var freeSessions: [YogaNidraSession] {
         sessions.filter { !$0.isPremium }
@@ -56,7 +56,11 @@ struct HomeView: View {
                         .padding(.bottom, 16)
                     }
                     
-                    valentinesBanner
+                    Button {
+                        router.push(.springReset)
+                    } label: {
+                        springResetBanner
+                    }
                     
                     // Popular section
                     popularSection
@@ -71,51 +75,42 @@ struct HomeView: View {
             .environmentObject(router)
             .navigationDestination(for: HomeTabDestination.self) { destination in
                 switch destination {
-                case .none:
-                    Text("No view for HomeTabDestination")
+                case .springReset:
+                    SpringReset()
                 }
-            }
-            .onAppear {
-                AppState.shared.shouldShowValentrineDayTab = true
             }
         }
     }
     
-    var valentinesBanner: some View {
+    var springResetBanner: some View {
         ZStack {
-            Image("Unfamiliar_Place")
+            Image("spring_reset")
                 .resizable()
                 .aspectRatio(1, contentMode: .fill)
                 .frame(height: 160)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .overlay(
                     LinearGradient(
-                        gradient: Gradient(colors: [.pink.opacity(0.5), .purple.opacity(0.7)]),
+                        gradient: Gradient(colors: [.springGreen.opacity(0.5)]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
                 )
             VStack {
-                Text("Special Event: 14 Days of Self-Love 💝")
+                Text("Spring Reset: 10 Nights to Renewed Rest.")
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                     .padding()
                 Spacer()
-                VStack(spacing: 4) {
-                    Text("A love letter to your wellbeing... tap to unwrap ✨")
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                    HeartAnimation()
-                }
+                Text("Spring forward into deeper rest. Tap to renew yourself. 🌺")
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
                 .padding()
             }
         }
-        .padding()
-        .onTapGesture {
-            AppState.shared.shouldShowValentrineDayTab = true
-            AppState.shared.selectedTab = 3
-        }
+        .padding(.horizontal)
     }
     
     var popularSection: some View {
@@ -126,7 +121,7 @@ struct HomeView: View {
                     .fontWeight(.bold)
                 Spacer()
                 Button("See All") {
-                    selectedTab = 1
+                    selectedTab = .lirbrary
                 }
                 .foregroundColor(.blue)
             }
@@ -156,7 +151,7 @@ struct HomeView: View {
                     .fontWeight(.bold)
                 Spacer()
                 Button("See All") {
-                    selectedTab = 1
+                    selectedTab = .lirbrary
                 }
                 .foregroundColor(.blue)
             }
@@ -184,7 +179,7 @@ struct HomeView: View {
             }
             
             Button("See All") {
-                selectedTab = 1
+                selectedTab = .lirbrary
             }
             .frame(maxWidth: .infinity)
             .padding()
@@ -218,7 +213,7 @@ struct HeartAnimation: View {
 // MARK: - Previews
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
-        HomeView(selectedTab: .constant(0))
+        HomeView(selectedTab: .constant(.home))
             .environmentObject(Presenter())
             .environmentObject(OverlayManager())
             .environmentObject(ProgressManager.shared)

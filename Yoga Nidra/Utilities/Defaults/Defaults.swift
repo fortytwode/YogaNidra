@@ -13,6 +13,7 @@ enum StroageKeys {
     static let totalSessionsCompletedKey = "totalSessionsCompletedKey"
     static let recentsSessionsKey = "recentsSessionsKey"
     static let favoriteSessionsKey = "favoriteSessionsKey"
+    static let sleepReminderTime = "sleepReminderTime"
 }
 
 var Defaults: UserDefaults {

@@ -52,7 +52,10 @@ final class DownloadManager: ObservableObject {
             try createDownloadDirectoryIfNeeded()
             
             // Get Firebase download URL
-            let downloadURL = try await firebaseManager.getMeditationURL(fileName: session.storageFileName)
+            let downloadURL = try await firebaseManager.getMeditationURL(
+                fileFolder: session.audioFileFolder,
+                fileName: session.storageFileName
+            )
             
             // Download file
             let (tempURL, _) = try await URLSession.shared.download(from: downloadURL)

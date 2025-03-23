@@ -92,7 +92,11 @@ struct RatingPromptView: View {
     }
     
     private func showRatingPrompt() {
-        guard let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene else { return }
+        guard let scene = UIApplication.shared.connectedScenes
+            .first(where: {
+                $0.activationState == .foregroundActive || $0.activationState == .foregroundInactive
+            }) as? UIWindowScene else { return }
+        FirebaseManager.shared.logRatingPromtShown()
         SKStoreReviewController.requestReview(in: scene)
         Defaults.setValue(true, forKey: StroageKeys.isAppRated)
     }

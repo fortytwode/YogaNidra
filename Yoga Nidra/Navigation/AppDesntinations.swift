@@ -17,13 +17,18 @@ enum SheetPresentaiton: Identifiable, Hashable {
 }
 
 enum HomeTabDestination: Hashable {
-    case none
+    case springReset
 }
 
 enum LibraryTabDestination: Hashable {
     case none
 }
 
-enum ProgressTabDestination: Hashable {
-    case none
+enum DisoverTabDestination: Hashable {
+    case selfLove14Days
+    case springReset
+}
+
+enum ProgileTabDestination: Hashable {
+    case settings
 }

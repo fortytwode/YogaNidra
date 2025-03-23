@@ -118,7 +118,10 @@ final class AudioManager: ObservableObject {
                 try await playFromURL(localURL)
             } else {
                 // Download from Firebase if not available locally
-                let remoteURL = try await FirebaseManager.shared.getMeditationURL(fileName: session.audioFileName)
+                let remoteURL = try await FirebaseManager.shared.getMeditationURL(
+                    fileFolder: session.audioFileFolder,
+                    fileName: session.audioFileName
+                )
                 try await playFromURL(remoteURL)
             }
             

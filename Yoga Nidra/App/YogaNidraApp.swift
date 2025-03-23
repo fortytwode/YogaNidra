@@ -6,15 +6,24 @@ import FirebaseAnalytics
 import FirebaseAuth
 import FirebaseCrashlytics
 
+enum AppTab {
+    case home
+    case discover
+    case lirbrary
+    case profile
+}
+
 class AppState: ObservableObject {
     static let shared = AppState()
-    @Published var selectedTab: Int = 0
-    @Published var shouldShowValentrineDayTab: Bool = false
+    @Published var selectedTab: AppTab = .home
     @Published var isNewFeature: Bool = true  // Will show highlight on the tab
 }
 
 @main
 struct YogaNidraApp: App {
+    
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     @StateObject private var rechabilityManager = RechabilityManager.shared
     @StateObject private var progressManager = ProgressManager.shared
     @StateObject private var playerState = PlayerState()
@@ -24,10 +33,6 @@ struct YogaNidraApp: App {
     @StateObject private var sheetPresenter = Presenter()
     @StateObject private var overlayManager = OverlayManager.shared
     @StateObject private var appState = AppState.shared
-    
-    init() {
-        FirebaseApp.configure()
-    }
     
     var body: some Scene {
         WindowGroup {
@@ -77,27 +82,15 @@ struct YogaNidraApp: App {
                 // Normalize path by removing trailing slash if present
                 let normalizedPath = url.path.hasSuffix("/") ? String(url.path.dropLast()) : url.path
                 
-                if normalizedPath == "/selflove14days" {
-                    print("📱 Self Love program link detected")
-                    // Skip onboarding for universal links
-                    // Navigate to home tab
-                    DispatchQueue.main.async {
-                        appState.shouldShowValentrineDayTab = true
-                        appState.selectedTab = 3
-                        if !onboardingManager.isOnboardingCompleted {
-                            print("📱 Skipping onboarding for universal link")
-                            onboardingManager.isOnboardingCompleted = true
-                        }
-                    }
-                } else if normalizedPath == "/tab1" {
+                if normalizedPath == "/tab1" {
                     print("📱 Tab 1 link detected")
                     DispatchQueue.main.async {
-                        appState.selectedTab = 1
+                        appState.selectedTab = .home
                     }
                 } else if normalizedPath == "/tab2" {
                     print("📱 Tab 2 link detected")
                     DispatchQueue.main.async {
-                        appState.selectedTab = 2
+                        appState.selectedTab = .discover
                     }
                 } else {
                     print("❌ Unknown deep link path: \(normalizedPath)")

@@ -21,8 +21,7 @@ struct MiniPlayerView: View {
                 } label: {
                     HStack(spacing: 12) {
                         // Thumbnail
-                        Image(session.thumbnailUrl)
-                            .resizable()
+                        SessionThumbnailImage(session: session)
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 40, height: 40)
                             .clipShape(RoundedRectangle(cornerRadius: 8))

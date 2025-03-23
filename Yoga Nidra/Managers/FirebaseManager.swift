@@ -67,12 +67,21 @@ final class FirebaseManager {
     /// Downloads the URL for a meditation file
     /// - Parameter fileName: Name of the meditation file in Firebase Storage
     /// - Returns: A downloadable URL for the meditation file
-    func getMeditationURL(fileName: String) async throws -> URL {
+    func getMeditationURL(fileFolder: String?, fileName: String) async throws -> URL {
         guard !fileName.isEmpty else {
             throw FirebaseError.fileNotFound
         }
         
-        let fileRef = meditationsRef.child(fileName)
+        var rootRef = meditationsRef
+        if let fileFolder {
+            let parts = fileFolder.split(separator: "/")
+            parts.forEach { path in
+                if !path.isEmpty {
+                    rootRef = rootRef.child(String(path))
+                }
+            }
+        }
+        let fileRef = rootRef.child(fileName)
         
         // Implement retry logic
         var lastError: Error?
@@ -196,6 +205,12 @@ final class FirebaseManager {
             "timestamp": Date().timeIntervalSince1970
         ])
     }
+    
+    func logRatingPromtShown() {
+        Analytics.logEvent("rating_prompt_shown", parameters: [
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
 }
 
 // MARK: User progress tracking
@@ -278,7 +293,7 @@ extension FirebaseManager {
         guard let userDocument = await getUserDocument() else { return [] }
         let sessionCollection = userDocument.collection(StroageKeys.recentsSessionsKey)
         
-        var recentSessions = recentSessions
+        var recentSessions = Array(Set(recentSessions))
         do {
             let existingDocuments = try await sessionCollection.getDocuments()
             for document in existingDocuments.documents {
@@ -287,7 +302,7 @@ extension FirebaseManager {
             
             // Ensure we only store the latest 2 sessions
             recentSessions.insert(RecentSessionItem(session: session, lastCompleted: Date()), at: 0)
-            if recentSessions.count > 3 {
+            if recentSessions.count > 5 {
                 recentSessions.removeLast() // Remove the oldest session
             }
             // Store all recent sessions as separate documents
