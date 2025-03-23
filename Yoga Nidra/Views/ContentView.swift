@@ -29,6 +29,13 @@ struct ContentView: View {
                     }
                     .tag(AppTab.discover)
                 
+                LibraryTab()
+                    .tabItem {
+                        Image(systemName: "book.fill")
+                        Text("Library")
+                    }
+                    .tag(AppTab.lirbrary)
+                
                 ProfileTabView()
                     .tabItem {
                         ZStack {
@@ -37,13 +44,6 @@ struct ContentView: View {
                         }
                     }
                     .tag(AppTab.profile)
-                
-                LibraryTab()
-                    .tabItem {
-                        Image(systemName: "book.fill")
-                        Text("Library")
-                    }
-                    .tag(AppTab.lirbrary)
             }
             
             // Middle layer: Mini Player - show when there's a current session
