@@ -302,7 +302,7 @@ extension FirebaseManager {
             
             // Ensure we only store the latest 2 sessions
             recentSessions.insert(RecentSessionItem(session: session, lastCompleted: Date()), at: 0)
-            if recentSessions.count > 5 {
+            if recentSessions.count > 10 {
                 recentSessions.removeLast() // Remove the oldest session
             }
             // Store all recent sessions as separate documents
