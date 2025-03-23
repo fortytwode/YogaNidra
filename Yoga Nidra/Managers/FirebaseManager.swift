@@ -71,6 +71,14 @@ final class FirebaseManager {
         guard !fileName.isEmpty else {
             throw FirebaseError.fileNotFound
         }
+
+        // Define cache directory
+        let cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        let cachedFileURL = cacheDirectory.appendingPathComponent("\(fileFolder ?? "NoFolder")_\(fileName)")
+        // Check if file exists in cache
+        if FileManager.default.fileExists(atPath: cachedFileURL.path(percentEncoded: false)) {
+            return cachedFileURL // Return cached file
+        }
         
         var rootRef = meditationsRef
         if let fileFolder {
@@ -87,7 +95,7 @@ final class FirebaseManager {
         var lastError: Error?
         for attempt in 1...maxRetries {
             do {
-                return try await fileRef.downloadURL()
+                return try await downloadFile(from: fileRef, to: cachedFileURL)
             } catch {
                 lastError = error
                 if attempt == maxRetries { break }
@@ -95,6 +103,38 @@ final class FirebaseManager {
             }
         }
         throw FirebaseError.downloadFailed(lastError ?? NSError(domain: "Unknown", code: -1))
+    }
+    
+    /// Downloads a file from Firebase Storage and saves it locally.
+    /// - Parameters:
+    ///   - fileRef: The `StorageReference` of the file in Firebase Storage.
+    ///   - destinationURL: The local URL where the file should be saved.
+    /// - Returns: The local file URL after a successful download.
+    func downloadFile(from fileRef: StorageReference, to destinationURL: URL) async throws -> URL {
+        return try await withUnsafeThrowingContinuation { continuation in
+            let downloadTask = fileRef.write(toFile: destinationURL) { url, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else if let url = url {
+                    continuation.resume(returning: url)
+                } else {
+                    continuation.resume(
+                        throwing: NSError(
+                            domain: "FirebaseStorage",
+                            code: -1,
+                            userInfo: [NSLocalizedDescriptionKey: "Unknown error"]
+                        )
+                    )
+                }
+            }
+
+            // Optional: Monitor progress
+            downloadTask.observe(.progress) { snapshot in
+                if let progress = snapshot.progress {
+                    print("Download progress: \(progress.fractionCompleted * 100)%")
+                }
+            }
+        }
     }
     
     // MARK: - Analytics Methods
