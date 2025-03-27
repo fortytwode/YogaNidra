@@ -5,53 +5,61 @@ struct FloatingHeart: Identifiable {
     var position: CGPoint
     var scale: CGFloat
     var opacity: Double
+    var rotation: Angle
 }
 
 struct FloatingHeartsView: View {
     @State private var hearts: [FloatingHeart] = []
-    let timer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
+    let timer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
     
     var body: some View {
         ZStack {
             ForEach(hearts) { heart in
                 Image(systemName: "heart.fill")
-                    .foregroundColor(.pink.opacity(0.3))
+                    .foregroundColor(.pink.opacity(0.6))
                     .scaleEffect(heart.scale)
                     .opacity(heart.opacity)
+                    .rotationEffect(heart.rotation)
                     .position(heart.position)
             }
         }
         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
         .onReceive(timer) { _ in
-            addHeart()
+            addHearts()
         }
     }
     
-    private func addHeart() {
+    private func addHearts() {
         let screenWidth = UIScreen.main.bounds.width
         let screenHeight = UIScreen.main.bounds.height
         
-        let heart = FloatingHeart(
-            position: CGPoint(
-                x: CGFloat.random(in: 50...screenWidth-50),
-                y: screenHeight
-            ),
-            scale: CGFloat.random(in: 0.5...1.5),
-            opacity: 0.8
-        )
+        // Add 3-5 hearts at once for increased density
+        let heartCount = Int.random(in: 3...5)
         
-        hearts.append(heart)
-        
-        withAnimation(.easeOut(duration: 4)) {
-            if let index = hearts.firstIndex(where: { $0.id == heart.id }) {
-                hearts[index].position.y -= CGFloat.random(in: 200...400)
-                hearts[index].opacity = 0
+        for _ in 0..<heartCount {
+            let heart = FloatingHeart(
+                position: CGPoint(
+                    x: CGFloat.random(in: 20...screenWidth-20),
+                    y: -50
+                ),
+                scale: CGFloat.random(in: 0.6...1.8),
+                opacity: 1.0,
+                rotation: Angle.degrees(Double.random(in: -20...20))
+            )
+            
+            hearts.append(heart)
+            
+            withAnimation(.easeIn(duration: CGFloat.random(in: 4...6))) {
+                if let index = hearts.firstIndex(where: { $0.id == heart.id }) {
+                    hearts[index].position.y += screenHeight + 100
+                    hearts[index].opacity = 0
+                }
             }
-        }
-        
-        // Remove heart after animation
-        DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-            hearts.removeAll { $0.id == heart.id }
+            
+            // Remove heart after animation
+            DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
+                hearts.removeAll { $0.id == heart.id }
+            }
         }
     }
 }

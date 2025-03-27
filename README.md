@@ -1,4 +1,11 @@
 # Yoga Nidra App
+2.1
+
+push custom diaglog
+superwall sdk
+fb sdk
+
+**
 1.3
 
 progress tab
