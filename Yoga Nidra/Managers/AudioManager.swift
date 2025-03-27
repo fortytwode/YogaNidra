@@ -2,6 +2,7 @@ import AVFoundation
 import MediaPlayer
 import SwiftUI
 import FirebaseStorage
+import FirebaseAnalytics
 
 final class Debouncer {
     
@@ -50,6 +51,12 @@ final class AudioManager: ObservableObject {
     @Published var duration: TimeInterval = 0
     @Published var errorMessage: String?
     @Published private(set) var currentPlayingSession: YogaNidraSession?
+    
+    // MARK: - Analytics Tracking Properties
+    private var sessionStartTime: Date?
+    private var lastSessionId: String?
+    private var lastCategory: String?
+    private var lastTitle: String?
     
     // MARK: - Private Properties
     private let audioEngine = AudioEngine.shared
@@ -112,6 +119,19 @@ final class AudioManager: ObservableObject {
             
             // Start progress tracking
             ProgressManager.shared.audioSessionStarted(session: session)
+            
+            // Track session start
+            sessionStartTime = Date()
+            lastSessionId = session.id
+            lastCategory = session.category.id
+            lastTitle = session.title
+            
+            // Log meditation started event
+            FirebaseManager.shared.logMeditationStarted(
+                sessionId: session.id,
+                duration: TimeInterval(session.duration),
+                category: session.category.id
+            )
             
             // Try to get local URL first
             if let localURL = session.localURL, FileManager.default.fileExists(atPath: localURL.path) {
@@ -192,6 +212,31 @@ final class AudioManager: ObservableObject {
         updateNowPlayingInfo()
         
         ProgressManager.shared.audioSessionEnded()
+        
+        // Track session end
+        if let sessionStartTime = sessionStartTime, let sessionId = lastSessionId, let category = lastCategory {
+            let sessionDuration = Date().timeIntervalSince(sessionStartTime)
+            
+            // Log meditation completed event
+            FirebaseManager.shared.logMeditationCompleted(
+                sessionId: sessionId,
+                duration: sessionDuration,
+                category: category
+            )
+            
+            // Also log to standard Firebase event for backward compatibility
+            Analytics.logEvent("session_completed", parameters: [
+                "session_id": sessionId,
+                "category": category,
+                "title": lastTitle ?? "",
+                "duration": sessionDuration
+            ])
+            
+            self.sessionStartTime = nil
+            lastSessionId = nil
+            lastCategory = nil
+            lastTitle = nil
+        }
     }
     
     // MARK: - Session Management
