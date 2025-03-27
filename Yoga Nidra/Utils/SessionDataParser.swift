@@ -3,8 +3,12 @@ import Foundation
 class SessionDataParser {
     
     static func loadSessions() -> [YogaNidraSession] {
-        guard let path = Bundle.main.path(forResource: "sessions", ofType: "json") else {
-            print("❌ Could not find sessions.json in path: \(Bundle.main.bundlePath)")
+        return loadSessionsFromJSON(fileName: "sessions")
+    }
+    
+    static func loadSessionsFromJSON(fileName: String) -> [YogaNidraSession] {
+        guard let path = Bundle.main.path(forResource: fileName, ofType: "json") else {
+            print("❌ Could not find \(fileName).json in path: \(Bundle.main.bundlePath)")
             return []
         }
         
@@ -13,7 +17,7 @@ class SessionDataParser {
             let decoder = JSONDecoder()
             let sessions = try decoder.decode([Session].self, from: data)
             
-            print("✅ Successfully loaded \(sessions.count) sessions")
+            print("✅ Successfully loaded \(sessions.count) sessions from \(fileName).json")
             return sessions.sorted {
                 $0.order < $1.order
             }.compactMap { item in
@@ -31,43 +35,17 @@ class SessionDataParser {
                 )
             }
         } catch {
-            print("❌ Error reading sessions.json:", error)
+            print("❌ Error reading \(fileName).json:", error)
             return []
         }
     }
     
+    static func loadEarthMonthSessions() -> [YogaNidraSession] {
+        return loadSessionsFromJSON(fileName: "earth_month")
+    }
+    
     static func loadSpringResetSessions() -> [YogaNidraSession] {
-        guard let path = Bundle.main.path(forResource: "march", ofType: "json") else {
-            print("❌ Could not find march.json in path: \(Bundle.main.bundlePath)")
-            return []
-        }
-        
-        do {
-            let data = try Data(contentsOf: URL(fileURLWithPath: path))
-            let decoder = JSONDecoder()
-            let sessions = try decoder.decode([Session].self, from: data)
-            
-            print("✅ Successfully loaded \(sessions.count) sessions")
-            return sessions.sorted {
-                $0.order < $1.order
-            }.compactMap { item in
-                YogaNidraSession(
-                    id: String(item.order),
-                    title: item.title,
-                    description: item.description,
-                    duration: item.duration,
-                    thumbnailUrl: item.thumbnailUrl,
-                    audioFileName: item.audioFileName,
-                    audioFileFolder: item.audioFileFolder,
-                    isPremium: item.premium != "n",
-                    category: SessionCategory(id: item.category),
-                    instructor: item.instructor
-                )
-            }
-        } catch {
-            print("❌ Error reading march.json:", error)
-            return []
-        }
+        return loadSessionsFromJSON(fileName: "spring_reset")
     }
     
     struct Session: Codable {
