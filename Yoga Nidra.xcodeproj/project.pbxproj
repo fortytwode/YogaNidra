@@ -180,6 +180,7 @@
 				24CEDFE72D6B64DF00CE9964 /* XCRemoteSwiftPackageReference "SwiftMessages" */,
 				24A379E12D6B68CB00217CC5 /* XCRemoteSwiftPackageReference "Connectivity" */,
 				24212E092D870D6C007AE53F /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				12BC20FD2D96AF4400AAA98E /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 24BD50232D263F7300159E70 /* Products */;
@@ -449,6 +450,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 11.8.0;
+			};
+		};
+		12BC20FD2D96AF4400AAA98E /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
 			};
 		};
 		24212E092D870D6C007AE53F /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
