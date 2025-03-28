@@ -311,18 +311,51 @@ extension FirebaseManager {
         guard let userDocument = await getUserDocument() else { return [] }
         let sessions = YogaNidraSession.allSessions + YogaNidraSession.specialEventSessions
         do {
-            let sessionsSnapshot = try await userDocument.collection(StroageKeys.recentsSessionsKey).getDocuments()
+            // Query with ordering and limit
+            let query = userDocument.collection(StroageKeys.recentsSessionsKey)
+                .order(by: "lastCompleted", descending: true)
+                .limit(to: 10)
+            
+            let sessionsSnapshot = try await query.getDocuments()
             let recentSessionsArray: [RecentSessionItem] = sessionsSnapshot.documents.compactMap { document in
                 guard let sessionId = document["sessionId"] as? String,
                       let lastCompleted = document["lastCompleted"] as? Timestamp else {
                     return nil
                 }
-                guard let session = sessions.first(where: { $0.id == sessionId }) else {
-                    return nil
+                
+                // Try to find the session in current sessions
+                if let session = sessions.first(where: { $0.id == sessionId }) {
+                    return RecentSessionItem(session: session, lastCompleted: lastCompleted.dateValue())
                 }
-                return RecentSessionItem(session: session, lastCompleted: lastCompleted.dateValue())
+                
+                // If not found, check if we have additional metadata stored
+                // This handles sessions that may no longer exist in the current app version
+                if let title = document["sessionTitle"] as? String,
+                   let duration = document["sessionDuration"] as? Int,
+                   let category = document["sessionCategory"] as? String,
+                   let thumbnailUrl = document["thumbnailUrl"] as? String {
+                    
+                    // Create a placeholder session for the UI
+                    let legacySession = YogaNidraSession(
+                        id: sessionId,
+                        title: title,
+                        description: "Previously played session",
+                        duration: duration,
+                        thumbnailUrl: thumbnailUrl,
+                        audioFileName: "",
+                        audioFileFolder: nil,
+                        isPremium: false,
+                        category: SessionCategory(id: category),
+                        instructor: document["instructor"] as? String ?? "Unknown"
+                    )
+                    
+                    return RecentSessionItem(session: legacySession, lastCompleted: lastCompleted.dateValue())
+                }
+                
+                return nil
             }
-            return recentSessionsArray.sorted(by: { $0.lastCompleted > $1.lastCompleted })
+            
+            return recentSessionsArray
         } catch {
             print("Error fetching recent sessions: \(error.localizedDescription)")
             return []
@@ -333,32 +366,40 @@ extension FirebaseManager {
         guard let userDocument = await getUserDocument() else { return [] }
         let sessionCollection = userDocument.collection(StroageKeys.recentsSessionsKey)
         
-        var recentSessions = Array(Set(recentSessions))
+        // Create a new RecentSessionItem with current timestamp
+        let newSessionItem = RecentSessionItem(session: session, lastCompleted: Date())
+        
+        // Add to in-memory array (at the beginning)
+        var updatedSessions = recentSessions
+        updatedSessions.insert(newSessionItem, at: 0)
+        
         do {
-            let existingDocuments = try await sessionCollection.getDocuments()
-            for document in existingDocuments.documents {
-                try await sessionCollection.document(document.documentID).delete()
+            // Create a new document with auto-generated ID
+            let newDocRef = sessionCollection.document()
+            
+            // Store comprehensive session metadata
+            let sessionData: [String: Any] = [
+                "sessionId": session.id,
+                "lastCompleted": Timestamp(date: newSessionItem.lastCompleted),
+                // Additional metadata to handle app updates
+                "sessionTitle": session.title,
+                "sessionDuration": session.duration,
+                "sessionCategory": session.category.id,
+                "thumbnailUrl": session.thumbnailUrl,
+                "instructor": session.instructor
+            ]
+            
+            try await newDocRef.setData(sessionData)
+            
+            // Limit the in-memory array to 10 items
+            if updatedSessions.count > 10 {
+                updatedSessions = Array(updatedSessions.prefix(10))
             }
             
-            // Ensure we only store the latest 2 sessions
-            recentSessions.insert(RecentSessionItem(session: session, lastCompleted: Date()), at: 0)
-            if recentSessions.count > 10 {
-                recentSessions.removeLast() // Remove the oldest session
-            }
-            // Store all recent sessions as separate documents
-            for recentSession in recentSessions {
-                let sessionData: [String: Any] = [
-                    "sessionId": recentSession.session.id,
-                    "lastCompleted": Timestamp(date: recentSession.lastCompleted)
-                ]
-                
-                let documentRef = sessionCollection.document(recentSession.session.id)
-                try await documentRef.setData(sessionData) // Overwrites if exists
-            }
-            return recentSessions
+            return updatedSessions
         } catch {
-            print("Error storing recent sessions: \(error.localizedDescription)")
-            return []
+            print("Error storing recent session: \(error.localizedDescription)")
+            return recentSessions
         }
     }
     

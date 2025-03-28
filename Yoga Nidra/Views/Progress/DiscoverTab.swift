@@ -1,22 +1,22 @@
 import SwiftUI
 
-struct DisvoverTabItem: Identifiable, Hashable {
+struct DiscoverTabItem: Identifiable, Hashable {
     let id = UUID()
     let title: String
     
     static let favouritesTab: Self = .init(title: "Favorites")
-    static let recnentlyPlayed: Self = .init(title: "Recently Played")
+    static let recentlyPlayed: Self = .init(title: "Recently Played")
     static let special: Self = .init(title: "Specials")
     
     static var allDefinedTabs: [Self] {
-        [special, .favouritesTab, .recnentlyPlayed]
+        [special, .favouritesTab, .recentlyPlayed]
     }
 }
 
 struct DiscoverTab: View {
     @StateObject var router = Router<DisoverTabDestination>()
-    @State private var sleedtedTab: DisvoverTabItem? = .allDefinedTabs.first
-    @State private var allTabs: [DisvoverTabItem] = DisvoverTabItem.allDefinedTabs
+    @State private var selectedTab: DiscoverTabItem? = .allDefinedTabs.first
+    @State private var allTabs: [DiscoverTabItem] = DiscoverTabItem.allDefinedTabs
     @EnvironmentObject var audioManager: AudioManager
     @AppStorage(StroageKeys.totalSessionsCompletedKey) var sessionsCompleted = 0
     
@@ -25,14 +25,14 @@ struct DiscoverTab: View {
             ScrollView {
                 LazyVStack(pinnedViews: [.sectionHeaders]) {
                     Section(header: tabsSelection) {
-                        if let sleedtedTab {
-                            getViw(for: sleedtedTab)
+                        if let selectedTab {
+                            getView(for: selectedTab)
                         }
                     }
                 }
             }
             .contentMargins(.bottom, audioManager.currentPlayingSession != nil ? 52 : 0, for: .scrollContent)
-            .navigationTitle(sleedtedTab?.title ?? "Dashboard")
+            .navigationTitle(selectedTab?.title ?? "Dashboard")
             .navigationDestination(for: DisoverTabDestination.self) { dest in
                 switch dest {
                 case .selfLove14Days:
@@ -45,13 +45,13 @@ struct DiscoverTab: View {
     }
     
     @ViewBuilder
-    func getViw(for tab: DisvoverTabItem) -> some View {
+    func getView(for tab: DiscoverTabItem) -> some View {
         switch tab.title {
-        case DisvoverTabItem.favouritesTab.title:
+        case DiscoverTabItem.favouritesTab.title:
             favouritesView
-        case DisvoverTabItem.recnentlyPlayed.title:
-            recnetlyPlayerView
-        case DisvoverTabItem.special.title:
+        case DiscoverTabItem.recentlyPlayed.title:
+            recentlyPlayedView
+        case DiscoverTabItem.special.title:
             specialsView
         default:
             fatalError("No tab identified for \(tab.title)")
@@ -66,7 +66,7 @@ struct DiscoverTab: View {
         }
     }
     
-    var recnetlyPlayerView: some View {
+    var recentlyPlayedView: some View {
         VStack(spacing: 24) {
             VStack(alignment: .leading, spacing: 16) {
                 if sessionsCompleted == 0 {
@@ -171,9 +171,9 @@ struct DiscoverTab: View {
                 ForEach(allTabs) { tab in
                     ChipButton(
                         title: tab.title,
-                        isSelected: sleedtedTab?.id == tab.id
+                        isSelected: selectedTab?.id == tab.id
                     ) {
-                        sleedtedTab = tab
+                        selectedTab = tab
                     }
                 }
             }
