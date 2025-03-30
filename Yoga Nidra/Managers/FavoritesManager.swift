@@ -51,7 +51,7 @@ final class FavoritesManager: ObservableObject {
     private func loadFavoritesFromFirebase() async {
         guard let userCollection = await FirebaseManager.shared.getUserDocument() else { return }
         
-        let allSessions = YogaNidraSession.allSessions + YogaNidraSession.specialEventSessions
+        let allSessions = YogaNidraSession.allSessionIncldedSpecialEventSessions
         let favCollection = userCollection.collection(StroageKeys.favoriteSessionsKey)
         do {
             let snapshot = try await favCollection.getDocuments()
