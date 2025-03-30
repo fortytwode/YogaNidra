@@ -64,8 +64,12 @@ struct YogaNidraSession: Identifiable, Codable, Equatable, Hashable {
         SessionDataParser.loadSpringResetSessions()
     }()
     
+    static var earthMonthSession: [YogaNidraSession] = {
+        SessionDataParser.loadEarthMonthSessions()
+    }()
+    
     static var allSessionIncldedSpecialEventSessions: [YogaNidraSession] = {
-        allSessions + specialEventSessions + springResetSessions
+        allSessions + specialEventSessions + springResetSessions + earthMonthSession
     }()
     
     static let preview = YogaNidraSession(
