@@ -18,6 +18,7 @@ enum SheetPresentaiton: Identifiable, Hashable {
 
 enum HomeTabDestination: Hashable {
     case springReset
+    case earthMonth
 }
 
 enum LibraryTabDestination: Hashable {
@@ -27,6 +28,7 @@ enum LibraryTabDestination: Hashable {
 enum DisoverTabDestination: Hashable {
     case selfLove14Days
     case springReset
+    case earthMonth
 }
 
 enum ProgileTabDestination: Hashable {

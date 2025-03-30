@@ -39,6 +39,8 @@ struct DiscoverTab: View {
                     SelfLove14days()
                 case .springReset:
                     SpringReset()
+                case .earthMonth:
+                    EarthMonth()
                 }
             }
         }
@@ -87,6 +89,11 @@ struct DiscoverTab: View {
     var specialsView: some View {
         VStack {
             Button {
+                router.push(.earthMonth)
+            } label: {
+                EarthMonthBanner()
+            }
+            Button {
                 router.push(.springReset)
             } label: {
                 springResetBanner
@@ -98,7 +105,6 @@ struct DiscoverTab: View {
             }
         }
     }
-    
     
     var valentinesBanner: some View {
         ZStack {

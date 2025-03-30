@@ -57,9 +57,9 @@ struct HomeView: View {
                     }
                     
                     Button {
-                        router.push(.springReset)
+                        router.push(.earthMonth)
                     } label: {
-                        springResetBanner
+                        EarthMonthBanner()
                     }
                     
                     // Popular section
@@ -77,40 +77,11 @@ struct HomeView: View {
                 switch destination {
                 case .springReset:
                     SpringReset()
+                case .earthMonth:
+                    EarthMonth()
                 }
             }
         }
-    }
-    
-    var springResetBanner: some View {
-        ZStack {
-            Image("spring_reset")
-                .resizable()
-                .aspectRatio(1, contentMode: .fill)
-                .frame(height: 160)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .overlay(
-                    LinearGradient(
-                        gradient: Gradient(colors: [.springGreen.opacity(0.5)]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                )
-            VStack {
-                Text("Spring Reset: 10 Nights to Renewed Rest.")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .padding()
-                Spacer()
-                Text("Spring forward into deeper rest. Tap to renew yourself. 🌺")
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                .padding()
-            }
-        }
-        .padding(.horizontal)
     }
     
     var popularSection: some View {
