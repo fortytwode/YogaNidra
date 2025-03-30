@@ -8,6 +8,14 @@ struct RecentSessionItem: Identifiable, Hashable {
     let lastCompleted: Date
     
     var id: String { session.id }
+    
+    static func == (lhs: RecentSessionItem, rhs: RecentSessionItem) -> Bool {
+        return lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 // MARK: - Date Formatting

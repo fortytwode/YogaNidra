@@ -309,53 +309,20 @@ extension FirebaseManager {
     
     func getRecentSessions() async -> [RecentSessionItem] {
         guard let userDocument = await getUserDocument() else { return [] }
-        let sessions = YogaNidraSession.allSessions + YogaNidraSession.specialEventSessions
+        let sessions = YogaNidraSession.allSessionIncldedSpecialEventSessions
         do {
-            // Query with ordering and limit
-            let query = userDocument.collection(StroageKeys.recentsSessionsKey)
-                .order(by: "lastCompleted", descending: true)
-                .limit(to: 10)
-            
-            let sessionsSnapshot = try await query.getDocuments()
+            let sessionsSnapshot = try await userDocument.collection(StroageKeys.recentsSessionsKey).getDocuments()
             let recentSessionsArray: [RecentSessionItem] = sessionsSnapshot.documents.compactMap { document in
                 guard let sessionId = document["sessionId"] as? String,
                       let lastCompleted = document["lastCompleted"] as? Timestamp else {
                     return nil
                 }
-                
-                // Try to find the session in current sessions
-                if let session = sessions.first(where: { $0.id == sessionId }) {
-                    return RecentSessionItem(session: session, lastCompleted: lastCompleted.dateValue())
+                guard let session = sessions.first(where: { $0.id == sessionId }) else {
+                    return nil
                 }
-                
-                // If not found, check if we have additional metadata stored
-                // This handles sessions that may no longer exist in the current app version
-                if let title = document["sessionTitle"] as? String,
-                   let duration = document["sessionDuration"] as? Int,
-                   let category = document["sessionCategory"] as? String,
-                   let thumbnailUrl = document["thumbnailUrl"] as? String {
-                    
-                    // Create a placeholder session for the UI
-                    let legacySession = YogaNidraSession(
-                        id: sessionId,
-                        title: title,
-                        description: "Previously played session",
-                        duration: duration,
-                        thumbnailUrl: thumbnailUrl,
-                        audioFileName: "",
-                        audioFileFolder: nil,
-                        isPremium: false,
-                        category: SessionCategory(id: category),
-                        instructor: document["instructor"] as? String ?? "Unknown"
-                    )
-                    
-                    return RecentSessionItem(session: legacySession, lastCompleted: lastCompleted.dateValue())
-                }
-                
-                return nil
+                return RecentSessionItem(session: session, lastCompleted: lastCompleted.dateValue())
             }
-            
-            return recentSessionsArray
+            return recentSessionsArray.sorted(by: { $0.lastCompleted > $1.lastCompleted })
         } catch {
             print("Error fetching recent sessions: \(error.localizedDescription)")
             return []
@@ -366,40 +333,36 @@ extension FirebaseManager {
         guard let userDocument = await getUserDocument() else { return [] }
         let sessionCollection = userDocument.collection(StroageKeys.recentsSessionsKey)
         
-        // Create a new RecentSessionItem with current timestamp
-        let newSessionItem = RecentSessionItem(session: session, lastCompleted: Date())
-        
-        // Add to in-memory array (at the beginning)
-        var updatedSessions = recentSessions
-        updatedSessions.insert(newSessionItem, at: 0)
-        
+        var recentSessions = recentSessions
         do {
-            // Create a new document with auto-generated ID
-            let newDocRef = sessionCollection.document()
+            let existingDocuments = try await sessionCollection.getDocuments()
+            for document in existingDocuments.documents {
+                try await sessionCollection.document(document.documentID).delete()
+            }
+            recentSessions.insert(RecentSessionItem(session: session, lastCompleted: Date()), at: 0)
             
-            // Store comprehensive session metadata
-            let sessionData: [String: Any] = [
-                "sessionId": session.id,
-                "lastCompleted": Timestamp(date: newSessionItem.lastCompleted),
-                // Additional metadata to handle app updates
-                "sessionTitle": session.title,
-                "sessionDuration": session.duration,
-                "sessionCategory": session.category.id,
-                "thumbnailUrl": session.thumbnailUrl,
-                "instructor": session.instructor
-            ]
-            
-            try await newDocRef.setData(sessionData)
-            
-            // Limit the in-memory array to 10 items
-            if updatedSessions.count > 10 {
-                updatedSessions = Array(updatedSessions.prefix(10))
+            var seenIds = Set<String>()
+            let uniqueSessions = recentSessions.filter { session in
+                guard !seenIds.contains(session.id) else { return false }
+                seenIds.insert(session.id)
+                return true
             }
             
-            return updatedSessions
-        } catch {
-            print("Error storing recent session: \(error.localizedDescription)")
+            recentSessions = Array(uniqueSessions.prefix(10))
+            // Store all recent sessions as separate documents
+            for recentSession in recentSessions {
+                let sessionData: [String: Any] = [
+                    "sessionId": recentSession.session.id,
+                    "lastCompleted": Timestamp(date: recentSession.lastCompleted)
+                ]
+                
+                let documentRef = sessionCollection.document(recentSession.session.id)
+                try await documentRef.setData(sessionData) // Overwrites if exists
+            }
             return recentSessions
+        } catch {
+            print("Error storing recent sessions: \(error.localizedDescription)")
+            return []
         }
     }
     
