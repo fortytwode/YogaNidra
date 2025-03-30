@@ -28,9 +28,6 @@ final class ProgressManager: ObservableObject {
         Task {
             await FirebaseManager.shared.syncProgress()
             recentSessions = await FirebaseManager.shared.getRecentSessions()
-            
-            try? await Task.sleep(for: .seconds(5))
-            setRatingDialogShown()
         }
         setAppLaunchCount()
         checkRatingDialog()

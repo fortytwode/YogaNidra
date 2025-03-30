@@ -33,6 +33,7 @@ struct YogaNidraApp: App {
     @StateObject private var sheetPresenter = Presenter()
     @StateObject private var overlayManager = OverlayManager.shared
     @StateObject private var appState = AppState.shared
+    @StateObject private var notificationSettingsManager = NotificationSettingsManager.shared
     
     var body: some Scene {
         WindowGroup {
@@ -98,6 +99,8 @@ struct YogaNidraApp: App {
             }
             .onReceive(progressManager.showRaitnsDialogPublisher) {
                 overlayManager.showOverlay(RatingPromptView())
+            }.onReceive(onboardingManager.showRemindersDialogPublisher) {
+                overlayManager.showOverlay(SleepReminderPromptView())
             }
             .onReceive(rechabilityManager.rechabilityChangedPublisher) {
                 if !rechabilityManager.isNetworkRechable {
@@ -161,6 +164,7 @@ struct YogaNidraApp: App {
             .environmentObject(overlayManager)
             .environmentObject(appState)
             .environmentObject(rechabilityManager)
+            .environmentObject(notificationSettingsManager)
         }
     }
     

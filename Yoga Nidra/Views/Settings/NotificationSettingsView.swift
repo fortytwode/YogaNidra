@@ -2,35 +2,30 @@ import SwiftUI
 import UserNotifications
 
 struct NotificationSettingsView: View {
-    @State private var isNotificationsEnabled = false
-    @State private var showingTimePickerSheet = false
-    @State private var selectedTime: Date
     
-    init() {
-        _selectedTime = State(wrappedValue: (Defaults.value(forKey: StroageKeys.sleepReminderTime) as? Date) ?? .now)
-    }
+    @EnvironmentObject var notificationSettingsManager: NotificationSettingsManager
     
     var body: some View {
         Form {
             Section {
-                Toggle("Enable Notifications", isOn: $isNotificationsEnabled)
-                    .onChange(of: isNotificationsEnabled) { _, newValue in
+                Toggle("Enable Notifications", isOn: $notificationSettingsManager.isNotificationsEnabled)
+                    .onChange(of: notificationSettingsManager.isNotificationsEnabled) { _, newValue in
                         if newValue {
-                            requestNotificationPermission()
+                            notificationSettingsManager.requestNotificationPermission()
                         } else {
                             // Cancel any scheduled notifications
                             UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
                         }
                     }
                 
-                if isNotificationsEnabled {
+                if notificationSettingsManager.isNotificationsEnabled {
                     Button {
-                        showingTimePickerSheet = true
+                        notificationSettingsManager.showingTimePickerSheet = true
                     } label: {
                         HStack {
                             Text("Reminder Time")
                             Spacer()
-                            Text(selectedTime.formatted(date: .omitted, time: .shortened))
+                            Text(notificationSettingsManager.selectedTime.formatted(date: .omitted, time: .shortened))
                                 .foregroundColor(.gray)
                         }
                     }
@@ -42,67 +37,27 @@ struct NotificationSettingsView: View {
             }
         }
         .navigationTitle("Notifications")
-        .sheet(isPresented: $showingTimePickerSheet) {
+        .sheet(isPresented: $notificationSettingsManager.showingTimePickerSheet) {
             NavigationStack {
                 Form {
                     DatePicker("Select Time",
-                              selection: $selectedTime,
+                               selection: $notificationSettingsManager.selectedTime,
                               displayedComponents: .hourAndMinute)
                         .datePickerStyle(.wheel)
-                        .onChange(of: selectedTime) { _, newTime in
-                            scheduleNotification(at: newTime)
+                        .onChange(of: notificationSettingsManager.selectedTime) { _, newTime in
+                            notificationSettingsManager.scheduleNotification(at: newTime)
                         }
                 }
                 .navigationTitle("Choose Time")
                 .navigationBarItems(trailing: Button("Done") {
-                    showingTimePickerSheet = false
+                    notificationSettingsManager.showingTimePickerSheet = false
                 })
             }
             .presentationDetents([.height(300)])
         }
         .onAppear {
-            checkNotificationStatus()
+            notificationSettingsManager.checkNotificationStatus()
         }
-    }
-    
-    private func checkNotificationStatus() {
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            DispatchQueue.main.async {
-                isNotificationsEnabled = settings.authorizationStatus == .authorized
-            }
-        }
-    }
-    
-    private func requestNotificationPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { success, error in
-            DispatchQueue.main.async {
-                isNotificationsEnabled = success
-                if success {
-                    scheduleNotification(at: selectedTime)
-                }
-            }
-        }
-    }
-    
-    private func scheduleNotification(at time: Date) {
-        Defaults.set(time, forKey: StroageKeys.sleepReminderTime)
-        // Cancel existing notifications
-        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-        
-        let content = UNMutableNotificationContent()
-        content.title = "Time to Sleep"
-        content.body = "It is time to sleep now! Sleep well!"
-        content.sound = .default
-        
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.hour, .minute], from: time)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-        let request = UNNotificationRequest(
-            identifier: "dailyReminder",
-            content: content,
-            trigger: trigger
-        )
-        UNUserNotificationCenter.current().add(request)
     }
 }
 
