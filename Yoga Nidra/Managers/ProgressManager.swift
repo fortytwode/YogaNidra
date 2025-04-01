@@ -28,6 +28,9 @@ final class ProgressManager: ObservableObject {
         Task {
             await FirebaseManager.shared.syncProgress()
             recentSessions = await FirebaseManager.shared.getRecentSessions()
+            
+            try? await Task.sleep(for: .seconds(5))
+            setRatingDialogShown()
         }
         setAppLaunchCount()
         checkRatingDialog()
@@ -133,6 +136,11 @@ final class ProgressManager: ObservableObject {
         guard !Defaults.bool(forKey: StroageKeys.isAppRated) else { return }
         FirebaseManager.shared.logAppRatingPromtShown()
         showRaitnsDialog.send()
+        
+        // Set the isAppRated flag to true when showing the dialog
+        // This assumes the user has been given the opportunity to rate
+        // and prevents showing the prompt again, regardless of user action
+        Defaults.setValue(true, forKey: StroageKeys.isAppRated)
         Defaults.set(Date(), forKey: StroageKeys.lastRatingDialogDateKey)
     }
     
