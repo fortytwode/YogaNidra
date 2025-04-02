@@ -3,6 +3,7 @@ import MediaPlayer
 import SwiftUI
 import FirebaseStorage
 import FirebaseAnalytics
+import FBSDKCoreKit
 
 final class Debouncer {
     
@@ -221,6 +222,13 @@ final class AudioManager: ObservableObject {
             FirebaseManager.shared.logMeditationCompleted(
                 sessionId: sessionId,
                 duration: sessionDuration,
+                category: category
+            )
+            
+            // Track first meditation completed with Facebook
+            checkAndTrackFirstMeditationCompleted(
+                sessionId: sessionId,
+                durationMinutes: Int(sessionDuration / 60),
                 category: category
             )
             
@@ -467,5 +475,23 @@ final class AudioManager: ObservableObject {
     private func deactivateAudioSession() {
         // Removed duplicate audio session deactivation
         // Now handled by AudioEngine
+    }
+    
+    // MARK: - Facebook Event Tracking
+    
+    private func checkAndTrackFirstMeditationCompleted(sessionId: String, durationMinutes: Int, category: String) {
+        let defaults = UserDefaults.standard
+        let hasCompletedFirstMeditation = defaults.bool(forKey: "hasCompletedFirstMeditation")
+        
+        if !hasCompletedFirstMeditation {
+            // This is their first meditation
+            FacebookEventTracker.shared.trackFirstMeditationCompleted(
+                meditationId: sessionId,
+                durationMinutes: durationMinutes
+            )
+            
+            // Mark that they've completed their first meditation
+            defaults.set(true, forKey: "hasCompletedFirstMeditation")
+        }
     }
 }

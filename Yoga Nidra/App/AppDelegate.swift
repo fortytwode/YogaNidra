@@ -7,6 +7,7 @@
 
 import UIKit
 import Firebase
+import FBSDKCoreKit
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
     
@@ -16,6 +17,27 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
         firebase()
         notification()
+        setupFacebookSDK(launchOptions: launchOptions)
+        return true
+    }
+    
+    private func setupFacebookSDK(launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) {
+        ApplicationDelegate.shared.application(
+            UIApplication.shared,
+            didFinishLaunchingWithOptions: launchOptions
+        )
+    }
+    
+    func application(
+        _ app: UIApplication,
+        open url: URL,
+        options: [UIApplication.OpenURLOptionsKey : Any] = [:]
+    ) -> Bool {
+        ApplicationDelegate.shared.application(
+            app,
+            open: url,
+            options: options
+        )
         return true
     }
     

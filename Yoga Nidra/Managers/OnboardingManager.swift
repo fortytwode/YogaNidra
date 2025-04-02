@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import FBSDKCoreKit
 
 @MainActor
 final class OnboardingManager: ObservableObject {
@@ -28,6 +29,9 @@ final class OnboardingManager: ObservableObject {
             shouldShowOnboarding = !isOnboardingCompleted
             if isOnboardingCompleted {
                 showRemindersDialog.send()
+                
+                // Track onboarding completed event with Facebook
+                trackOnboardingCompleted()
             }
         }
     }
@@ -36,6 +40,16 @@ final class OnboardingManager: ObservableObject {
         let isOnboardingCompleted = UserDefaults.standard.bool(forKey: "isOnboardingCompleted")
         self.isOnboardingCompleted = isOnboardingCompleted
         self.shouldShowOnboarding = !isOnboardingCompleted
+    }
+    
+    // Track onboarding completed event
+    private func trackOnboardingCompleted() {
+        // Use our FacebookEventTracker service to track the event
+        Task {
+            await MainActor.run {
+                FacebookEventTracker.shared.trackOnboardingCompleted()
+            }
+        }
     }
 }
 

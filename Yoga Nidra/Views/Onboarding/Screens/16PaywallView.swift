@@ -1,4 +1,5 @@
 import SwiftUI
+import FBSDKCoreKit
 
 struct PaywallView: View {
     @EnvironmentObject private var storeManager: StoreManager
@@ -77,6 +78,10 @@ struct PaywallView: View {
                             do {
                                 try await storeManager.purchase()
                                 onboardingManager.isOnboardingCompleted = true
+                                
+                                // Track trial started event with Facebook
+                                FacebookEventTracker.shared.trackTrialStarted(planName: "premium_yearly")
+                                
                             } catch {
                                 showError = true
                                 errorMessage = error.localizedDescription
@@ -108,6 +113,10 @@ struct PaywallView: View {
                             do {
                                 try await storeManager.restore()
                                 onboardingManager.isOnboardingCompleted = true
+                                
+                                // Track restore purchase with Facebook (optional)
+                                FacebookEventTracker.shared.trackTrialStarted(planName: "restored_purchase")
+                                
                             } catch {
                                 showError = true
                                 errorMessage = error.localizedDescription
