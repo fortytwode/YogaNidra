@@ -1,5 +1,6 @@
 import SwiftUI
 import FBSDKCoreKit
+import RevenueCat
 
 struct PaywallView: View {
     @EnvironmentObject private var storeManager: StoreManager
@@ -7,6 +8,9 @@ struct PaywallView: View {
     @Environment(\.openURL) private var openURL
     @State private var showError = false
     @State private var errorMessage = ""
+    
+    // RevenueCat manager reference
+    @StateObject private var revenueCatManager = RevenueCatManager.shared
     
     var body: some View {
         ScrollView {
@@ -68,7 +72,8 @@ struct PaywallView: View {
                             .font(.headline)
                             .foregroundColor(.white)
                         
-                        Text("Then just $59.99/year (that's $5/month for better sleep) 💎")
+                        // Use price from RevenueCat if available
+                        Text("Then just \(storeManager.formattedPrice) (that's $5/month for better sleep) 💎")
                             .foregroundColor(.white.opacity(0.9))
                             .multilineTextAlignment(.center)
                     }
@@ -76,10 +81,12 @@ struct PaywallView: View {
                     Button {
                         Task {
                             do {
+                                // Use StoreManager which delegates to RevenueCat
                                 try await storeManager.purchase()
                                 onboardingManager.isOnboardingCompleted = true
                                 
                                 // Track trial started event with Facebook
+                                // Note: RevenueCatManager also tracks this event internally
                                 FacebookEventTracker.shared.trackTrialStarted(planName: "premium_yearly")
                                 
                             } catch {
@@ -88,7 +95,7 @@ struct PaywallView: View {
                             }
                         }
                     } label: {
-                        if storeManager.isLoading {
+                        if storeManager.isLoading || revenueCatManager.isLoading {
                             ProgressView()
                                 .progressViewStyle(.circular)
                                 .tint(.white)
@@ -163,8 +170,13 @@ struct PaywallView: View {
         }
         .onAppear {
             FirebaseManager.shared.logPaywallImpression(source: "onboarding")
+            
+            // Refresh offerings when view appears
+            Task {
+                await revenueCatManager.loadOfferings()
+            }
         }
-        .alert("Purchase Failed", isPresented: $showError) {
+        .alert(revenueCatManager.errorMessage ?? "Purchase Failed", isPresented: $showError) {
             Button("OK", role: .cancel) { }
         } message: {
             Text(errorMessage)

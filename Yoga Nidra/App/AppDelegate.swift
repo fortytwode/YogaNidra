@@ -8,6 +8,7 @@
 import UIKit
 import Firebase
 import FBSDKCoreKit
+import RevenueCat
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
     
@@ -18,6 +19,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         firebase()
         notification()
         setupFacebookSDK(launchOptions: launchOptions)
+        
+        // Initialize RevenueCat
+        _ = RevenueCatManager.shared
+        
         return true
     }
     

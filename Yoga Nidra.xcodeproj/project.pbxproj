@@ -34,6 +34,8 @@
 		12BC22402D9D78E100AAA98E /* FacebookBasics in Frameworks */ = {isa = PBXBuildFile; productRef = 12BC223F2D9D78E100AAA98E /* FacebookBasics */; };
 		12BC22422D9D78E100AAA98E /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = 12BC22412D9D78E100AAA98E /* FacebookCore */; };
 		12BC22442D9D78E100AAA98E /* FacebookLogin in Frameworks */ = {isa = PBXBuildFile; productRef = 12BC22432D9D78E100AAA98E /* FacebookLogin */; };
+		12BC224A2D9D947200AAA98E /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 12BC22492D9D947200AAA98E /* ReceiptParser */; };
+		12BC224C2D9D947200AAA98E /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 12BC224B2D9D947200AAA98E /* RevenueCat */; };
 		24212E0B2D870D6C007AE53F /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 24212E0A2D870D6C007AE53F /* Kingfisher */; };
 		247FD2C02D529FA0009F6F69 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 247FD2BF2D529FA0009F6F69 /* FirebaseAnalytics */; };
 		247FD2C22D529FA0009F6F69 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 247FD2C12D529FA0009F6F69 /* FirebaseAuth */; };
@@ -85,6 +87,8 @@
 				12B4C6362D2E8A7F00353CB5 /* StoreKit.framework in Frameworks */,
 				247FD2C62D529FA0009F6F69 /* FirebaseDatabase in Frameworks */,
 				12AED4182D5651AF006D4637 /* FirebaseAuth in Frameworks */,
+				12BC224A2D9D947200AAA98E /* ReceiptParser in Frameworks */,
+				12BC224C2D9D947200AAA98E /* RevenueCat in Frameworks */,
 				12AED4142D5651AF006D4637 /* FirebaseAnalytics in Frameworks */,
 				12AED41C2D5651AF006D4637 /* FirebaseFirestore in Frameworks */,
 				121A12222D521AC300E55E90 /* FirebaseStorage in Frameworks */,
@@ -636,6 +640,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 12BC223C2D9D78E100AAA98E /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
 			productName = FacebookLogin;
+		};
+		12BC22492D9D947200AAA98E /* ReceiptParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 12BC20FD2D96AF4400AAA98E /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = ReceiptParser;
+		};
+		12BC224B2D9D947200AAA98E /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 12BC20FD2D96AF4400AAA98E /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
 		};
 		24212E0A2D870D6C007AE53F /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
