@@ -26,53 +26,102 @@ Superwall is a powerful SDK that allows you to create and manage paywalls remote
    
    private func configureRevenueCat() {
        // Configure RevenueCat with the most basic configuration
-       Purchases.configure(withAPIKey: "appl_KDvjJIUgkZHCeRNGQZCsJlrMFbB")
+       Purchases.configure(withAPIKey: "appl_KDvjJIUgkZHCsJlrMFbB")
    }
    ```
 
 2. **SuperwallManager.swift**
    - Created a new manager class to centralize Superwall interactions
    - Implemented methods for showing paywalls and tracking events
+   - Added error handling and subscription status management
    - Maintained compatibility with existing Facebook event tracking
    - Code:
    ```swift
-   // Simple method to show a paywall
-   func showPaywall() {
-       // Just register the placement without any complex handlers
-       Superwall.shared.register(placement: "show_paywall")
+   // Enhanced method to show a paywall with error handling
+   func showPaywallWithErrorHandling() {
+       let handler = PaywallPresentationHandler()
        
-       // Track paywall view with Facebook
-       AppEvents.shared.logEvent(AppEvents.Name("paywall_viewed"))
+       // Handle presentation errors - using the method (not property assignment)
+       handler.onError { error in
+           print("Superwall presentation error: \(error.localizedDescription)")
+           
+           // Log to Firebase Analytics directly
+           Analytics.logEvent("superwall_presentation_error", parameters: [
+               "error": error.localizedDescription
+           ])
+           
+           // Notify observers about the failure
+           NotificationCenter.default.post(
+               name: SuperwallManager.presentationFailedNotification,
+               object: nil
+           )
+       }
+       
+       // Register the placement with the handler
+       Superwall.shared.register(
+           placement: "show_paywall",
+           params: nil,
+           handler: handler
+       )
    }
    
-   // Track an event that might trigger a paywall
-   func trackEvent(_ eventName: String) {
-       // Simply register the placement
-       Superwall.shared.register(placement: eventName)
-       
-       // Also track in Facebook for key events
-       if eventName == "onboarding_completed" {
-           AppEvents.shared.logEvent(AppEvents.Name("onboarding_completed"))
-       } else if eventName == "first_meditation_completed" {
-           AppEvents.shared.logEvent(AppEvents.Name("first_meditation_completed"))
+   // Update subscription status in Superwall
+   func updateSubscriptionStatus(isSubscribed: Bool) {
+       if isSubscribed {
+           // Create an empty Set of Entitlement
+           let entitlements: Set<Entitlement> = [Entitlement(id: "premium")]
+           Superwall.shared.subscriptionStatus = .active(entitlements)
+       } else {
+           Superwall.shared.subscriptionStatus = .inactive
        }
    }
    ```
 
 3. **PaywallView.swift**
-   - Updated to use SuperwallManager for paywall presentation
-   - Maintained fallback UI in case Superwall doesn't present a paywall
+   - Updated to use enhanced SuperwallManager for paywall presentation
+   - Implemented notification observer for handling presentation failures
+   - Added dynamic UI that adapts when Superwall fails to present
    - Code:
    ```swift
+   .onAppear {
+       // Add notification observer for Superwall presentation failures
+       notificationToken = NotificationCenter.default.addObserver(
+           forName: SuperwallManager.presentationFailedNotification,
+           object: nil,
+           queue: .main
+       ) { [self] _ in
+           self.superwallPresentationFailed = true
+       }
+       
+       // Show Superwall after a brief delay
+       DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+           presentSuperwallPaywall()
+       }
+   }
+   
    private func presentSuperwallPaywall() {
-       // Use the simplified SuperwallManager method
-       SuperwallManager.shared.showPaywall()
+       // Use the enhanced error handling method
+       SuperwallManager.shared.showPaywallWithErrorHandling()
+   }
+   ```
+
+4. **RevenueCatManager.swift**
+   - Updated to sync subscription status with Superwall
+   - Code:
+   ```swift
+   nonisolated func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
+       Task { @MainActor in
+           isSubscribed = customerInfo.entitlements[entitlementID]?.isActive == true
+           
+           // Update Superwall subscription status
+           SuperwallManager.shared.updateSubscriptionStatus(isSubscribed: isSubscribed)
+       }
    }
    ```
 
 ### Current Implementation
 
-The current implementation provides a minimal but functional integration with Superwall:
+The current implementation provides a robust integration with Superwall:
 
 1. **SDK Initialization**
    - Both Superwall and RevenueCat are initialized in AppDelegate
@@ -86,11 +135,21 @@ The current implementation provides a minimal but functional integration with Su
    - Facebook event tracking is maintained for analytics continuity
 
 3. **Paywall Presentation**
-   - When a user reaches the paywall screen, Superwall is triggered
-   - A fallback UI is shown if Superwall doesn't present anything
+   - Enhanced error handling with proper notification system
+   - Fallback UI automatically shows with full opacity if Superwall fails to present
+   - Firebase Analytics tracks presentation errors for debugging
 
 4. **User Identification**
    - Method provided to set the same user ID in both Superwall and RevenueCat
+   - Proper error handling for RevenueCat identification
+
+5. **Subscription Status Management**
+   - Automatic syncing of subscription status between RevenueCat and Superwall
+   - Proper handling of entitlements for active subscriptions
+
+6. **User Attributes**
+   - Support for setting user attributes for better targeting
+   - Convenience method for updating common user profile data
 
 ### A/B Testing Implementation
 
@@ -110,60 +169,43 @@ To implement A/B testing with Superwall, you don't need additional code in your 
    - Based on results, you can adjust traffic allocation
    - Eventually, you can direct 100% of traffic to the best-performing variant
 
+### Testing Your Implementation
+
+Before submitting to the App Store, you can test the following locally:
+
+1. **Paywall Presentation**
+   - Navigate to the paywall screen to verify Superwall presents correctly
+   - Check console logs for any errors
+
+2. **Fallback UI**
+   - You can test the fallback UI by:
+     - Temporarily using an invalid API key
+     - Turning off internet connection
+     - The native UI should appear with full opacity
+
+3. **Event Logging**
+   - Use debug logs to confirm events are being sent to Facebook and Firebase
+   - Full event visibility in Facebook Events Manager will only be available after app release
+
+4. **Subscription Status**
+   - Test subscription purchase flow with sandbox accounts
+   - Verify that subscription status is properly reflected in the app
+
 ### Future Enhancements
 
 1. **Advanced Event Parameters**
-   - Pass additional context with events for better targeting:
-   ```swift
-   func trackEventWithParams(_ eventName: String, params: [String: Any]) {
-       Superwall.shared.register(placement: eventName, params: params)
-   }
-   ```
+   - Pass additional context with events for better targeting
 
-2. **Custom Paywall Handlers**
-   - Implement more sophisticated presentation handlers:
-   ```swift
-   func showPaywallWithHandler() {
-       let handler = PaywallPresentationHandler()
-       // Configure handler methods
-       Superwall.shared.register(placement: "show_paywall", params: nil, handler: handler)
-   }
-   ```
+2. **Deeper Analytics Integration**
+   - Implement more sophisticated analytics tracking
+   - Add custom conversion events
 
-3. **User Attributes**
-   - Set user attributes for better targeting:
-   ```swift
-   func setUserAttributes(_ attributes: [String: Any]) {
-       Superwall.shared.setUserAttributes(attributes)
-   }
-   ```
+3. **Localization Support**
+   - Configure paywalls for different languages and regions
 
-4. **Subscription Status Sync**
-   - Implement more robust subscription status synchronization:
-   ```swift
-   func updateSubscriptionStatus(isSubscribed: Bool) {
-       if isSubscribed {
-           Superwall.shared.subscriptionStatus = .active(entitlements: ["premium"])
-       } else {
-           Superwall.shared.subscriptionStatus = .inactive
-       }
-   }
-   ```
-
-5. **Deeper RevenueCat Integration**
-   - Implement a custom purchase controller for more control:
-   ```swift
-   class CustomPurchaseController: NSObject, PurchaseController {
-       // Implement required methods
-   }
-   
-   // In AppDelegate
-   Superwall.configure(
-       apiKey: "YOUR_API_KEY",
-       purchaseController: CustomPurchaseController(),
-       options: nil
-   )
-   ```
+4. **Offline Support**
+   - Enhance fallback UI for offline scenarios
+   - Cache paywall configurations for offline use
 
 ### Dashboard Setup Requirements
 
@@ -174,7 +216,7 @@ To complete the Superwall integration, you need to set up the following in the S
    - Configure product offerings that match your RevenueCat products
 
 2. **Create Campaigns**
-   - Set up campaigns that use the placement names from your code
+   - Set up campaigns that use the placement names from your code (`show_paywall`)
    - Configure audience rules if needed
 
 3. **Link Products**
@@ -183,6 +225,10 @@ To complete the Superwall integration, you need to set up the following in the S
 4. **Set Up Events**
    - Configure which events should trigger paywalls
    - Set up event properties for targeting if needed
+
+5. **Configure A/B Tests**
+   - Create multiple paywall variants
+   - Set up experiments with different traffic allocations
 
 ### Troubleshooting
 
@@ -200,8 +246,15 @@ If paywalls aren't appearing:
 4. **Debug Mode**
    - Enable debug logging for more information:
    ```swift
-   Superwall.shared.logLevel = .debug
+   Superwall.configure(
+       apiKey: "YOUR_API_KEY",
+       options: .init(debugMode: true)
+   )
    ```
 
-5. **Test User Identification**
-   - Make sure user IDs are correctly synchronized between SDKs
+5. **Check Error Notifications**
+   - Look for `SuperwallManager.presentationFailedNotification` notifications
+   - Check Firebase Analytics for "superwall_presentation_error" events
+
+6. **Verify Subscription Status**
+   - Ensure subscription status is being properly synced from RevenueCat to Superwall

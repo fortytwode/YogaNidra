@@ -10,6 +10,8 @@ struct PaywallView: View {
     @Environment(\.presentationMode) private var presentationMode
     @State private var showError = false
     @State private var errorMessage = ""
+    @State private var superwallPresentationFailed = false
+    @State private var notificationToken: NSObjectProtocol?
     
     // RevenueCat manager reference
     @StateObject private var revenueCatManager = RevenueCatManager.shared
@@ -37,14 +39,17 @@ struct PaywallView: View {
                 
                 Spacer()
                 
-                // Loading indicator
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                    .scaleEffect(1.5)
+                // Loading indicator - hide if Superwall presentation failed
+                if !superwallPresentationFailed {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(1.5)
+                }
                 
                 Spacer()
                 
                 // Fallback button in case Superwall doesn't load
+                // Show with full opacity if Superwall presentation failed
                 Button {
                     Task {
                         do {
@@ -69,7 +74,7 @@ struct PaywallView: View {
                         .cornerRadius(28)
                         .padding(.horizontal)
                 }
-                .opacity(0.7) // Slightly faded as this is a fallback
+                .opacity(superwallPresentationFailed ? 1.0 : 0.7) // Full opacity if Superwall failed
             }
             .padding(.bottom, 30)
         }
@@ -77,9 +82,26 @@ struct PaywallView: View {
             // Log impression in Firebase
             FirebaseManager.shared.logPaywallImpression(source: "onboarding")
             
+            // Add notification observer for Superwall presentation failures
+            // Use a closure capture instead of weak self since struct doesn't support weak
+            notificationToken = NotificationCenter.default.addObserver(
+                forName: SuperwallManager.presentationFailedNotification,
+                object: nil,
+                queue: .main
+            ) { [self] _ in
+                self.superwallPresentationFailed = true
+            }
+            
             // Show Superwall after a brief delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 presentSuperwallPaywall()
+            }
+        }
+        .onDisappear {
+            // Remove notification observer
+            if let token = notificationToken {
+                NotificationCenter.default.removeObserver(token)
+                notificationToken = nil
             }
         }
         .alert(errorMessage, isPresented: $showError) {
@@ -88,8 +110,8 @@ struct PaywallView: View {
     }
     
     private func presentSuperwallPaywall() {
-        // Use the simplified SuperwallManager method
-        SuperwallManager.shared.showPaywall()
+        // Use the enhanced error handling method
+        SuperwallManager.shared.showPaywallWithErrorHandling()
     }
 }
 

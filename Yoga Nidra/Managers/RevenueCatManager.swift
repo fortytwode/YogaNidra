@@ -142,6 +142,9 @@ extension RevenueCatManager: PurchasesDelegate {
                 isInTrialPeriod = isInTrial
                 trialEndDate = expirationDate
             }
+            
+            // Update Superwall subscription status
+            SuperwallManager.shared.updateSubscriptionStatus(isSubscribed: isSubscribed)
         }
     }
 }
