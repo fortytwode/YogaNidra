@@ -240,6 +240,9 @@ final class AudioManager: ObservableObject {
                 "duration": sessionDuration
             ])
             
+            // Track meditation completion with Superwall
+            SuperwallManager.shared.trackEvent("meditation_completed")
+            
             self.sessionStartTime = nil
             lastSessionId = nil
             lastCategory = nil

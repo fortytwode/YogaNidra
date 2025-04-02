@@ -131,15 +131,17 @@ class RevenueCatManager: NSObject, ObservableObject {
 
 // MARK: - PurchasesDelegate
 extension RevenueCatManager: PurchasesDelegate {
-    func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
-        isSubscribed = customerInfo.entitlements[entitlementID]?.isActive == true
-        
-        // Check for trial period
-        if let expirationDate = customerInfo.entitlements[entitlementID]?.expirationDate,
-           let _ = customerInfo.entitlements[entitlementID]?.latestPurchaseDate {
-            let isInTrial = customerInfo.entitlements[entitlementID]?.periodType == .trial
-            isInTrialPeriod = isInTrial
-            trialEndDate = expirationDate
+    nonisolated func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
+        Task { @MainActor in
+            isSubscribed = customerInfo.entitlements[entitlementID]?.isActive == true
+            
+            // Check for trial period
+            if let expirationDate = customerInfo.entitlements[entitlementID]?.expirationDate,
+               let _ = customerInfo.entitlements[entitlementID]?.latestPurchaseDate {
+                let isInTrial = customerInfo.entitlements[entitlementID]?.periodType == .trial
+                isInTrialPeriod = isInTrial
+                trialEndDate = expirationDate
+            }
         }
     }
 }

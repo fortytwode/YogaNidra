@@ -48,6 +48,7 @@ final class OnboardingManager: ObservableObject {
         Task {
             await MainActor.run {
                 FacebookEventTracker.shared.trackOnboardingCompleted()
+                SuperwallManager.shared.trackEvent("onboarding_completed")
             }
         }
     }

@@ -36,6 +36,7 @@
 		12BC22442D9D78E100AAA98E /* FacebookLogin in Frameworks */ = {isa = PBXBuildFile; productRef = 12BC22432D9D78E100AAA98E /* FacebookLogin */; };
 		12BC224A2D9D947200AAA98E /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 12BC22492D9D947200AAA98E /* ReceiptParser */; };
 		12BC224C2D9D947200AAA98E /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 12BC224B2D9D947200AAA98E /* RevenueCat */; };
+		12BC224F2D9DB78600AAA98E /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 12BC224E2D9DB78600AAA98E /* SuperwallKit */; };
 		24212E0B2D870D6C007AE53F /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 24212E0A2D870D6C007AE53F /* Kingfisher */; };
 		247FD2C02D529FA0009F6F69 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 247FD2BF2D529FA0009F6F69 /* FirebaseAnalytics */; };
 		247FD2C22D529FA0009F6F69 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 247FD2C12D529FA0009F6F69 /* FirebaseAuth */; };
@@ -86,6 +87,7 @@
 				12AED41A2D5651AF006D4637 /* FirebaseCrashlytics in Frameworks */,
 				12B4C6362D2E8A7F00353CB5 /* StoreKit.framework in Frameworks */,
 				247FD2C62D529FA0009F6F69 /* FirebaseDatabase in Frameworks */,
+				12BC224F2D9DB78600AAA98E /* SuperwallKit in Frameworks */,
 				12AED4182D5651AF006D4637 /* FirebaseAuth in Frameworks */,
 				12BC224A2D9D947200AAA98E /* ReceiptParser in Frameworks */,
 				12BC224C2D9D947200AAA98E /* RevenueCat in Frameworks */,
@@ -194,6 +196,7 @@
 				24212E092D870D6C007AE53F /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				12BC20FD2D96AF4400AAA98E /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 				12BC223C2D9D78E100AAA98E /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
+				12BC224D2D9DB78600AAA98E /* XCRemoteSwiftPackageReference "Superwall-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 24BD50232D263F7300159E70 /* Products */;
@@ -481,6 +484,14 @@
 				minimumVersion = 14.1.0;
 			};
 		};
+		12BC224D2D9DB78600AAA98E /* XCRemoteSwiftPackageReference "Superwall-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/superwall/Superwall-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.5;
+			};
+		};
 		24212E092D870D6C007AE53F /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher";
@@ -650,6 +661,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 12BC20FD2D96AF4400AAA98E /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCat;
+		};
+		12BC224E2D9DB78600AAA98E /* SuperwallKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 12BC224D2D9DB78600AAA98E /* XCRemoteSwiftPackageReference "Superwall-iOS" */;
+			productName = SuperwallKit;
 		};
 		24212E0A2D870D6C007AE53F /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;

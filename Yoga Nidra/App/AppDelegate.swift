@@ -9,6 +9,7 @@ import UIKit
 import Firebase
 import FBSDKCoreKit
 import RevenueCat
+import SuperwallKit
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
     
@@ -21,9 +22,22 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         setupFacebookSDK(launchOptions: launchOptions)
         
         // Initialize RevenueCat
-        _ = RevenueCatManager.shared
+        configureRevenueCat()
+        
+        // Initialize Superwall with your API key
+        configureSuperwallSDK()
         
         return true
+    }
+    
+    private func configureRevenueCat() {
+        // Configure RevenueCat with the most basic configuration
+        Purchases.configure(withAPIKey: "appl_KDvjJIUgkZHCeRNGQZCsJlrMFbB")
+    }
+    
+    private func configureSuperwallSDK() {
+        // Simple configuration with just the API key
+        Superwall.configure(apiKey: "pk_43c10a21c60615dc63a3862187df3ced631ac5742bdd23db")
     }
     
     private func setupFacebookSDK(launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) {
