@@ -13,7 +13,19 @@ import RevenueCat
 @MainActor
 class RevenueCatManager: NSObject, ObservableObject {
     // MARK: - Singleton
-    static let shared = RevenueCatManager()
+    static let shared: RevenueCatManager = {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+            return RevenueCatManager(isPreview: true)
+        }
+        #endif
+        return RevenueCatManager()
+    }()
+    
+    // MARK: - Preview Support
+    static var preview: RevenueCatManager {
+        return RevenueCatManager(isPreview: true)
+    }
     
     // MARK: - Published Properties
     @Published private(set) var isSubscribed = false
@@ -28,6 +40,7 @@ class RevenueCatManager: NSObject, ObservableObject {
     // MARK: - Constants
     private let entitlementID = "premium"
     private let apiKey = "appl_MhpUQCAfwTMwCVeDAGsENEYsmQB" // Apple SDK key
+    private let isPreview: Bool
     
     // MARK: - Events
     private var purchaseCompletedSubject = PassthroughSubject<Bool, Never>()
@@ -37,6 +50,7 @@ class RevenueCatManager: NSObject, ObservableObject {
     
     // MARK: - Initialization
     private override init() {
+        self.isPreview = false
         super.init()
         configureRevenueCat()
         setupObservers()
@@ -44,6 +58,28 @@ class RevenueCatManager: NSObject, ObservableObject {
         // Use Task to call async method from non-async initializer
         Task {
             await loadOfferings()
+        }
+    }
+    
+    private init(isPreview: Bool) {
+        self.isPreview = isPreview
+        super.init()
+        
+        // Skip actual SDK initialization in preview mode
+        if !isPreview {
+            configureRevenueCat()
+            setupObservers()
+            
+            // Use Task to call async method from non-async initializer
+            Task {
+                await loadOfferings()
+            }
+        } else {
+            // Set up mock data for preview
+            self.offerings = nil
+            self.currentPackage = nil
+            self.isSubscribed = false
+            self.isInTrialPeriod = false
         }
     }
     
@@ -59,21 +95,79 @@ class RevenueCatManager: NSObject, ObservableObject {
     
     // MARK: - Public Methods
     func loadOfferings() async {
+        // Skip SDK calls in preview mode
+        guard !isPreview else {
+            print("📱 [PREVIEW] Loading offerings")
+            // Simulate a delay for realism
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            return
+        }
+        
         isLoading = true
         
         do {
-            let offerings = try await Purchases.shared.offerings()
-            self.offerings = offerings
-            self.currentPackage = offerings.current?.availablePackages.first
+            // Add retry logic (up to 3 attempts)
+            var attempts = 0
+            var success = false
+            
+            while attempts < 3 && !success {
+                attempts += 1
+                
+                do {
+                    print("🔍 RevenueCatManager: Loading offerings (attempt \(attempts)/3)...")
+                    let offerings = try await Purchases.shared.offerings()
+                    self.offerings = offerings
+                    self.currentPackage = offerings.current?.availablePackages.first
+                    
+                    // Log success or failure
+                    if self.currentPackage != nil {
+                        print("✅ RevenueCatManager: Successfully loaded offerings with package")
+                        success = true
+                    } else {
+                        print("⚠️ RevenueCatManager: Loaded offerings but no packages available (attempt \(attempts)/3)")
+                        // Wait before retry if not the last attempt
+                        if attempts < 3 {
+                            try await Task.sleep(nanoseconds: 1_000_000_000)
+                        }
+                    }
+                } catch {
+                    print("❌ RevenueCatManager: Failed to load offerings (attempt \(attempts)/3): \(error)")
+                    // Wait before retry if not the last attempt
+                    if attempts < 3 {
+                        try await Task.sleep(nanoseconds: 1_000_000_000)
+                    }
+                }
+            }
+            
             isLoading = false
+            
+            // If all attempts failed, set error message
+            if !success && self.currentPackage == nil {
+                errorMessage = "Failed to load subscription options"
+                showError = true
+                print("❌ RevenueCatManager: All attempts to load offerings failed")
+            }
         } catch {
             errorMessage = error.localizedDescription
             showError = true
             isLoading = false
+            print("❌ RevenueCatManager: Exception during offerings loading: \(error)")
         }
     }
     
     func purchase() async throws {
+        // Skip SDK calls in preview mode
+        guard !isPreview else {
+            print("📱 [PREVIEW] Purchase completed")
+            isLoading = true
+            // Simulate a delay for realism
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            isSubscribed = true
+            purchaseCompletedSubject.send(true)
+            isLoading = false
+            return
+        }
+        
         guard let package = currentPackage else {
             throw NSError(domain: "RevenueCatManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "No package available"])
         }
@@ -96,6 +190,18 @@ class RevenueCatManager: NSObject, ObservableObject {
     }
     
     func restorePurchases() async throws {
+        // Skip SDK calls in preview mode
+        guard !isPreview else {
+            print("📱 [PREVIEW] Restoring purchases")
+            isLoading = true
+            // Simulate a delay for realism
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            isSubscribed = true
+            purchaseCompletedSubject.send(true)
+            isLoading = false
+            return
+        }
+        
         isLoading = true
         
         do {
@@ -110,6 +216,12 @@ class RevenueCatManager: NSObject, ObservableObject {
     }
     
     func refreshSubscriptionStatus() {
+        // Skip SDK calls in preview mode
+        guard !isPreview else {
+            print("📱 [PREVIEW] Refreshing subscription status")
+            return
+        }
+        
         Task {
             do {
                 let info = try await Purchases.shared.customerInfo()
@@ -132,6 +244,9 @@ class RevenueCatManager: NSObject, ObservableObject {
 // MARK: - PurchasesDelegate
 extension RevenueCatManager: PurchasesDelegate {
     nonisolated func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
+        // Skip processing in preview mode
+        guard !isPreview else { return }
+        
         Task { @MainActor in
             isSubscribed = customerInfo.entitlements[entitlementID]?.isActive == true
             

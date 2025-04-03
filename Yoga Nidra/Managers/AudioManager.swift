@@ -36,6 +36,18 @@ final class Debouncer {
 final class AudioManager: ObservableObject {
     static let shared = AudioManager()
     
+    // MARK: - Preview Helper
+    #if DEBUG
+    static var preview: AudioManager {
+        let manager = AudioManager()
+        // Set minimal properties needed for preview
+        manager.isPlaying = false
+        manager.currentTime = 0
+        manager.duration = 600 // 10 minutes
+        return manager
+    }
+    #endif
+    
     // MARK: - Types
     
     enum SessionClearMode {

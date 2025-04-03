@@ -96,7 +96,7 @@ struct TrialExplanationView: View {
             VStack(spacing: 0) {
                 Button {
                     withAnimation {
-                        currentPage = 15 // Navigate to PaywallView
+                        currentPage += 1 // Navigate to PaywallView
                     }
                 } label: {
                     HStack {

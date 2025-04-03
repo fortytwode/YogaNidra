@@ -17,22 +17,36 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
-        firebase()
-        notification()
-        setupFacebookSDK(launchOptions: launchOptions)
+        // Skip SDK initialization in preview mode
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+            print("📱 Running in preview mode - skipping SDK initialization")
+            return true
+        }
+        #endif
         
-        // Initialize RevenueCat
-        configureRevenueCat()
-        
-        // Initialize Superwall with your API key
-        configureSuperwallSDK()
+        // Initialize SDKs with proper error handling
+        do {
+            firebase()
+            notification()
+            setupFacebookSDK(launchOptions: launchOptions)
+            
+            // Initialize RevenueCat
+            configureRevenueCat()
+            
+            // Initialize Superwall with your API key
+            configureSuperwallSDK()
+        } catch {
+            print("❌ SDK initialization error: \(error.localizedDescription)")
+            // Continue app execution even if SDKs fail
+        }
         
         return true
     }
     
     private func configureRevenueCat() {
         // Configure RevenueCat with the most basic configuration
-        Purchases.configure(withAPIKey: "appl_KDvjJIUgkZHCeRNGQZCsJlrMFbB")
+        Purchases.configure(withAPIKey: "appl_MhpUQCAfwTMwCVeDAGsENEYsmQB")
     }
     
     private func configureSuperwallSDK() {

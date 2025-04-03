@@ -16,18 +16,41 @@ import FirebaseAnalytics
 typealias Entitlement = SuperwallKit.Entitlement
 
 class SuperwallManager {
-    // Singleton
-    static let shared = SuperwallManager()
+    // Singleton with preview support
+    static let shared: SuperwallManager = {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+            return SuperwallManager(isPreview: true)
+        }
+        #endif
+        return SuperwallManager()
+    }()
     
     // Notification name for paywall presentation failures
     static let presentationFailedNotification = Notification.Name("SuperwallPresentationFailed")
     
-    private init() {
+    // Preview mode flag
+    private let isPreview: Bool
+    
+    // Preview support for SwiftUI
+    static var preview: SuperwallManager {
+        return SuperwallManager(isPreview: true)
+    }
+    
+    private init(isPreview: Bool = false) {
+        self.isPreview = isPreview
         // Nothing complex needed here
     }
     
     // Simple method to show a paywall
     func showPaywall() {
+        // Skip SDK calls in preview mode
+        guard !isPreview else {
+            // Simulate success in preview mode
+            print("📱 [PREVIEW] Showing paywall")
+            return
+        }
+        
         // Just register the placement without any complex handlers
         Superwall.shared.register(placement: "show_paywall")
         
@@ -37,6 +60,13 @@ class SuperwallManager {
     
     // Enhanced method to show a paywall with error handling
     func showPaywallWithErrorHandling() {
+        // Skip SDK calls in preview mode
+        guard !isPreview else {
+            // Simulate success in preview mode
+            print("📱 [PREVIEW] Showing paywall with error handling")
+            return
+        }
+        
         let handler = PaywallPresentationHandler()
         
         // Handle presentation errors - using the method (not property assignment)
@@ -65,6 +95,12 @@ class SuperwallManager {
     
     // Track an event that might trigger a paywall
     func trackEvent(_ eventName: String) {
+        // Skip SDK calls in preview mode
+        guard !isPreview else {
+            print("📱 [PREVIEW] Tracking event: \(eventName)")
+            return
+        }
+        
         // Simply register the placement
         Superwall.shared.register(placement: eventName)
         
@@ -78,12 +114,24 @@ class SuperwallManager {
     
     // Track trial started event
     func trackTrialStarted() {
+        // Skip SDK calls in preview mode
+        guard !isPreview else {
+            print("📱 [PREVIEW] Trial started")
+            return
+        }
+        
         // Track in Facebook using the standard event name
         AppEvents.shared.logEvent(AppEvents.Name("fb_mobile_start_trial"))
     }
     
     // Identify user to both Superwall and RevenueCat
     func identifyUser(userId: String) {
+        // Skip SDK calls in preview mode
+        guard !isPreview else {
+            print("📱 [PREVIEW] Identifying user: \(userId)")
+            return
+        }
+        
         // Identify user in Superwall
         Superwall.shared.identify(userId: userId)
         
@@ -99,9 +147,15 @@ class SuperwallManager {
     
     // Update subscription status in Superwall
     func updateSubscriptionStatus(isSubscribed: Bool) {
+        // Skip SDK calls in preview mode
+        guard !isPreview else {
+            print("📱 [PREVIEW] Updating subscription status: \(isSubscribed)")
+            return
+        }
+        
         if isSubscribed {
-            // Create an empty Set of Entitlement
-            let entitlements: Set<Entitlement> = [Entitlement(id: "premium")]
+            // Create a Set of Entitlement with proper namespace
+            let entitlements: Set<SuperwallKit.Entitlement> = [SuperwallKit.Entitlement(id: "premium")]
             Superwall.shared.subscriptionStatus = .active(entitlements)
         } else {
             Superwall.shared.subscriptionStatus = .inactive
@@ -110,6 +164,12 @@ class SuperwallManager {
     
     // Set user attributes for better targeting
     func setUserAttributes(_ attributes: [String: Any]) {
+        // Skip SDK calls in preview mode
+        guard !isPreview else {
+            print("📱 [PREVIEW] Setting user attributes: \(attributes)")
+            return
+        }
+        
         Superwall.shared.setUserAttributes(attributes)
     }
     
@@ -120,6 +180,12 @@ class SuperwallManager {
         favoriteCategory: String?,
         lastActiveDate: Date
     ) {
+        // Skip SDK calls in preview mode
+        guard !isPreview else {
+            print("📱 [PREVIEW] Updating user profile")
+            return
+        }
+        
         let daysSinceActive = Calendar.current.dateComponents([.day], from: lastActiveDate, to: Date()).day ?? 0
         
         let attributes: [String: Any] = [

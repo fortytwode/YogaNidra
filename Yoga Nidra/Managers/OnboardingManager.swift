@@ -23,6 +23,9 @@ final class OnboardingManager: ObservableObject {
     @Published
     var shouldShowOnboarding: Bool
     
+    // Track current onboarding page to prevent premature completion
+    @Published var currentOnboardingPage: Int?
+    
     @Published var isOnboardingCompleted: Bool {
         didSet {
             UserDefaults.standard.set(isOnboardingCompleted, forKey: "isOnboardingCompleted")

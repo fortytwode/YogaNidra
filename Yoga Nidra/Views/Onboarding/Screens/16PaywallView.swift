@@ -1,117 +1,197 @@
 import SwiftUI
-import FBSDKCoreKit
-import RevenueCat
-import SuperwallKit
 
 struct PaywallView: View {
     @EnvironmentObject private var storeManager: StoreManager
     @EnvironmentObject private var onboardingManager: OnboardingManager
     @Environment(\.openURL) private var openURL
-    @Environment(\.presentationMode) private var presentationMode
     @State private var showError = false
     @State private var errorMessage = ""
-    @State private var superwallPresentationFailed = false
-    @State private var notificationToken: NSObjectProtocol?
-    
-    // RevenueCat manager reference
-    @StateObject private var revenueCatManager = RevenueCatManager.shared
     
     var body: some View {
-        // Your existing beautiful UI as a fallback
-        ZStack {
-            // Background
-            Image("mountain-lake-twilight")
-                .resizable()
-                .scaledToFill()
-                .overlay(Color.black.opacity(0.4))
-                .edgesIgnoringSafeArea(.all)
-            
-            // Content
+        ScrollView {
             VStack(spacing: 24) {
-                // Headline
-                Text("Sweet Dreams Start Here ✨")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal)
-                    .padding(.top, 20)
-                
-                Spacer()
-                
-                // Loading indicator - hide if Superwall presentation failed
-                if !superwallPresentationFailed {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        .scaleEffect(1.5)
+                // Main Content
+                VStack(spacing: 24) {
+                    // Headline
+                    Text("Sweet Dreams Start Here ✨")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                    
+                    ScrollView {
+                        // Benefits
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Snuggle up with better sleep 🛏️")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding(.bottom, 4)
+                            
+                            BenefitRow(icon: "bed.double.fill",
+                                      title: "Find deep sleep faster with guided rest")
+                            
+                            BenefitRow(icon: "leaf.fill",
+                                      title: "Enhance your sleep quality naturally")
+                            
+                            BenefitRow(icon: "theatermasks.fill",
+                                      title: "Melt away stress, night after night")
+                        }
+                        .padding(.horizontal)
+                        
+                        // Research Stats
+                        VStack(spacing: 16) {
+                            Text("Snooze Report 🌙")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                            
+                            VStack(alignment: .leading, spacing: 12) {
+                                StatRow(emoji: "🌛", text: "84% fewer sleepless nights")
+                                StatRow(emoji: "🌠", text: "More time in deep, restorative sleep")
+                                StatRow(emoji: "⏰", text: "Fall asleep 30 minutes faster")
+                            }
+                        }
+                        .padding(20)
+                        .background(Color.white.opacity(0.1))
+                        .cornerRadius(16)
+                        .padding(.horizontal)
+                    }
+                    .scrollIndicators(.hidden)
                 }
                 
-                Spacer()
-                
-                // Fallback button in case Superwall doesn't load
-                // Show with full opacity if Superwall presentation failed
-                Button {
-                    Task {
-                        do {
-                            try await storeManager.purchase()
-                            onboardingManager.isOnboardingCompleted = true
-                            
-                            // Track trial started event with Facebook
-                            FacebookEventTracker.shared.trackTrialStarted(planName: "premium_yearly")
-                            
-                        } catch {
-                            showError = true
-                            errorMessage = error.localizedDescription
+                // Bottom Section
+                VStack(spacing: 16) {
+                    VStack(spacing: 8) {
+                        Text("7 nights of sweet dreams on us 🎁")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                        
+                        Text("Then just $59.99/year (that's $5/month for better sleep) 💎")
+                            .foregroundColor(.white.opacity(0.9))
+                            .multilineTextAlignment(.center)
+                    }
+                    
+                    Button {
+                        Task {
+                            do {
+                                try await storeManager.purchase(whileOnboarding: true)
+                                FacebookEventTracker.shared.trackCustomEvent(name: "trial_started", parameters: ["source": "onboarding"])
+                            } catch {
+                                showError = true
+                                errorMessage = error.localizedDescription
+                            }
+                        }
+                    } label: {
+                        if storeManager.isLoading {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(.white)
+                        } else {
+                            HStack {
+                                Text("Start your free trial")
+                                Text("→")
+                                Text("🌜")
+                            }
+                            .font(.headline)
+                            .foregroundColor(.accentColor)
+                            .frame(maxWidth: .infinity)
                         }
                     }
-                } label: {
-                    Text("Continue")
-                        .font(.headline)
-                        .foregroundColor(.accentColor)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(.white)
-                        .cornerRadius(28)
-                        .padding(.horizontal)
+                    .frame(height: 56)
+                    .background(.white)
+                    .cornerRadius(28)
+                    .padding(.horizontal)
+                    
+                    Button {
+                        Task {
+                            do {
+                                try await storeManager.restore(whileOnboarding: true)
+                                // No longer directly set onboardingManager.isOnboardingCompleted
+                                // The completion will be handled by YogaNidraApp through the publisher
+                            } catch {
+                                showError = true
+                                errorMessage = error.localizedDescription
+                            }
+                        }
+                    } label: {
+                        Text("Restore Purchases")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 12)
+                    
+                    // Skip button
+                    Button {
+                        // Skip subscription using StoreManager's event system
+                        storeManager.skipSubscription(whileOnboarding: true)
+                        
+                        // Track skip event
+                        FacebookEventTracker.shared.trackCustomEvent(name: "subscription_skipped", parameters: ["source": "onboarding"])
+                    } label: {
+                        Text("Continue with Limited Access")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(.vertical, 8)
+                    }
+                    .padding(.top, 4)
+                    
+                    if let date = Calendar.current.date(byAdding: .day, value: 7, to: Date()) {
+                        Text("Cancel anytime before \(date.formatted(date: .abbreviated, time: .omitted))")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.7))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                    
+                    HStack(spacing: 24) {
+                        Button {
+                            openURL(URL(string: "https://rocketshiphq.com/yoga-nidra-terms")!)
+                        } label: {
+                            Text("Terms")
+                                .font(.footnote)
+                                .foregroundColor(.white.opacity(0.8))
+                                .underline()
+                        }
+                        
+                        Button {
+                            openURL(URL(string: "https://rocketshiphq.com/yoga-nidra-privacy")!)
+                        } label: {
+                            Text("Privacy Policy")
+                                .font(.footnote)
+                                .foregroundColor(.white.opacity(0.8))
+                                .underline()
+                        }
+                    }
+                    .padding(.top, 8)
                 }
-                .opacity(superwallPresentationFailed ? 1.0 : 0.7) // Full opacity if Superwall failed
+                .padding(.bottom, 16)
             }
-            .padding(.bottom, 30)
         }
         .onAppear {
-            // Log impression in Firebase
             FirebaseManager.shared.logPaywallImpression(source: "onboarding")
-            
-            // Add notification observer for Superwall presentation failures
-            // Use a closure capture instead of weak self since struct doesn't support weak
-            notificationToken = NotificationCenter.default.addObserver(
-                forName: SuperwallManager.presentationFailedNotification,
-                object: nil,
-                queue: .main
-            ) { [self] _ in
-                self.superwallPresentationFailed = true
-            }
-            
-            // Show Superwall after a brief delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                presentSuperwallPaywall()
-            }
         }
-        .onDisappear {
-            // Remove notification observer
-            if let token = notificationToken {
-                NotificationCenter.default.removeObserver(token)
-                notificationToken = nil
-            }
-        }
-        .alert(errorMessage, isPresented: $showError) {
+        .alert("Purchase Failed", isPresented: $showError) {
             Button("OK", role: .cancel) { }
+        } message: {
+            Text(errorMessage)
         }
-    }
-    
-    private func presentSuperwallPaywall() {
-        // Use the enhanced error handling method
-        SuperwallManager.shared.showPaywallWithErrorHandling()
+        .background(
+            ZStack {
+                Image("mountain-lake-twilight")
+                    .resizable()
+                    .scaledToFill()
+                    .overlay(Color.black.opacity(0.4))
+                    .edgesIgnoringSafeArea(.all)
+                
+                LinearGradient(
+                    gradient: Gradient(colors: [.clear, .black.opacity(0.3)]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .edgesIgnoringSafeArea(.all)
+            }
+        )
     }
 }
 

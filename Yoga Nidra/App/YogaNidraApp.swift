@@ -141,17 +141,43 @@ struct YogaNidraApp: App {
                 switch reason {
                 case .purchased(let whileOnboarding):
                     if whileOnboarding {
-                        withAnimation {
-                            onboardingManager.isOnboardingCompleted = true
+                        // Only complete onboarding if we're actually in the PaywallView
+                        // This prevents race conditions during navigation
+                        if let currentPage = onboardingManager.currentOnboardingPage, currentPage == 15 {
+                            withAnimation {
+                                onboardingManager.isOnboardingCompleted = true
+                            }
+                        } else {
+                            print("⚠️ Purchase completed with whileOnboarding=true, but not in PaywallView. Ignoring onboarding completion.")
                         }
                     }
                 case .restored(let whileOnboarding):
                     if whileOnboarding {
-                        withAnimation {
-                            onboardingManager.isOnboardingCompleted = true
+                        // Only complete onboarding if we're actually in the PaywallView
+                        // This prevents race conditions during navigation
+                        if let currentPage = onboardingManager.currentOnboardingPage, currentPage == 15 {
+                            withAnimation {
+                                onboardingManager.isOnboardingCompleted = true
+                            }
+                        } else {
+                            print("⚠️ Purchase restored with whileOnboarding=true, but not in PaywallView. Ignoring onboarding completion.")
+                        }
+                    }
+                case .skipped(let whileOnboarding):
+                    if whileOnboarding {
+                        // Only complete onboarding if we're actually in the PaywallView
+                        // This prevents race conditions during navigation
+                        if let currentPage = onboardingManager.currentOnboardingPage, currentPage == 15 {
+                            withAnimation {
+                                onboardingManager.isOnboardingCompleted = true
+                            }
+                        } else {
+                            print("⚠️ Subscription skipped with whileOnboarding=true, but not in PaywallView. Ignoring onboarding completion.")
                         }
                     }
                 case .whileTransactionUpdate:
+                    // Explicitly do nothing for background transaction updates
+                    // This prevents race conditions during navigation
                     break
                 }
             }

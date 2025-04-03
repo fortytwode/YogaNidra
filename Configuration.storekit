@@ -95,8 +95,8 @@
           },
           "localizations" : [
             {
-              "description" : "",
-              "displayName" : "",
+              "description" : "Full access to all premium sleep meditations and features",
+              "displayName" : "Pro Annual",
               "locale" : "en_US"
             }
           ],

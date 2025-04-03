@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OnboardingContainerView: View {
     @State private var currentPageIndex = 0
+    @State private var previousPageIndex = 0
     @StateObject private var storeManager = StoreManager.shared
     @StateObject private var onboardingManager = OnboardingManager.shared
     
@@ -76,6 +77,15 @@ struct OnboardingContainerView: View {
             .preferredColorScheme(.dark)
             .environmentObject(storeManager)
             .environmentObject(onboardingManager)
+            .onChange(of: currentPageIndex) { newPage in
+                // Update the OnboardingManager with the current page
+                onboardingManager.currentOnboardingPage = newPage
+                print("📱 Onboarding: Navigated to page \(newPage)")
+            }
+            .onAppear {
+                // Set initial page in OnboardingManager
+                onboardingManager.currentOnboardingPage = currentPageIndex
+            }
         }
     }
 }

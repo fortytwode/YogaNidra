@@ -195,6 +195,8 @@ struct ProfileTabView_Previews: PreviewProvider {
     static var previews: some View {
         ProfileTabView()
             .environmentObject(StoreManager.preview)
+            .environmentObject(Presenter.preview)
+            .environmentObject(AudioManager.preview)
     }
 }
 #endif

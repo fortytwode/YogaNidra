@@ -1,6 +1,5 @@
 import StoreKit
 import Combine
-import RevenueCat
 
 @MainActor
 final class StoreManager: ObservableObject {
@@ -39,10 +38,6 @@ final class StoreManager: ObservableObject {
     private var currentPurchaseTask: Task<Void, Error>?
     private var purchasedIdentifiers: Set<String> = []
     
-    // RevenueCat integration
-    private let revenueCatManager = RevenueCatManager.shared
-    private var cancellables = Set<AnyCancellable>()
-    
     // MARK: Events
     private var onPuchaseCompleted = PassthroughSubject<TransactionReason, Never>()
     var onPurchaseCompletedPublisher: AnyPublisher<TransactionReason, Never> {
@@ -54,28 +49,6 @@ final class StoreManager: ObservableObject {
         print("🚀 StoreManager: Initializing...")
         startTransactionListeners()
         
-        // Subscribe to RevenueCat updates
-        revenueCatManager.$isSubscribed
-            .receive(on: RunLoop.main)
-            .sink { [weak self] value in
-                self?.isSubscribed = value
-            }
-            .store(in: &cancellables)
-        
-        revenueCatManager.$isInTrialPeriod
-            .receive(on: RunLoop.main)
-            .sink { [weak self] value in
-                self?.isInTrialPeriod = value
-            }
-            .store(in: &cancellables)
-        
-        revenueCatManager.$trialEndDate
-            .receive(on: RunLoop.main)
-            .sink { [weak self] value in
-                self?.trialEndDate = value
-            }
-            .store(in: &cancellables)
-        
         // Initial product load
         Task {
             try? await loadProducts()
@@ -85,7 +58,6 @@ final class StoreManager: ObservableObject {
     deinit {
         transactionListener?.cancel()
         updateListenerTask?.cancel()
-        cancellables.forEach { $0.cancel() }
     }
     
     // MARK: - Transaction Listeners
@@ -126,116 +98,49 @@ final class StoreManager: ObservableObject {
         
         print("🔍 StoreManager: Loading products...")
         
-        // Load products from RevenueCat
-        await revenueCatManager.loadOfferings()
-        
-        // Also load from StoreKit for backward compatibility
         do {
             let products = try await Product.products(for: [productID])
-            if let product = products.first {
-                subscriptionProduct = product
-                subscriptionPrice = product.displayPrice
-                
-                // Format price for display
-                if product.subscription?.subscriptionPeriod.unit == .year {
-                    formattedPrice = "\(product.displayPrice)/year"
-                } else {
-                    formattedPrice = product.displayPrice
-                }
-                
-                hasLoadedProducts = true
-                print("✅ StoreManager: Successfully loaded products")
-            } else {
-                print("⚠️ StoreManager: No products found")
+            guard let product = products.first else {
+                print("❌ StoreManager: No products found")
+                throw StoreError.notFound
             }
+            
+            print("✅ StoreManager: Products loaded successfully")
+            self.subscriptionProduct = product
+            self.subscriptionPrice = product.displayPrice
+            hasLoadedProducts = true
+            
         } catch {
-            print("❌ StoreManager: Failed to load products: \(error)")
-            throw error
+            print("❌ StoreManager: Failed to load products: \(error.localizedDescription)")
+            throw StoreError.failed(error)
         }
     }
     
-    // MARK: - Purchase
-    func purchase() async throws {
-        guard !isPurchaseInProgress else {
-            throw StoreError.pending
-        }
-        
-        isLoading = true
-        isPurchaseInProgress = true
-        
-        defer {
-            isLoading = false
-            isPurchaseInProgress = false
+    // MARK: - Purchase Flow
+    func purchase(whileOnboarding: Bool = false) async throws {
+        guard let product = subscriptionProduct else {
+            throw StoreError.notFound
         }
         
         do {
-            // Use RevenueCat for purchase
-            try await revenueCatManager.purchase()
+            let result = try await product.purchase()
             
-            // Notify listeners
-            onPuchaseCompleted.send(.purchased(whileOnboarding: false))
-            
-            print("✅ StoreManager: Purchase completed successfully")
-        } catch {
-            print("❌ StoreManager: Purchase failed: \(error)")
-            throw error
-        }
-    }
-    
-    // MARK: - Restore Purchases
-    func restore() async throws {
-        isLoading = true
-        
-        do {
-            // Use RevenueCat for restore
-            try await revenueCatManager.restorePurchases()
-            
-            // Notify listeners
-            onPuchaseCompleted.send(.restored(whileOnboarding: false))
-            
-            print("✅ StoreManager: Restore completed successfully")
-            isLoading = false
-        } catch {
-            print("❌ StoreManager: Restore failed: \(error)")
-            isLoading = false
-            throw error
-        }
-    }
-    
-    // MARK: - Trial Period Detection
-    private func checkTrialEligibility(_ transaction: StoreKit.Transaction) {
-        // Check if the transaction indicates a trial period
-        if transaction.isUpgraded {
-            isInTrialPeriod = true
-            trialEndDate = transaction.expirationDate
-        }
-    }
-    
-    private func updateFormattedPrice(_ product: Product) {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.locale = Locale.current
-        
-        formattedPrice = product.displayPrice
-        print("💲 StoreManager: Updated price to: \(formattedPrice)")
-    }
-    
-    // Handle transaction verification
-    private func handle(transactionResult verification: StoreKit.VerificationResult<StoreKit.Transaction>, reason: TransactionReason) async throws {
-        switch verification {
-        case .verified(let transaction):
-            await transaction.finish()
-            try await refreshPurchasedIdentifiers()
-            
-            if let product = try? await Product.products(for: [transaction.productID]).first,
-               product.type == .autoRenewable {
-                logPurchaseAnalytics(product, transaction: transaction)
+            switch result {
+            case .success(let verification):
+                try await handleVerification(verification)
+                
+                // Send the purchased event with the onboarding flag
+                onPuchaseCompleted.send(.purchased(whileOnboarding: whileOnboarding))
+                
+            case .userCancelled:
+                throw StoreError.failed(nil)
+            case .pending:
+                throw StoreError.pending
+            @unknown default:
+                throw StoreError.unknown
             }
-            
-            onPuchaseCompleted.send(reason)
-            
-        case .unverified:
-            throw StoreError.failed(nil)
+        } catch {
+            throw StoreError.failed(error)
         }
     }
     
@@ -306,30 +211,87 @@ final class StoreManager: ObservableObject {
         isSubscribed = !purchasedIdentifiers.isEmpty
     }
     
-    // MARK: - Errors
-    enum StoreError: Error {
-        case pending
-        case failed(Error?)
-        case notFound
-        case unknown
-        
-        var errorDescription: String? {
-            switch self {
-            case .pending:
-                return "Purchase is pending"
-            case .failed(let error):
-                return error?.localizedDescription
-            case .notFound:
-                return "Product not found"
-            case .unknown:
-                return "An unknown error occurred"
-            }
+    // Restore Purchases
+    func restore(whileOnboarding: Bool = false) async throws {
+        do {
+            try await AppStore.sync()
+            try await refreshPurchasedIdentifiers()
+            
+            // Send the restored event with the onboarding flag
+            onPuchaseCompleted.send(.restored(whileOnboarding: whileOnboarding))
+        } catch {
+            throw StoreError.failed(error)
         }
     }
     
-    enum TransactionReason {
-        case whileTransactionUpdate
-        case restored(whileOnboarding: Bool)
-        case purchased(whileOnboarding: Bool)
+    // Handle transaction verification
+    private func handle(transactionResult verification: StoreKit.VerificationResult<StoreKit.Transaction>, reason: TransactionReason) async throws {
+        switch verification {
+        case .verified(let transaction):
+            await transaction.finish()
+            try await refreshPurchasedIdentifiers()
+            
+            if let product = try? await Product.products(for: [transaction.productID]).first,
+               product.type == .autoRenewable {
+                logPurchaseAnalytics(product, transaction: transaction)
+            }
+            
+            onPuchaseCompleted.send(reason)
+            
+        case .unverified:
+            throw StoreError.failed(nil)
+        }
     }
+    
+    // MARK: - Trial Period Detection
+    private func checkTrialEligibility(_ transaction: StoreKit.Transaction) {
+        // Check if the transaction indicates a trial period
+        if transaction.isUpgraded {
+            isInTrialPeriod = true
+            trialEndDate = transaction.expirationDate
+        }
+    }
+    
+    private func updateFormattedPrice(_ product: Product) {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = Locale.current
+        
+        formattedPrice = product.displayPrice
+        print("💲 StoreManager: Updated price to: \(formattedPrice)")
+    }
+    
+    // Function to handle skipping subscription
+    func skipSubscription(whileOnboarding: Bool = false) {
+        print("⏭️ StoreManager: User skipped subscription (whileOnboarding: \(whileOnboarding))")
+        onPuchaseCompleted.send(.skipped(whileOnboarding: whileOnboarding))
+    }
+}
+
+// MARK: - Errors
+enum StoreError: Error {
+    case pending
+    case failed(Error?)
+    case notFound
+    case unknown
+    
+    var errorDescription: String? {
+        switch self {
+        case .pending:
+            return "Purchase is pending"
+        case .failed(let error):
+            return error?.localizedDescription
+        case .notFound:
+            return "Product not found"
+        case .unknown:
+            return "An unknown error occurred"
+        }
+    }
+}
+
+enum TransactionReason {
+    case whileTransactionUpdate
+    case restored(whileOnboarding: Bool)
+    case purchased(whileOnboarding: Bool)
+    case skipped(whileOnboarding: Bool)
 }

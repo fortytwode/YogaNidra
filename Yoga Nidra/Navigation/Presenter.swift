@@ -13,6 +13,15 @@ final class Presenter: ObservableObject {
     @Published var presenation: SheetPresentaiton?
     private let audioManager = AudioManager.shared
     
+    // MARK: - Preview Helper
+    #if DEBUG
+    static var preview: Presenter {
+        let presenter = Presenter()
+        // No need to set any presentation by default
+        return presenter
+    }
+    #endif
+    
     func present(_ destination: SheetPresentaiton) {
         switch destination {
         case .subscriptionPaywall:
