@@ -67,6 +67,7 @@ ProvisioningProfiles/
 project.xcworkspace/
 project.xcodeproj/xcuserdata
 
+
 # User-specific settings
 *.plist
 
