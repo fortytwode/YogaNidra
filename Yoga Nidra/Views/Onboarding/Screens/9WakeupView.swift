@@ -14,7 +14,7 @@ struct WakeupView: View {
     var body: some View {
         VStack(spacing: 32) {
             VStack(spacing: 16) {
-                Text("Do you wake up at night and have trouble getting back to sleep?")
+                Text("How often do you wake up in the middle of the night?")
                     .font(.system(size: 28, weight: .bold))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.white)

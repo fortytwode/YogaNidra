@@ -152,6 +152,7 @@
 				24BD501E2D263F7300159E70 /* Sources */,
 				24BD501F2D263F7300159E70 /* Frameworks */,
 				24BD50202D263F7300159E70 /* Resources */,
+				122AB2672D9F307B00E3F926 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -219,6 +220,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		122AB2672D9F307B00E3F926 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nfind \"${BUILT_PRODUCTS_DIR}\" -name \"*.framework\" -type d | while read -r FRAMEWORK; do\n    FRAMEWORK_NAME=$(basename \"${FRAMEWORK}\" .framework)\n    echo \"Generating dSYM for ${FRAMEWORK_NAME}\"\n    xcrun dsymutil \"${FRAMEWORK}/${FRAMEWORK_NAME}\" -o \"${BUILT_PRODUCTS_DIR}/${FRAMEWORK_NAME}.framework.dSYM\"\ndone\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		24BD501E2D263F7300159E70 /* Sources */ = {
@@ -379,7 +400,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5;
+				MARKETING_VERSION = 2.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rocketship.YogaNidraSleepDeeply;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -422,7 +443,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5;
+				MARKETING_VERSION = 2.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rocketship.YogaNidraSleepDeeply;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

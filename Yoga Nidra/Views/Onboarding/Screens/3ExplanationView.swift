@@ -8,7 +8,7 @@ struct ExplanationView: View {
             ScrollView {
                 VStack(spacing: 32) {
                     // Header
-                    Text("What is Yoga Nidra? ✨")
+                    Text("Yoga Nidra can help with that ✨")
                         .font(.system(size: 32, weight: .bold))
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
@@ -22,9 +22,9 @@ struct ExplanationView: View {
                     sectionView(
                         title: "Like a warm hug for your mind:",
                         items: [
-                            (emoji: "💆‍♀️", text: "A spa day for your thoughts"),
-                            (emoji: "🌙", text: "Your personal sleep whisperer"),
-                            (emoji: "✨", text: "Nature's deepest rest recipe")
+                            (emoji: " 😌", text: "Calms racing thoughts"),
+                            (emoji: "🌙", text: "Soothes your mind to sleep"),
+                            (emoji: "✨", text: "Helps wake you up refreshed")
                         ]
                     )
                     
@@ -32,9 +32,9 @@ struct ExplanationView: View {
                     sectionView(
                         title: "The snuggly science:",
                         items: [
-                            (emoji: "🧠", text: "Tucks your brain in like a pro"),
-                            (emoji: "💫", text: "Drifts you into delta waves"),
-                            (emoji: "🌟", text: "Helps you float off to dreamland")
+                            (emoji: "🧠", text: "Activates parasympathetic system"),
+                            (emoji: "💫", text: "Reduces cortisol levels by 27%"),
+                            (emoji: "📉", text: "Increases delta waves by 30%")
                         ]
                     )
                     

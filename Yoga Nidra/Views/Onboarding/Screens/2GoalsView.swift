@@ -5,11 +5,11 @@ struct GoalsView: View {
     @State private var selectedGoals: Set<String> = []
     
     private let goals = [
-        "😴 Sweet dreams & better sleep",
-        "😌 A calmer mind at rest",
-        "🧘‍♀️ Deep peaceful relaxation",
-        "✨ Mental clarity & focus",
-        "🌙 Wake up feeling refreshed"
+        "🏋️ Optimize fitness",
+        "🌙 Solve sleep disorder",
+        "😌 Reduce anxiety",
+        "🌅 Become a morning person/early riser",
+        "⚙️ Optimize productivity"
     ]
     
     var body: some View {
@@ -22,7 +22,7 @@ struct GoalsView: View {
                     .font(.body)
                     .foregroundColor(.white)
                 
-                Text("What would you love to improve about your sleep?")
+                Text("What brings you to Yoga Nidra today?")
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.white)
             }
@@ -54,7 +54,7 @@ struct GoalsView: View {
                     }
                 }
                 
-                Text("Quick quiz (faster than counting sheep) 💫")
+                Text("Quick quiz allows us to personalize the app for you (faster than counting sheep) 💫")
                     .font(.subheadline)
                     .foregroundColor(.white)
                     .padding(.top, 8)
