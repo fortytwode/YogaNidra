@@ -155,8 +155,15 @@ final class StoreManager: ObservableObject {
                 // Trial conversion
                 firebaseManager.logTrialConverted(productId: product.id)
             } else if product.subscription != nil {
-                // Regular subscription purchase
-                firebaseManager.logSubscriptionStarted(productId: product.id)
+                // Check if this is a trial start
+                if let subscription = product.subscription,
+                   subscription.introductoryOffer != nil {
+                    // This is a trial start
+                    firebaseManager.logTrialStarted(productId: product.id)
+                } else {
+                    // Regular subscription purchase
+                    firebaseManager.logSubscriptionStarted(productId: product.id)
+                }
             }
         } else {
             // Default subscription start

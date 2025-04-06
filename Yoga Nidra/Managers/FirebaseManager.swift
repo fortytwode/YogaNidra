@@ -139,33 +139,6 @@ final class FirebaseManager {
     
     // MARK: - Analytics Methods
     
-    /// Logs when a meditation session starts
-    /// - Parameters:
-    ///   - sessionTitle: Title of the meditation session
-    ///   - duration: Duration of the session in seconds
-    func logSessionStart(sessionTitle: String, duration: TimeInterval) {
-        Analytics.logEvent("meditation_session_start", parameters: [
-            "session_title": sessionTitle,
-            "duration": duration,
-            "timestamp": Date().timeIntervalSince1970
-        ])
-    }
-    
-    /// Logs when a meditation session completes
-    /// - Parameters:
-    ///   - sessionTitle: Title of the meditation session
-    ///   - duration: Duration of the session in seconds
-    ///   - completedDuration: How long the user actually meditated
-    func logSessionComplete(sessionTitle: String, duration: TimeInterval, completedDuration: TimeInterval) {
-        Analytics.logEvent("meditation_session_complete", parameters: [
-            "session_title": sessionTitle,
-            "total_duration": duration,
-            "completed_duration": completedDuration,
-            "completion_rate": completedDuration / duration,
-            "timestamp": Date().timeIntervalSince1970
-        ])
-    }
-    
     // MARK: - Meditation Analytics
     
     func logMeditationStarted(sessionId: String, duration: TimeInterval, category: String) {
