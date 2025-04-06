@@ -36,6 +36,13 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
             
             // Initialize Superwall with your API key
             configureSuperwallSDK()
+            
+            // Set debug flag for analytics filtering
+            #if DEBUG
+                UserDefaults.standard.set(true, forKey: "isDebugBuild")
+            #else
+                UserDefaults.standard.set(false, forKey: "isDebugBuild")
+            #endif
         } catch {
             print("❌ SDK initialization error: \(error.localizedDescription)")
             // Continue app execution even if SDKs fail
