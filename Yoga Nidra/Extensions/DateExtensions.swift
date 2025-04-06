@@ -21,4 +21,16 @@ extension Date {
             return false
         }
     }
+    
+    static func todayAt10PM() -> Date {
+        let calendar = Calendar.current
+        let now = Date()
+
+        var components = calendar.dateComponents([.year, .month, .day], from: now)
+        components.hour = 22 // 10 PM in 24-hour format
+        components.minute = 0
+        components.second = 0
+
+        return calendar.date(from: components) ?? .now
+    }
 }

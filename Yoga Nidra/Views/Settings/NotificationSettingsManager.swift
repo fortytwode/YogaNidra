@@ -6,6 +6,7 @@ final class NotificationSettingsManager: ObservableObject {
     
     static var shared: NotificationSettingsManager { .init() }
     
+    @MainActor @Published var isShowingSettingAlert = false
     @MainActor @Published var isNotificationsEnabled = false
     @MainActor @Published var showingTimePickerSheet = false
     @MainActor @Published var selectedTime: Date  = .now
@@ -20,6 +21,7 @@ final class NotificationSettingsManager: ObservableObject {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             DispatchQueue.main.async { [weak self] in
                 self?.isNotificationsEnabled = settings.authorizationStatus == .authorized
+                self?.isShowingSettingAlert = settings.authorizationStatus != .authorized
             }
         }
     }

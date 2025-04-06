@@ -99,8 +99,6 @@ struct YogaNidraApp: App {
             }
             .onReceive(progressManager.showRaitnsDialogPublisher) {
                 overlayManager.showOverlay(RatingPromptView())
-            }.onReceive(onboardingManager.showRemindersDialogPublisher) {
-                overlayManager.showOverlay(SleepReminderPromptView())
             }
             .onReceive(rechabilityManager.rechabilityChangedPublisher) {
                 if !rechabilityManager.isNetworkRechable {
@@ -143,7 +141,7 @@ struct YogaNidraApp: App {
                     if whileOnboarding {
                         // Only complete onboarding if we're actually in the PaywallView
                         // This prevents race conditions during navigation
-                        if let currentPage = onboardingManager.currentOnboardingPage, currentPage == 15 {
+                        if let currentPage = onboardingManager.currentOnboardingPage, currentPage == 16 {
                             withAnimation {
                                 onboardingManager.isOnboardingCompleted = true
                             }
@@ -155,7 +153,7 @@ struct YogaNidraApp: App {
                     if whileOnboarding {
                         // Only complete onboarding if we're actually in the PaywallView
                         // This prevents race conditions during navigation
-                        if let currentPage = onboardingManager.currentOnboardingPage, currentPage == 15 {
+                        if let currentPage = onboardingManager.currentOnboardingPage, currentPage == 16 {
                             withAnimation {
                                 onboardingManager.isOnboardingCompleted = true
                             }
@@ -167,7 +165,7 @@ struct YogaNidraApp: App {
                     if whileOnboarding {
                         // Only complete onboarding if we're actually in the PaywallView
                         // This prevents race conditions during navigation
-                        if let currentPage = onboardingManager.currentOnboardingPage, currentPage == 15 {
+                        if let currentPage = onboardingManager.currentOnboardingPage, currentPage == 16 {
                             withAnimation {
                                 onboardingManager.isOnboardingCompleted = true
                             }

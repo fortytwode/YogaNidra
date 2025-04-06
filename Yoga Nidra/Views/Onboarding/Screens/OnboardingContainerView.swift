@@ -43,31 +43,35 @@ struct OnboardingContainerView: View {
                         }
                     case 7:
                         OnboardingQuestionWrapper(currentStep: 7) {
-                            SleepScienceView(nextPage: nextPage)
+                            SleepReminderView(nextPage: nextPage)
                         }
                     case 8:
                         OnboardingQuestionWrapper(currentStep: 8) {
-                            WakeupView(nextPage: nextPage)
+                            SleepScienceView(nextPage: nextPage)
                         }
                     case 9:
                         OnboardingQuestionWrapper(currentStep: 9) {
-                            RelaxationObstaclesView(nextPage: nextPage)
+                            WakeupView(nextPage: nextPage)
                         }
                     case 10:
                         OnboardingQuestionWrapper(currentStep: 10) {
-                            SleepImpactView(nextPage: nextPage)
+                            RelaxationObstaclesView(nextPage: nextPage)
                         }
                     case 11:
                         OnboardingQuestionWrapper(currentStep: 11) {
-                            AfterPoorSleepView(nextPage: nextPage)
+                            SleepImpactView(nextPage: nextPage)
                         }
                     case 12:
-                        ProcessingDataView(nextPage: nextPage)
+                        OnboardingQuestionWrapper(currentStep: 12) {
+                            AfterPoorSleepView(nextPage: nextPage)
+                        }
                     case 13:
-                        FinalProfileView(nextPage: nextPage)
+                        ProcessingDataView(nextPage: nextPage)
                     case 14:
-                        TrialExplanationView(currentPage: $currentPageIndex)
+                        FinalProfileView(nextPage: nextPage)
                     case 15:
+                        TrialExplanationView(currentPage: $currentPageIndex)
+                    case 16:
                         PaywallView()
                     default:
                         EmptyView()
