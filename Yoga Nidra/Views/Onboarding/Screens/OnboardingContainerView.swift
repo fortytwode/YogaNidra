@@ -57,44 +57,50 @@ struct OnboardingContainerView: View {
                         .environmentObject(sizeProvider)
                     case 7:
                         OnboardingQuestionWrapper(currentStep: 7) {
-                            SleepScienceView(nextPage: nextPage)
+                            SleepReminderView(nextPage: nextPage)
                                 .environmentObject(sizeProvider)
                         }
                         .environmentObject(sizeProvider)
                     case 8:
                         OnboardingQuestionWrapper(currentStep: 8) {
-                            WakeupView(nextPage: nextPage)
+                            SleepScienceView(nextPage: nextPage)
                                 .environmentObject(sizeProvider)
                         }
                         .environmentObject(sizeProvider)
                     case 9:
                         OnboardingQuestionWrapper(currentStep: 9) {
-                            RelaxationObstaclesView(nextPage: nextPage)
+                            WakeupView(nextPage: nextPage)
                                 .environmentObject(sizeProvider)
                         }
                         .environmentObject(sizeProvider)
                     case 10:
                         OnboardingQuestionWrapper(currentStep: 10) {
-                            SleepImpactView(nextPage: nextPage)
+                            RelaxationObstaclesView(nextPage: nextPage)
                                 .environmentObject(sizeProvider)
                         }
                         .environmentObject(sizeProvider)
                     case 11:
                         OnboardingQuestionWrapper(currentStep: 11) {
-                            AfterPoorSleepView(nextPage: nextPage)
+                            SleepImpactView(nextPage: nextPage)
                                 .environmentObject(sizeProvider)
                         }
                         .environmentObject(sizeProvider)
                     case 12:
+                        OnboardingQuestionWrapper(currentStep: 12) {
+                            AfterPoorSleepView(nextPage: nextPage)
+                                .environmentObject(sizeProvider)
+                        }
+                        .environmentObject(sizeProvider)
+                    case 13:
                         ProcessingDataView(nextPage: nextPage)
                             .environmentObject(sizeProvider)
-                    case 13:
+                    case 14:
                         FinalProfileView(nextPage: nextPage)
                             .environmentObject(sizeProvider)
-                    case 14:
+                    case 15:
                         TrialExplanationView(currentPage: $currentPageIndex)
                             .environmentObject(sizeProvider)
-                    case 15:
+                    case 16:
                         PaywallView()
                             .environmentObject(sizeProvider)
                     default:

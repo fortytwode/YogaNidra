@@ -104,16 +104,25 @@ final class ProgressManager: ObservableObject {
               let startTime = audioSessionStartTime else { return }
         audioSessionStartTime = nil
         let endTime = Date()
-        let totalListenTime = endTime.timeIntervalSince(startTime) + totalSessionListenTime
+        let sessionDuration = endTime.timeIntervalSince(startTime)
+        let totalListenTime = sessionDuration + totalSessionListenTime
         setTotalSessionListenTime(totalListenTime)
-        checkRatingDialog()
+        
+        // Check if this session was long enough for rating prompt
+        let isCurrentSessionLongEnough = sessionDuration >= 10 * 60
+        checkRatingDialog(currentSessionDuration: sessionDuration)
     }
     
-    private func checkRatingDialog() {
+    private func checkRatingDialog(currentSessionDuration: TimeInterval = 0) {
+        // Don't proceed if user has already rated the app
+        guard !Defaults.bool(forKey: StroageKeys.hasRatedApp) else { return }
+        
         let isEngoughListenTime = totalSessionListenTime >= 10 * 60
         let isAppLaunchCountSufficient = appLaunchCount >= 1
         let isRatingDialogCoolDownPassed = lastRatingDialogDate?.isAtLeastDaysApart(from: .now, days: 3) ?? true
-        if isEngoughListenTime, isAppLaunchCountSufficient, isRatingDialogCoolDownPassed {
+        let isCurrentSessionLongEnough = currentSessionDuration >= 10 * 60
+        
+        if isEngoughListenTime, isAppLaunchCountSufficient, isRatingDialogCoolDownPassed, isCurrentSessionLongEnough {
             setRatingDialogShown()
         }
     }
@@ -130,14 +139,14 @@ final class ProgressManager: ObservableObject {
     }
     
     private func setRatingDialogShown() {
-        guard !Defaults.bool(forKey: StroageKeys.isAppRated) else { return }
+        // Don't show if user has already rated the app
+        guard !Defaults.bool(forKey: StroageKeys.hasRatedApp) else { return }
+        
         FirebaseManager.shared.logAppRatingPromtShown()
         showRaitnsDialog.send()
         
-        // Set the isAppRated flag to true when showing the dialog
-        // This assumes the user has been given the opportunity to rate
-        // and prevents showing the prompt again, regardless of user action
-        Defaults.setValue(true, forKey: StroageKeys.isAppRated)
+        // Only update the timestamp, don't set hasRatedApp
+        // This allows the prompt to appear again after the cooldown period
         Defaults.set(Date(), forKey: StroageKeys.lastRatingDialogDateKey)
     }
     

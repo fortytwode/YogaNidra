@@ -1,4 +1,3 @@
-
 import Foundation
 
 enum StroageKeys {
@@ -8,7 +7,7 @@ enum StroageKeys {
     static let lastSessionDateKey = "lastSessionDateKey"
     static let streakCountKey = "streakCountKey"
     static let lastRatingDialogDateKey = "lastRatingDialogDate"
-    static let isAppRated = "isAppRated"
+    static let hasRatedApp = "hasRatedApp"  // Only set when user taps "Rate on App Store"
     static let totalSessionListenTimeKey = "totalSessionListenTimeKey"
     static let totalSessionsCompletedKey = "totalSessionsCompletedKey"
     static let recentsSessionsKey = "recentsSessionsKey"

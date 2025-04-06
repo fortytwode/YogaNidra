@@ -11,11 +11,15 @@ struct NotificationSettingsView: View {
                 Toggle("Enable Notifications", isOn: $notificationSettingsManager.isNotificationsEnabled)
                     .onChange(of: notificationSettingsManager.isNotificationsEnabled) { _, newValue in
                         if newValue {
+                            notificationSettingsManager.checkNotificationStatus()
                             notificationSettingsManager.requestNotificationPermission()
                         } else {
                             // Cancel any scheduled notifications
                             UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
                         }
+                    }
+                    .onChange(of: notificationSettingsManager.isShowingSettingAlert) { _, newValue in
+                        notificationSettingsManager.isNotificationsEnabled = false
                     }
                 
                 if notificationSettingsManager.isNotificationsEnabled {
@@ -36,6 +40,25 @@ struct NotificationSettingsView: View {
                 Text("We'll send you a gentle reminder to sleep at your chosen time each day.")
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            notificationSettingsManager.checkNotificationStatus()
+            print("App became active")
+        }
+        .alert(
+            "",
+            isPresented: $notificationSettingsManager.isShowingSettingAlert,
+            actions: {
+                Button("Go to Settings") {
+                    if let url = URL(string: UIApplication.openNotificationSettingsURLString),
+                       UIApplication.shared.canOpenURL(url) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            }, message: {
+                Text("Please enable permissions in Settings to continue.")
+            }
+        )
         .navigationTitle("Notifications")
         .sheet(isPresented: $notificationSettingsManager.showingTimePickerSheet) {
             NavigationStack {

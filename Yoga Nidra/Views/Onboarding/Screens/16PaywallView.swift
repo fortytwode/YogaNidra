@@ -121,21 +121,6 @@ struct PaywallView: View {
                     }
                     .padding(.top, 12)
                     
-                    // Skip button
-                    Button {
-                        // Skip subscription using StoreManager's event system
-                        storeManager.skipSubscription(whileOnboarding: true)
-                        
-                        // Track skip event
-                        FacebookEventTracker.shared.trackCustomEvent(name: "subscription_skipped", parameters: ["source": "onboarding"])
-                    } label: {
-                        Text("Continue with Limited Access")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.7))
-                            .padding(.vertical, 8)
-                    }
-                    .padding(.top, 4)
-                    
                     if let date = Calendar.current.date(byAdding: .day, value: 7, to: Date()) {
                         Text("Cancel anytime before \(date.formatted(date: .abbreviated, time: .omitted))")
                             .font(.caption)
@@ -169,7 +154,13 @@ struct PaywallView: View {
             }
         }
         .onAppear {
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" {
+                FirebaseManager.shared.logPaywallImpression(source: "onboarding")
+            }
+            #else
             FirebaseManager.shared.logPaywallImpression(source: "onboarding")
+            #endif
         }
         .alert("Purchase Failed", isPresented: $showError) {
             Button("OK", role: .cancel) { }

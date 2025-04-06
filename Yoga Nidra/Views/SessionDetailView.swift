@@ -62,7 +62,7 @@ struct SessionDetailView: View {
             sessionImage
             sessionInfo
             if !RechabilityManager.shared.isNetworkRechable {
-                Text("You are cuurently offline, please connect to internet")
+                Text("You are currently offline, please connect to internet")
                     .font(.subheadline)
                     .foregroundStyle(.red)
                     .multilineTextAlignment(.center)

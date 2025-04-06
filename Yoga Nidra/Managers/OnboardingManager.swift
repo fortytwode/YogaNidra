@@ -14,12 +14,6 @@ final class OnboardingManager: ObservableObject {
     
     static let shared = OnboardingManager()
     
-    // Dialog
-    private var showRemindersDialog = PassthroughSubject<Void, Never>()
-    var showRemindersDialogPublisher: AnyPublisher<Void, Never> {
-        showRemindersDialog.eraseToAnyPublisher()
-    }
-    
     @Published
     var shouldShowOnboarding: Bool
     
@@ -31,8 +25,6 @@ final class OnboardingManager: ObservableObject {
             UserDefaults.standard.set(isOnboardingCompleted, forKey: "isOnboardingCompleted")
             shouldShowOnboarding = !isOnboardingCompleted
             if isOnboardingCompleted {
-                showRemindersDialog.send()
-                
                 // Track onboarding completed event with Facebook
                 trackOnboardingCompleted()
             }
