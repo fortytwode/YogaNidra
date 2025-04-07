@@ -34,6 +34,7 @@ struct YogaNidraApp: App {
     @StateObject private var overlayManager = OverlayManager.shared
     @StateObject private var appState = AppState.shared
     @StateObject private var notificationSettingsManager = NotificationSettingsManager.shared
+    @StateObject private var screenSizeProvider = ScreenSizeProvider()
     
     var body: some Scene {
         WindowGroup {
@@ -189,6 +190,7 @@ struct YogaNidraApp: App {
             .environmentObject(appState)
             .environmentObject(rechabilityManager)
             .environmentObject(notificationSettingsManager)
+            .environmentObject(screenSizeProvider)
             .scalableApp() // Apply the scaling modifier to the entire app
         }
     }

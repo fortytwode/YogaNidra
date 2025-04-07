@@ -96,4 +96,5 @@ struct OnboardingContainerView: View {
 
 #Preview {
     OnboardingContainerView()
+        .environmentObject(ScreenSizeProvider())
 }
