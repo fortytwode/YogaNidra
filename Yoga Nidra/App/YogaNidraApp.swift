@@ -189,6 +189,7 @@ struct YogaNidraApp: App {
             .environmentObject(appState)
             .environmentObject(rechabilityManager)
             .environmentObject(notificationSettingsManager)
+            .scalableApp() // Apply the scaling modifier to the entire app
         }
     }
     

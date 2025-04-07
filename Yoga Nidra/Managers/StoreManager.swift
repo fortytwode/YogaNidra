@@ -148,6 +148,12 @@ final class StoreManager: ObservableObject {
     private func logPurchaseAnalytics(_ product: Product, transaction: StoreKit.Transaction? = nil) {
         guard product.type == .autoRenewable else { return }
         
+        // Skip analytics in debug builds or for test purchases
+        let isDebugBuild = UserDefaults.standard.bool(forKey: "isDebugBuild")
+        let isTestPurchase = product.id.contains("test") || product.id.contains("debug")
+        
+        guard !isDebugBuild && !isTestPurchase else { return }
+        
         let firebaseManager = FirebaseManager.shared
         
         if let transaction = transaction {
@@ -155,8 +161,15 @@ final class StoreManager: ObservableObject {
                 // Trial conversion
                 firebaseManager.logTrialConverted(productId: product.id)
             } else if product.subscription != nil {
-                // Regular subscription purchase
-                firebaseManager.logSubscriptionStarted(productId: product.id)
+                // Check if this is a trial start
+                if let subscription = product.subscription,
+                   subscription.introductoryOffer != nil {
+                    // This is a trial start
+                    firebaseManager.logTrialStarted(productId: product.id)
+                } else {
+                    // Regular subscription purchase
+                    firebaseManager.logSubscriptionStarted(productId: product.id)
+                }
             }
         } else {
             // Default subscription start

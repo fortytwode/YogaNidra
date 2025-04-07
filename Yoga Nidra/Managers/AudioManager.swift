@@ -323,6 +323,19 @@ final class AudioManager: ObservableObject {
             self.duration = self.audioEngine.duration
             if self.duration > 0 {
                 self.progress = self.currentTime / self.duration
+                
+                // Track meditation progress at 25%, 50%, and 75% intervals
+                if let sessionId = self.lastSessionId,
+                   self.duration > 0 {
+                    let progressPercent = (self.currentTime / self.duration) * 100
+                    // Track at 25%, 50%, 75% to avoid excessive events
+                    if Int(progressPercent) % 25 == 0 && Int(progressPercent) > 0 && Int(progressPercent) < 100 {
+                        FirebaseManager.shared.logMeditationProgress(
+                            sessionId: sessionId,
+                            progressPercent: progressPercent
+                        )
+                    }
+                }
             }
             self.updateNowPlayingInfo()
         }
