@@ -29,7 +29,7 @@ struct SleepReminderView: View {
             .datePickerStyle(.wheel)
             .labelsHidden()
             Spacer()
-            Text("Would you like to be reminded of your bed time?")
+            Text("You can choose to be reminded to complete a Yoga Nidra session - so you can go to bed relaxed.")
                 .font(.title3)
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
