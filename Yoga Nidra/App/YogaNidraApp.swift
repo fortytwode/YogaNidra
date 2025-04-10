@@ -24,6 +24,7 @@ class AppState: ObservableObject {
         }
     }
     @Published var isNewFeature: Bool = true  // Will show highlight on the tab
+    @Published var forceRebuild: Bool = false  // Added to force view rebuild
     
     init() {
         // Initialize with the persisted tab or default to home
@@ -96,12 +97,13 @@ struct YogaNidraApp: App {
             }
             .sheet(isPresented: $onboardingManager.shouldShowGoogleAuth) {
                 // When the sheet is dismissed, ensure we're on the Home tab
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    // Force the tab to Home and prevent any other navigation
+                // Use a longer delay to ensure all other operations complete first
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    // Force ContentView to rebuild completely with Home tab selected
+                    appState.forceRebuild = true
                     appState.selectedTab = .home
                     
-                    // Critical fix: Prevent any other views from showing
-                    // by ensuring no sheets are presented
+                    // Prevent any other sheets from showing
                     sheetPresenter.presentation = nil
                 }
             } content: {
