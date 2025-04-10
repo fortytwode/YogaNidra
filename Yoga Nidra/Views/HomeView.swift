@@ -121,7 +121,7 @@ struct HomeView: View {
                     .fontWeight(.bold)
                 Spacer()
                 Button("See All") {
-                    selectedTab = .lirbrary
+                    selectedTab = .library
                 }
                 .foregroundColor(.blue)
             }
@@ -151,7 +151,7 @@ struct HomeView: View {
                     .fontWeight(.bold)
                 Spacer()
                 Button("See All") {
-                    selectedTab = .lirbrary
+                    selectedTab = .library
                 }
                 .foregroundColor(.blue)
             }
@@ -179,7 +179,7 @@ struct HomeView: View {
             }
             
             Button("See All") {
-                selectedTab = .lirbrary
+                selectedTab = .library
             }
             .frame(maxWidth: .infinity)
             .padding()

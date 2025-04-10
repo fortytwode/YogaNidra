@@ -10,7 +10,7 @@ import Foundation
 @MainActor
 final class Presenter: ObservableObject {
     
-    @Published var presenation: SheetPresentaiton?
+    @Published var presentation: SheetPresentation?
     private let audioManager = AudioManager.shared
     
     // MARK: - Preview Helper
@@ -22,13 +22,13 @@ final class Presenter: ObservableObject {
     }
     #endif
     
-    func present(_ destination: SheetPresentaiton) {
+    func present(_ destination: SheetPresentation) {
         switch destination {
         case .subscriptionPaywall:
-            presenation = .subscriptionPaywall
+            presentation = .subscriptionPaywall
         case .sessionDetials(let session):
             // Always show session details first
-            presenation = destination
+            presentation = destination
             if audioManager.currentPlayingSession != session {
                 Task {
                     audioManager.prepareSession(session)
@@ -42,9 +42,9 @@ final class Presenter: ObservableObject {
     }
     
     func dismiss() {
-        if case .sessionDetials = presenation {
+        if case .sessionDetials = presentation {
             audioManager.dismissDetailView()
         }
-        presenation = nil
+        presentation = nil
     }
 }

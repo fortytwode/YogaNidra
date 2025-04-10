@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum SheetPresentaiton: Identifiable, Hashable {
+enum SheetPresentation: Identifiable, Hashable {
     case subscriptionPaywall
     case sessionDetials(_ session: YogaNidraSession)
     
@@ -29,6 +29,6 @@ enum DisoverTabDestination: Hashable {
     case springReset
 }
 
-enum ProgileTabDestination: Hashable {
+enum ProfileTabDestination: Hashable {
     case settings
 }

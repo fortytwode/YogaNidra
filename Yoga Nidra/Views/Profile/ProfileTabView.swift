@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ProfileTabView: View {
-    @StateObject var router = Router<ProgileTabDestination>()
+    @StateObject var router = Router<ProfileTabDestination>()
     @EnvironmentObject private var storeManager: StoreManager
     @Environment(\.openURL) private var openURL
     @EnvironmentObject private var sheetPresenter: Presenter
@@ -41,7 +41,7 @@ struct ProfileTabView: View {
                 }
                 .padding(.horizontal)
             }
-            .navigationDestination(for: ProgileTabDestination.self) { dest in
+            .navigationDestination(for: ProfileTabDestination.self) { dest in
                 switch dest {
                 case .settings:
                     NotificationSettingsView()

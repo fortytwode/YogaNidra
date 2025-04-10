@@ -10,7 +10,7 @@ import GoogleSignIn
 enum AppTab {
     case home
     case discover
-    case lirbrary
+    case library
     case profile
 }
 
@@ -134,7 +134,7 @@ struct YogaNidraApp: App {
                 }
             }
             .overlayContent(overlayManager)
-            .sheet(item: $sheetPresenter.presenation) {
+            .sheet(item: $sheetPresenter.presentation) {
                 sheetPresenter.dismiss()
             } content: { destination in
                 switch destination {

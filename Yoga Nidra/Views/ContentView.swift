@@ -34,7 +34,7 @@ struct ContentView: View {
                         Image(systemName: "book.fill")
                         Text("Library")
                     }
-                    .tag(AppTab.lirbrary)
+                    .tag(AppTab.library)
                 
                 ProfileTabView()
                     .tabItem {
