@@ -219,16 +219,30 @@ final class FirebaseManager {
         ])
     }
     
-    func logRatingPromtShown() {
+    func logRatingPromptShown() {
         Analytics.logEvent("rating_prompt_shown", parameters: [
             "event_name": "rating_prompt_shown",
             "timestamp": Date().timeIntervalSince1970
         ])
     }
     
-    func logAppRatingPromtShown() {
+    func logAppRatingPromptShown() {
         Analytics.logEvent("app_rating_prompt_shown", parameters: [
             "event_name": "app_rating_prompt_shown",
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    func logRatingPromptMaybeLater() {
+        Analytics.logEvent("rating_prompt_response", parameters: [
+            "response": "maybe_later",
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    func logRatingPromptRateOnAppStore() {
+        Analytics.logEvent("rating_prompt_response", parameters: [
+            "response": "rate_on_app_store",
             "timestamp": Date().timeIntervalSince1970
         ])
     }

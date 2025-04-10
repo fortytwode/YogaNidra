@@ -65,6 +65,9 @@ struct RatingPromptView: View {
     var buttons: some View {
         VStack(spacing: 12) {
             Button {
+                // Log the "Rate on App Store" response
+                FirebaseManager.shared.logRatingPromptRateOnAppStore()
+                
                 showRatingPrompt()
                 Defaults.setValue(true, forKey: StroageKeys.hasRatedApp)
                 overlayManager.hideOverlay()
@@ -79,10 +82,8 @@ struct RatingPromptView: View {
             }
             
             Button {
-                // Log the "Maybe Later" response
+                // Log the "Maybe Later" response and update the last response date
                 FirebaseManager.shared.logRatingPromptMaybeLater()
-                
-                // Just update the last response date
                 Defaults.set(Date(), forKey: StroageKeys.lastRatingDialogDateKey)
                 overlayManager.hideOverlay()
             } label: {
@@ -102,7 +103,7 @@ struct RatingPromptView: View {
             .first(where: {
                 $0.activationState == .foregroundActive || $0.activationState == .foregroundInactive
             }) as? UIWindowScene else { return }
-        FirebaseManager.shared.logRatingPromtShown()
+        FirebaseManager.shared.logRatingPromptShown()
         SKStoreReviewController.requestReview(in: scene)
     }
 }

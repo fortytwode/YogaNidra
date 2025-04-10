@@ -20,6 +20,9 @@ final class OnboardingManager: ObservableObject {
     // Track current onboarding page to prevent premature completion
     @Published var currentOnboardingPage: Int?
     
+    // Add Google Auth presentation flag
+    @Published var shouldShowGoogleAuth = false
+    
     @Published var isOnboardingCompleted: Bool {
         didSet {
             UserDefaults.standard.set(isOnboardingCompleted, forKey: "isOnboardingCompleted")
@@ -27,6 +30,8 @@ final class OnboardingManager: ObservableObject {
             if isOnboardingCompleted {
                 // Track onboarding completed event with Facebook
                 trackOnboardingCompleted()
+                // Show Google Auth after onboarding
+                self.shouldShowGoogleAuth = true
             }
         }
     }

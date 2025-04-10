@@ -5,6 +5,7 @@ import FirebaseCore
 import FirebaseAnalytics
 import FirebaseAuth
 import FirebaseCrashlytics
+import GoogleSignIn
 
 enum AppTab {
     case home
@@ -60,6 +61,8 @@ struct YogaNidraApp: App {
                                     }
                                 }
                             }
+                            // Configure Google Sign-In
+                            GoogleAuthManager.shared.configure()
                         }
                         .onLoad {
                             audioManager.stopOnboardingMusic()
@@ -70,10 +73,21 @@ struct YogaNidraApp: App {
                         .environmentObject(audioManager)
                         .onLoad {
                             audioManager.startOnboardingMusic()
+                            // Configure Google Sign-In
+                            GoogleAuthManager.shared.configure()
                         }
                 }
             }
+            .sheet(isPresented: $onboardingManager.shouldShowGoogleAuth) {
+                GoogleAuthView()
+            }
             .onOpenURL { url in
+                // Handle Google Sign-In callback
+                if GIDSignIn.sharedInstance.handle(url) {
+                    return
+                }
+                
+                // Handle existing deep links
                 print("📱 Universal Link received: \(url.absoluteString)")
                 print("📱 URL components: \(url)")
                 print("📱 URL scheme: \(url.scheme ?? "none")")

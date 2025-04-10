@@ -142,7 +142,7 @@ final class ProgressManager: ObservableObject {
         // Don't show if user has already rated the app
         guard !Defaults.bool(forKey: StroageKeys.hasRatedApp) else { return }
         
-        FirebaseManager.shared.logAppRatingPromtShown()
+        FirebaseManager.shared.logAppRatingPromptShown()
         showRaitnsDialog.send()
         
         // Only update the timestamp, don't set hasRatedApp
