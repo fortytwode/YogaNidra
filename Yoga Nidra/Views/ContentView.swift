@@ -9,8 +9,23 @@ struct ContentView: View {
     @StateObject private var progressManager = ProgressManager.shared
     @EnvironmentObject private var appState: AppState
     
+    // Add this state to force view refresh when needed
+    @State private var viewID = UUID()
+    
     var body: some View {
         ZStack(alignment: .bottom) {
+            // Force the entire view to rebuild when needed
+            if appState.forceRebuild {
+                // This is a trick to force SwiftUI to rebuild the entire view
+                EmptyView()
+                    .onAppear {
+                        // Reset the flag immediately
+                        DispatchQueue.main.async {
+                            appState.forceRebuild = false
+                        }
+                    }
+            }
+            
             // Base layer: Tab View
             TabView(selection: $appState.selectedTab) {
                 HomeView(selectedTab: $appState.selectedTab)

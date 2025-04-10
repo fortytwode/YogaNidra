@@ -15,8 +15,25 @@ enum AppTab {
 
 class AppState: ObservableObject {
     static let shared = AppState()
-    @Published var selectedTab: AppTab = .home
+    
+    @Published var selectedTab: AppTab {
+        didSet {
+            // Persist the selected tab whenever it changes
+            UserDefaults.standard.set(selectedTab.rawValue, forKey: "selectedTab")
+        }
+    }
     @Published var isNewFeature: Bool = true  // Will show highlight on the tab
+    @Published var forceRebuild: Bool = false  // Added to force view rebuild
+    
+    init() {
+        // Initialize with the persisted tab or default to home
+        if let savedTabRawValue = UserDefaults.standard.string(forKey: "selectedTab"),
+           let savedTab = AppTab(rawValue: savedTabRawValue) {
+            self.selectedTab = savedTab
+        } else {
+            self.selectedTab = .home
+        }
+    }
 }
 
 @main
