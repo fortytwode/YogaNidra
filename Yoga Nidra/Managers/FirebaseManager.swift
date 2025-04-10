@@ -253,7 +253,7 @@ extension FirebaseManager {
     
     func getUserDocument() async -> DocumentReference? {
         guard let userId = AuthManager.shared.currentUserId else { return nil }
-        let userRef = firestore.collection(StroageKeys.usersCollectionKey).document(userId)
+        let userRef = firestore.collection(StorageKeys.usersCollectionKey).document(userId)
         do {
             let document = try await userRef.getDocument()
             if !document.exists {
@@ -267,46 +267,67 @@ extension FirebaseManager {
     }
     
     func getUserStreaks() async -> Int {
-        let document = try? await getUserDocument()?.getDocument()
-        return document?.data()?[StroageKeys.streakCountKey] as? Int ?? 0
+        guard let docRef = await getUserDocument() else { return 0 }
+        do {
+            let document = try await docRef.getDocument()
+            return document.data()?[StorageKeys.streakCountKey] as? Int ?? 0
+        } catch {
+            print("Error fetching user streaks: \(error.localizedDescription)")
+            return 0
+        }
     }
     
     func getTotalListenedTime() async -> Double {
-        let document = try? await getUserDocument()?.getDocument()
-        return document?.data()?[StroageKeys.totalSessionListenTimeKey] as? Double ?? 0
+        guard let docRef = await getUserDocument() else { return 0 }
+        do {
+            let document = try await docRef.getDocument()
+            return document.data()?[StorageKeys.totalSessionListenTimeKey] as? Double ?? 0
+        } catch {
+            print("Error fetching total listened time: \(error.localizedDescription)")
+            return 0
+        }
     }
     
     func getCompletedSessionsCount() async -> Int {
-        let document = try? await getUserDocument()?.getDocument()
-        return document?.data()?[StroageKeys.totalSessionsCompletedKey] as? Int ?? 0
+        guard let docRef = await getUserDocument() else { return 0 }
+        do {
+            let document = try await docRef.getDocument()
+            return document.data()?[StorageKeys.totalSessionsCompletedKey] as? Int ?? 0
+        } catch {
+            print("Error fetching completed sessions count: \(error.localizedDescription)")
+            return 0
+        }
     }
     
     func setTotalListenedTime(time: TimeInterval) async {
+        guard let userDocument = await getUserDocument() else { return }
         let data = [
-            StroageKeys.totalSessionListenTimeKey: time
+            StorageKeys.totalSessionListenTimeKey: time
         ]
-        try? await getUserDocument()?.updateData(data)
+        try? await userDocument.updateData(data)
     }
     
     func setUserStreaks(count: Int) async {
+        guard let userDocument = await getUserDocument() else { return }
         let data = [
-            StroageKeys.streakCountKey: count
+            StorageKeys.streakCountKey: count
         ]
-        try? await getUserDocument()?.updateData(data)
+        try? await userDocument.updateData(data)
     }
     
     func setCompletedSessionsCount(count: Int) async {
+        guard let userDocument = await getUserDocument() else { return }
         let data = [
-            StroageKeys.totalSessionsCompletedKey: count
+            StorageKeys.totalSessionsCompletedKey: count
         ]
-        try? await getUserDocument()?.updateData(data)
+        try? await userDocument.updateData(data)
     }
     
     func getRecentSessions() async -> [RecentSessionItem] {
         guard let userDocument = await getUserDocument() else { return [] }
         let sessions = YogaNidraSession.allSessionIncldedSpecialEventSessions
         do {
-            let sessionsSnapshot = try await userDocument.collection(StroageKeys.recentsSessionsKey).getDocuments()
+            let sessionsSnapshot = try await userDocument.collection(StorageKeys.recentsSessionsKey).getDocuments()
             let recentSessionsArray: [RecentSessionItem] = sessionsSnapshot.documents.compactMap { document in
                 guard let sessionId = document["sessionId"] as? String,
                       let lastCompleted = document["lastCompleted"] as? Timestamp else {
@@ -326,7 +347,7 @@ extension FirebaseManager {
     
     func setRecentSessions(withNew session: YogaNidraSession, recentSessions: [RecentSessionItem]) async -> [RecentSessionItem] {
         guard let userDocument = await getUserDocument() else { return [] }
-        let sessionCollection = userDocument.collection(StroageKeys.recentsSessionsKey)
+        let sessionCollection = userDocument.collection(StorageKeys.recentsSessionsKey)
         
         var recentSessions = recentSessions
         do {
@@ -363,13 +384,13 @@ extension FirebaseManager {
     
     func syncProgress() async {
         Task {
-            if !Defaults.bool(forKey: StroageKeys.isLaunchedBefore) {
+            if !Defaults.bool(forKey: StorageKeys.isLaunchedBefore) {
                 await setUserStreaks(count: 0)
-                UserDefaults.standard.set(true, forKey: StroageKeys.isLaunchedBefore)
+                UserDefaults.standard.set(true, forKey: StorageKeys.isLaunchedBefore)
             }
-            await Defaults.set(getUserStreaks(), forKey: StroageKeys.streakCountKey)
-            await Defaults.set(getTotalListenedTime(), forKey: StroageKeys.totalSessionListenTimeKey)
-            await Defaults.set(getCompletedSessionsCount(), forKey: StroageKeys.totalSessionsCompletedKey)
+            await Defaults.set(getUserStreaks(), forKey: StorageKeys.streakCountKey)
+            await Defaults.set(getTotalListenedTime(), forKey: StorageKeys.totalSessionListenTimeKey)
+            await Defaults.set(getCompletedSessionsCount(), forKey: StorageKeys.totalSessionsCompletedKey)
         }
     }
 }

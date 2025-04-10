@@ -27,7 +27,7 @@ final class FavoritesManager: ObservableObject {
     private func addFavorite(_ session: YogaNidraSession) async {
         guard let userCollection = await FirebaseManager.shared.getUserDocument() else { return }
         
-        let favDocument = userCollection.collection(StroageKeys.favoriteSessionsKey).document(session.id)
+        let favDocument = userCollection.collection(StorageKeys.favoriteSessionsKey).document(session.id)
         do {
             try await favDocument.setData(["isFavoutite": true])
             favoriteSessions.append(session)
@@ -39,7 +39,7 @@ final class FavoritesManager: ObservableObject {
     private func removeFavorite(_ session: YogaNidraSession) async {
         guard let userCollection = await FirebaseManager.shared.getUserDocument() else { return }
         
-        let favDocument = userCollection.collection(StroageKeys.favoriteSessionsKey).document(session.id)
+        let favDocument = userCollection.collection(StorageKeys.favoriteSessionsKey).document(session.id)
         do {
             try await favDocument.delete()
             favoriteSessions.removeAll { $0.id == session.id }
@@ -52,7 +52,7 @@ final class FavoritesManager: ObservableObject {
         guard let userCollection = await FirebaseManager.shared.getUserDocument() else { return }
         
         let allSessions = YogaNidraSession.allSessionIncldedSpecialEventSessions
-        let favCollection = userCollection.collection(StroageKeys.favoriteSessionsKey)
+        let favCollection = userCollection.collection(StorageKeys.favoriteSessionsKey)
         do {
             let snapshot = try await favCollection.getDocuments()
             let favSessions = snapshot.documents.compactMap {

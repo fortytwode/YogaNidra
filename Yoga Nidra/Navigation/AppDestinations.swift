@@ -1,5 +1,5 @@
 //
-//  AppDesntinations.swift
+//  AppDestinations.swift
 //  Yoga Nidra
 //
 //  Created by Nishchal Visavadiya on 18/01/25.

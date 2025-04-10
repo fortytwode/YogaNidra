@@ -61,7 +61,7 @@ struct SessionDetailView: View {
         VStack(spacing: 16) {
             sessionImage
             sessionInfo
-            if !RechabilityManager.shared.isNetworkRechable {
+            if !ReachabilityManager.shared.isNetworkReachable {
                 Text("You are currently offline, please connect to internet")
                     .font(.subheadline)
                     .foregroundStyle(.red)

@@ -18,7 +18,7 @@ struct DiscoverTab: View {
     @State private var selectedTab: DiscoverTabItem? = .allDefinedTabs.first
     @State private var allTabs: [DiscoverTabItem] = DiscoverTabItem.allDefinedTabs
     @EnvironmentObject var audioManager: AudioManager
-    @AppStorage(StroageKeys.totalSessionsCompletedKey) var sessionsCompleted = 0
+    @AppStorage(StorageKeys.totalSessionsCompletedKey) var sessionsCompleted = 0
     
     var body: some View {
         NavigationStack(path: $router.path) {

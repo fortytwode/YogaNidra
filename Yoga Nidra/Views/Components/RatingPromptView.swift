@@ -69,7 +69,7 @@ struct RatingPromptView: View {
                 FirebaseManager.shared.logRatingPromptRateOnAppStore()
                 
                 showRatingPrompt()
-                Defaults.setValue(true, forKey: StroageKeys.hasRatedApp)
+                Defaults.setValue(true, forKey: StorageKeys.hasRatedApp)
                 overlayManager.hideOverlay()
             } label: {
                 Text("Rate on App Store")
@@ -84,7 +84,7 @@ struct RatingPromptView: View {
             Button {
                 // Log the "Maybe Later" response and update the last response date
                 FirebaseManager.shared.logRatingPromptMaybeLater()
-                Defaults.set(Date(), forKey: StroageKeys.lastRatingDialogDateKey)
+                Defaults.set(Date(), forKey: StorageKeys.lastRatingDialogDateKey)
                 overlayManager.hideOverlay()
             } label: {
                 Text("Maybe Later")

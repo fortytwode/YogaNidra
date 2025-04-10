@@ -8,20 +8,20 @@ final class ProgressManager: ObservableObject {
     @Published var recentSessions: [RecentSessionItem] = []
     
     // Rating Dialog
-    private var showRaitnsDialog = PassthroughSubject<Void, Never>()
-    var showRaitnsDialogPublisher: AnyPublisher<Void, Never> {
-        showRaitnsDialog.eraseToAnyPublisher()
+    private var showRatingsDialog = PassthroughSubject<Void, Never>()
+    var showRatingsDialogPublisher: AnyPublisher<Void, Never> {
+        showRatingsDialog.eraseToAnyPublisher()
     }
     
     private var audioSessionStartTime: Date?
     private var appLaunchCount: Int {
-        Defaults.integer(forKey: StroageKeys.appLaunchCountKey)
+        Defaults.integer(forKey: StorageKeys.appLaunchCountKey)
     }
     private var totalSessionListenTime: TimeInterval {
-        Defaults.object(forKey: StroageKeys.totalSessionListenTimeKey) as? TimeInterval ?? 0
+        Defaults.object(forKey: StorageKeys.totalSessionListenTimeKey) as? TimeInterval ?? 0
     }
     private var lastRatingDialogDate: Date? {
-        Defaults.object(forKey: StroageKeys.lastRatingDialogDateKey) as? Date
+        Defaults.object(forKey: StorageKeys.lastRatingDialogDateKey) as? Date
     }
     
     private init() {
@@ -48,14 +48,14 @@ final class ProgressManager: ObservableObject {
     @objc private func handlePlaybackFinished() {
         guard OnboardingManager.shared.isOnboardingCompleted else { return }
         audioSessionEnded()
-        let totalSessionsCompleted = Defaults.integer(forKey: StroageKeys.totalSessionsCompletedKey) + 1
-        Defaults.set(totalSessionsCompleted, forKey: StroageKeys.totalSessionsCompletedKey)
+        let totalSessionsCompleted = Defaults.integer(forKey: StorageKeys.totalSessionsCompletedKey) + 1
+        Defaults.set(totalSessionsCompleted, forKey: StorageKeys.totalSessionsCompletedKey)
         Task {
             await FirebaseManager.shared.setCompletedSessionsCount(count: totalSessionsCompleted)
         }
         
         let today = Calendar.current.startOfDay(for: Date()) // Normalize to 00:00
-        let lastSessionDate = Defaults.object(forKey: StroageKeys.lastSessionDateKey) as? Date
+        let lastSessionDate = Defaults.object(forKey: StorageKeys.lastSessionDateKey) as? Date
         
         if let lastSessionDate = lastSessionDate {
             let difference = Calendar.current.dateComponents([.day], from: lastSessionDate, to: today).day ?? 0
@@ -75,19 +75,19 @@ final class ProgressManager: ObservableObject {
         }
         
         // Save today's date as last session date
-        Defaults.set(today, forKey: StroageKeys.lastSessionDateKey)
+        Defaults.set(today, forKey: StorageKeys.lastSessionDateKey)
     }
     
     private func incrementStreak() {
-        let newStreak = Defaults.integer(forKey: StroageKeys.streakCountKey) + 1
-        Defaults.set(newStreak, forKey: StroageKeys.streakCountKey)
+        let newStreak = Defaults.integer(forKey: StorageKeys.streakCountKey) + 1
+        Defaults.set(newStreak, forKey: StorageKeys.streakCountKey)
         Task {
             await FirebaseManager.shared.setUserStreaks(count: newStreak)
         }
     }
     
     private func resetStreak() {
-        Defaults.set(1, forKey: StroageKeys.streakCountKey) // Start fresh from 1
+        Defaults.set(1, forKey: StorageKeys.streakCountKey) // Start fresh from 1
         Task {
             await FirebaseManager.shared.setUserStreaks(count: 1)
         }
@@ -115,7 +115,7 @@ final class ProgressManager: ObservableObject {
     
     private func checkRatingDialog(currentSessionDuration: TimeInterval = 0) {
         // Don't proceed if user has already rated the app
-        guard !Defaults.bool(forKey: StroageKeys.hasRatedApp) else { return }
+        guard !Defaults.bool(forKey: StorageKeys.hasRatedApp) else { return }
         
         let isEngoughListenTime = totalSessionListenTime >= 10 * 60
         let isAppLaunchCountSufficient = appLaunchCount >= 1
@@ -128,26 +128,26 @@ final class ProgressManager: ObservableObject {
     }
     
     private func setTotalSessionListenTime(_ time: TimeInterval) {
-        Defaults.set(time, forKey: StroageKeys.totalSessionListenTimeKey)
+        Defaults.set(time, forKey: StorageKeys.totalSessionListenTimeKey)
         Task {
             await FirebaseManager.shared.setTotalListenedTime(time: time)
         }
     }
     
     private func setAppLaunchCount() {
-        Defaults.set(appLaunchCount + 1, forKey: StroageKeys.appLaunchCountKey)
+        Defaults.set(appLaunchCount + 1, forKey: StorageKeys.appLaunchCountKey)
     }
     
     private func setRatingDialogShown() {
         // Don't show if user has already rated the app
-        guard !Defaults.bool(forKey: StroageKeys.hasRatedApp) else { return }
+        guard !Defaults.bool(forKey: StorageKeys.hasRatedApp) else { return }
         
         FirebaseManager.shared.logAppRatingPromptShown()
-        showRaitnsDialog.send()
+        showRatingsDialog.send()
         
         // Only update the timestamp, don't set hasRatedApp
         // This allows the prompt to appear again after the cooldown period
-        Defaults.set(Date(), forKey: StroageKeys.lastRatingDialogDateKey)
+        Defaults.set(Date(), forKey: StorageKeys.lastRatingDialogDateKey)
     }
     
     private func addRecentSession(session: YogaNidraSession) {

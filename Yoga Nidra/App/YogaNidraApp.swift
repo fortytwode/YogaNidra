@@ -25,7 +25,7 @@ struct YogaNidraApp: App {
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
-    @StateObject private var rechabilityManager = RechabilityManager.shared
+    @StateObject private var reachabilityManager = ReachabilityManager.shared
     @StateObject private var progressManager = ProgressManager.shared
     @StateObject private var playerState = PlayerState()
     @StateObject private var storeManager = StoreManager.shared
@@ -111,11 +111,11 @@ struct YogaNidraApp: App {
                     print("❌ Unknown deep link path: \(normalizedPath)")
                 }
             }
-            .onReceive(progressManager.showRaitnsDialogPublisher) {
+            .onReceive(progressManager.showRatingsDialogPublisher) {
                 overlayManager.showOverlay(RatingPromptView())
             }
-            .onReceive(rechabilityManager.rechabilityChangedPublisher) {
-                if !rechabilityManager.isNetworkRechable {
+            .onReceive(reachabilityManager.reachabilityChangedPublisher) {
+                if !reachabilityManager.isNetworkReachable {
                     SwiftMessages.hideAll()
                     SwiftMessages.show(
                         view: ToastView(
@@ -201,7 +201,7 @@ struct YogaNidraApp: App {
             .environmentObject(sheetPresenter)
             .environmentObject(overlayManager)
             .environmentObject(appState)
-            .environmentObject(rechabilityManager)
+            .environmentObject(reachabilityManager)
             .environmentObject(notificationSettingsManager)
             .scalableApp() // Apply the scaling modifier to the entire app
         }

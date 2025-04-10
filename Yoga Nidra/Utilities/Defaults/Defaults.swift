@@ -1,6 +1,6 @@
 import Foundation
 
-enum StroageKeys {
+enum StorageKeys {
     static let usersCollectionKey = "users"
     static let isLaunchedBefore = "isLaunchedBefore"
     static let appLaunchCountKey = "appLaunchCount"

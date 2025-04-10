@@ -6,9 +6,9 @@ struct ProfileTabView: View {
     @Environment(\.openURL) private var openURL
     @EnvironmentObject private var sheetPresenter: Presenter
     @EnvironmentObject var audioManager: AudioManager
-    @AppStorage(StroageKeys.streakCountKey) var currentStreak = 0
-    @AppStorage(StroageKeys.totalSessionsCompletedKey) var sessionsCompleted = 0
-    @AppStorage(StroageKeys.totalSessionListenTimeKey) var totalTimeListened = 0.0
+    @AppStorage(StorageKeys.streakCountKey) var currentStreak = 0
+    @AppStorage(StorageKeys.totalSessionsCompletedKey) var sessionsCompleted = 0
+    @AppStorage(StorageKeys.totalSessionListenTimeKey) var totalTimeListened = 0.0
     
     var body: some View {
         NavigationStack(path: $router.path) {

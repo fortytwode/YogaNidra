@@ -1,5 +1,5 @@
 //
-//  RechabilityManager.swift
+//  ReachabilityManager.swift
 //  Yoga Nidra
 //
 //  Created by Nishchal Visavadiya on 23/02/25.
@@ -9,16 +9,16 @@ import SwiftUI
 import Connectivity
 import Combine
 
-final class RechabilityManager: ObservableObject {
-    static let shared = RechabilityManager()
+final class ReachabilityManager: ObservableObject {
+    static let shared = ReachabilityManager()
     
-    @MainActor @Published var isNetworkRechable = true
+    @MainActor @Published var isNetworkReachable = true
     
     private let connectivity = Connectivity()
     
-    private let rechabilityChanged = PassthroughSubject<Void, Never>()
-    var rechabilityChangedPublisher: AnyPublisher<Void, Never> {
-        rechabilityChanged.eraseToAnyPublisher()
+    private let reachabilityChanged = PassthroughSubject<Void, Never>()
+    var reachabilityChangedPublisher: AnyPublisher<Void, Never> {
+        reachabilityChanged.eraseToAnyPublisher()
     }
     
     private init() {
@@ -27,18 +27,18 @@ final class RechabilityManager: ObservableObject {
             switch connectivity.status {
             case .connected, .connectedViaCellular, .connectedViaEthernet, .connectedViaWiFi:
                 Task { @MainActor in
-                    let oldValue = self?.isNetworkRechable
-                    self?.isNetworkRechable = true
+                    let oldValue = self?.isNetworkReachable
+                    self?.isNetworkReachable = true
                     if oldValue != true {
-                        self?.rechabilityChanged.send()
+                        self?.reachabilityChanged.send()
                     }
                 }
             default:
                 Task { @MainActor in
-                    let oldValue = self?.isNetworkRechable
-                    self?.isNetworkRechable = false
+                    let oldValue = self?.isNetworkReachable
+                    self?.isNetworkReachable = false
                     if oldValue != false {
-                        self?.rechabilityChanged.send()
+                        self?.reachabilityChanged.send()
                     }
                 }
             }

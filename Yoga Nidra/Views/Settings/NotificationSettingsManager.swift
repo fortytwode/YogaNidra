@@ -1,4 +1,3 @@
-
 import SwiftUI
 import UserNotifications
 
@@ -13,7 +12,7 @@ final class NotificationSettingsManager: ObservableObject {
     
     private init() {
         Task { @MainActor in
-            selectedTime = (Defaults.value(forKey: StroageKeys.sleepReminderTime) as? Date) ?? .now
+            selectedTime = (Defaults.value(forKey: StorageKeys.sleepReminderTime) as? Date) ?? .now
         }
     }
     
@@ -38,7 +37,7 @@ final class NotificationSettingsManager: ObservableObject {
     }
     
     func scheduleNotification(at time: Date) {
-        Defaults.set(time, forKey: StroageKeys.sleepReminderTime)
+        Defaults.set(time, forKey: StorageKeys.sleepReminderTime)
         // Cancel existing notifications
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         
