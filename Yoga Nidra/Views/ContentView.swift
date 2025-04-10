@@ -9,6 +9,9 @@ struct ContentView: View {
     @StateObject private var progressManager = ProgressManager.shared
     @EnvironmentObject private var appState: AppState
     
+    // Add this state to force view refresh when needed
+    @State private var viewID = UUID()
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             // Base layer: Tab View
@@ -45,6 +48,7 @@ struct ContentView: View {
                     }
                     .tag(AppTab.profile)
             }
+            .id(viewID) // Force view refresh when ID changes
             
             // Middle layer: Mini Player - show when there's a current session
             if let session = audioManager.currentPlayingSession {
@@ -67,6 +71,13 @@ struct ContentView: View {
             } catch {
                 storeManager.errorMessage = error.localizedDescription
                 storeManager.showError = true
+            }
+        }
+        .onAppear {
+            // Force a view refresh when the view appears
+            // This ensures the TabView respects the initial tab selection
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                viewID = UUID()
             }
         }
     }

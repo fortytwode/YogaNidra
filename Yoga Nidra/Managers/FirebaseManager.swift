@@ -266,37 +266,31 @@ extension FirebaseManager {
         return userRef
     }
     
-    func getUserStreaks() async -> Int {
-        guard let docRef = await getUserDocument() else { return 0 }
+    // Optimized method to fetch user data once
+    func getUserData() async -> [String: Any]? {
+        guard let docRef = await getUserDocument() else { return nil }
         do {
             let document = try await docRef.getDocument()
-            return document.data()?[StorageKeys.streakCountKey] as? Int ?? 0
+            return document.data()
         } catch {
-            print("Error fetching user streaks: \(error.localizedDescription)")
-            return 0
+            print("Error fetching user data: \(error.localizedDescription)")
+            return nil
         }
+    }
+    
+    func getUserStreaks() async -> Int {
+        let userData = await getUserData()
+        return userData?[StorageKeys.streakCountKey] as? Int ?? 0
     }
     
     func getTotalListenedTime() async -> Double {
-        guard let docRef = await getUserDocument() else { return 0 }
-        do {
-            let document = try await docRef.getDocument()
-            return document.data()?[StorageKeys.totalSessionListenTimeKey] as? Double ?? 0
-        } catch {
-            print("Error fetching total listened time: \(error.localizedDescription)")
-            return 0
-        }
+        let userData = await getUserData()
+        return userData?[StorageKeys.totalSessionListenTimeKey] as? Double ?? 0
     }
     
     func getCompletedSessionsCount() async -> Int {
-        guard let docRef = await getUserDocument() else { return 0 }
-        do {
-            let document = try await docRef.getDocument()
-            return document.data()?[StorageKeys.totalSessionsCompletedKey] as? Int ?? 0
-        } catch {
-            print("Error fetching completed sessions count: \(error.localizedDescription)")
-            return 0
-        }
+        let userData = await getUserData()
+        return userData?[StorageKeys.totalSessionsCompletedKey] as? Int ?? 0
     }
     
     func setTotalListenedTime(time: TimeInterval) async {

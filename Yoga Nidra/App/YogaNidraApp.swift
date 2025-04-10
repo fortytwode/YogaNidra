@@ -7,7 +7,7 @@ import FirebaseAuth
 import FirebaseCrashlytics
 import GoogleSignIn
 
-enum AppTab {
+enum AppTab: String {
     case home
     case discover
     case library
@@ -16,8 +16,24 @@ enum AppTab {
 
 class AppState: ObservableObject {
     static let shared = AppState()
-    @Published var selectedTab: AppTab = .home
+    
+    @Published var selectedTab: AppTab {
+        didSet {
+            // Persist the selected tab whenever it changes
+            UserDefaults.standard.set(selectedTab.rawValue, forKey: "selectedTab")
+        }
+    }
     @Published var isNewFeature: Bool = true  // Will show highlight on the tab
+    
+    init() {
+        // Initialize with the persisted tab or default to home
+        if let savedTabRawValue = UserDefaults.standard.string(forKey: "selectedTab"),
+           let savedTab = AppTab(rawValue: savedTabRawValue) {
+            self.selectedTab = savedTab
+        } else {
+            self.selectedTab = .home
+        }
+    }
 }
 
 @main
@@ -79,6 +95,16 @@ struct YogaNidraApp: App {
                 }
             }
             .sheet(isPresented: $onboardingManager.shouldShowGoogleAuth) {
+                // When the sheet is dismissed, ensure we're on the Home tab
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    // Force the tab to Home and prevent any other navigation
+                    appState.selectedTab = .home
+                    
+                    // Critical fix: Prevent any other views from showing
+                    // by ensuring no sheets are presented
+                    sheetPresenter.presentation = nil
+                }
+            } content: {
                 GoogleAuthView()
             }
             .onOpenURL { url in

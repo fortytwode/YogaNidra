@@ -30,6 +30,8 @@ final class OnboardingManager: ObservableObject {
             if isOnboardingCompleted {
                 // Track onboarding completed event with Facebook
                 trackOnboardingCompleted()
+                // Explicitly set the tab to home and persist it
+                AppState.shared.selectedTab = .home
                 // Show Google Auth after onboarding
                 self.shouldShowGoogleAuth = true
             }

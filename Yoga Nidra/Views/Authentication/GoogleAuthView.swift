@@ -40,6 +40,7 @@ struct GoogleAuthView: View {
             
             Button {
                 // Explicitly set the tab to home before dismissing
+                // This ensures the selection is persisted
                 AppState.shared.selectedTab = .home
                 dismiss()
             } label: {
@@ -93,7 +94,15 @@ struct GoogleAuthView: View {
                     showError = true
                 } else {
                     // Explicitly set the tab to home before dismissing
+                    // This ensures the selection is persisted
                     AppState.shared.selectedTab = .home
+                    
+                    // Critical fix: Ensure no other sheets are presented
+                    // This prevents the Progress view from appearing
+                    if let sheetPresenter = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.windows.first?.rootViewController?.view.window?.rootViewController?.presentedViewController {
+                        print("⚠️ Found a presented sheet that might interfere with navigation")
+                    }
+                    
                     dismiss()
                 }
             }

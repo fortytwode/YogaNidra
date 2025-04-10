@@ -1,6 +1,7 @@
 import SwiftUI
 
-struct ProgressView: View {
+// Renamed to avoid collision with SwiftUI.ProgressView
+struct YogaProgressView: View {
     var body: some View {
         NavigationView {
             ScrollView {
@@ -25,7 +26,7 @@ struct ProgressView: View {
 }
 
 #Preview {
-    ProgressView()
+    YogaProgressView()
         .environmentObject(Presenter())
         .environmentObject(ProgressManager.shared)
 }

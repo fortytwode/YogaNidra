@@ -15,7 +15,8 @@ struct DiscoverTabItem: Identifiable, Hashable {
 
 struct DiscoverTab: View {
     @StateObject var router = Router<DisoverTabDestination>()
-    @State private var selectedTab: DiscoverTabItem? = .allDefinedTabs.first
+    // Initialize with nil to prevent automatic selection
+    @State private var selectedTab: DiscoverTabItem? = nil
     @State private var allTabs: [DiscoverTabItem] = DiscoverTabItem.allDefinedTabs
     @EnvironmentObject var audioManager: AudioManager
     @AppStorage(StorageKeys.totalSessionsCompletedKey) var sessionsCompleted = 0
@@ -27,18 +28,29 @@ struct DiscoverTab: View {
                     Section(header: tabsSelection) {
                         if let selectedTab {
                             getView(for: selectedTab)
+                        } else {
+                            // Show a welcome view when no tab is selected
+                            welcomeView
                         }
                     }
                 }
             }
             .contentMargins(.bottom, audioManager.currentPlayingSession != nil ? 52 : 0, for: .scrollContent)
-            .navigationTitle(selectedTab?.title ?? "Dashboard")
+            .navigationTitle(selectedTab?.title ?? "Discover")
             .navigationDestination(for: DisoverTabDestination.self) { dest in
                 switch dest {
                 case .selfLove14Days:
                     SelfLove14days()
                 case .springReset:
                     SpringReset()
+                }
+            }
+            .onAppear {
+                // Set the default tab only if none is selected
+                if selectedTab == nil {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        selectedTab = .allDefinedTabs.first
+                    }
                 }
             }
         }
@@ -99,6 +111,19 @@ struct DiscoverTab: View {
         }
     }
     
+    var welcomeView: some View {
+        VStack {
+            Text("Welcome to Discover")
+                .font(.headline)
+                .foregroundColor(.primary)
+                .padding()
+            Text("Please select a tab to get started")
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding()
+        }
+        .padding(.horizontal)
+    }
     
     var valentinesBanner: some View {
         ZStack {
